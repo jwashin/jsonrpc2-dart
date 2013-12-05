@@ -1,6 +1,8 @@
 import 'package:start/start.dart';
 import 'dart:async';
-import 'jsonrpcservice.dart';
+import '../lib/jsonrpc_service.dart';
+
+//import 'package:jsonrpc2/jsonrpcservice.dart';
 
 
 main(){
@@ -31,11 +33,42 @@ class TestServer{
       app.options('/echo').listen((request){sendOptionHeaders(request,
           allowCrossOrigin);
       });
+
+
     });
   }
 
   stopServer() => server.stop();
 
+}
+
+
+class SumService{
+  subtract(minuend,subtrahend){
+    return minuend - subtrahend;
+  }
+  add(x,y){
+    return x + y;
+  }
+  update(args){
+    return args;
+  }
+  summation(args){
+    var sum = 0;
+    for (var value in args){
+      sum += value;
+    }
+    return sum;
+  }
+  notify_hello(args){
+    return args;
+  }
+  get_data(){
+    return ['hello', 5];
+  }
+  ping(){
+    return true;
+  }
 }
 
 

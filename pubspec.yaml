@@ -1,0 +1,7 @@
+name: jsonrpc2
+version: 0.1.0
+description: JSON-RPC utilities for web applications.
+dev_dependencies:
+  polymer: any
+  start: 0.1.1
+  unittest: any

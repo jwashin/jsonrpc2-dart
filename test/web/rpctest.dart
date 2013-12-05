@@ -1,9 +1,9 @@
-//import 'dart:convert';
 import 'dart:html';
-//import 'dart:async';
-import 'package:polymer/polymer.dart';
-import 'package:jsonrpc_client/jsonrpc_client.dart';
 import 'dart:math';
+import 'package:polymer/polymer.dart';
+import '../../lib/jsonrpc_client.dart';
+//import 'package:jsonrpc2/jsonrpc_client.dart';
+
 
 //@MirrorsUsed(symbols: const ['uppercase','lowercase'], override:'*')
 //import 'dart:mirrors';
