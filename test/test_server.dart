@@ -1,16 +1,18 @@
 import 'package:start/start.dart';
 import 'dart:async';
+import 'package:logging/logging.dart';
+import 'package:logging_handlers/logging_handlers_shared.dart';
 import '../lib/jsonrpc_service.dart';
 
 //import 'package:jsonrpc2/jsonrpcservice.dart';
 
-
 main(){
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen(new LogPrintHandler());
   var server = new TestServer('web', '127.0.0.1', 8394);
   server.startServer();
   print ("Test Server running at http://${server.host}:${server.port}");
 }
-
 
 class TestServer{
   var server;
@@ -19,7 +21,6 @@ class TestServer{
   var public = 'web';
   var JsonRpcVersion = '2.0';
   var allowCrossOrigin=true;
-
 
   TestServer(this.public, this.host, this.port);
 
@@ -34,6 +35,19 @@ class TestServer{
           allowCrossOrigin);
       });
 
+      app.post('/sum').listen((request){doJsonRpc(request, new Sum_fun(),
+          allowCrossOrigin);
+      });
+      app.options('/sum').listen((request){sendOptionHeaders(request,
+          allowCrossOrigin);
+      });
+
+      app.post('/friend/:name').listen((request){doJsonRpc(request, new Friend(request),
+          allowCrossOrigin);
+      });
+      app.options('/friend/:name').listen((request){sendOptionHeaders(request,
+          allowCrossOrigin);
+      });
 
     });
   }
@@ -43,16 +57,16 @@ class TestServer{
 }
 
 
-class SumService{
-  subtract(minuend,subtrahend){
-    return minuend - subtrahend;
-  }
-  add(x,y){
-    return x + y;
-  }
-  update(args){
-    return args;
-  }
+class Sum_fun{
+
+  subtract(minuend, subtrahend) => minuend - subtrahend;
+
+  nsubtract({minuend:0,subtrahend:0}) => minuend - subtrahend;
+
+  add(x,y) => x + y;
+
+  update(args) => args;
+
   summation(args){
     var sum = 0;
     for (var value in args){
@@ -60,12 +74,20 @@ class SumService{
     }
     return sum;
   }
+
+  _private() => "Not public; you can't see this!";
+
   notify_hello(args){
     return args;
   }
   get_data(){
     return ['hello', 5];
   }
+
+  oopsie(){
+    throw new RandomException('Whoops!');
+  }
+
   ping(){
     return true;
   }
@@ -90,7 +112,7 @@ class EchoService{
    lowercase(msg) =>msg.toLowerCase();
 
    asyncwait(msg) {
-     return new Future.delayed(new Duration(seconds:5),
+     return new Future.delayed(new Duration(seconds:2),
          (){return "Worth waiting for? $msg!";});
    }
 
@@ -102,6 +124,18 @@ class EchoService{
      }
      return "An Error";
    }
+
+}
+
+
+class Friend{
+  Request request;
+  String name;
+  Friend(request){
+   name = request.param('name');
+  }
+
+  hello() => "Hello from $name!";
 
 }
 

@@ -1,114 +1,118 @@
 import 'dart:html';
-import 'dart:math';
 import 'package:polymer/polymer.dart';
+import 'package:unittest/unittest.dart';
 import '../../lib/jsonrpc_client.dart';
-//import 'package:jsonrpc2/jsonrpc_client.dart';
+import 'package:unittest/html_config.dart';
+import 'package:logging/logging.dart';
+import 'package:logging_handlers/logging_handlers_shared.dart';
 
 
-//@MirrorsUsed(symbols: const ['uppercase','lowercase'], override:'*')
-//import 'dart:mirrors';
-
-//MirrorSystem mirrorSystem = currentMirrorSystem();
-
-
+final _logger = new Logger('rpctest');
 
 @CustomTag('rpc-test')
-class Super extends PolymerElement{
+class RPCTest extends PolymerElement{
 
-  static var zstr = [196, 140, 101, 115, 107, 195, 161, 32, 109, 97, 114, 105, 195, 161, 110, 115, 107, 195, 161];
+  @published final List methods = [["Echo", 'echo'],
+                                   ['Reverse', 'reverse'],
+                                   ['Echo - Wait', 'asyncwait'],
+                                   ['UPPERCASE', 'uppercase'],
+                                   ['lowercase', 'lowercase'],
+                                   ['Throw Error', 'throwerror'],
+                                   ['bad call', 'bad_call'],
+                                   ];
 
-  static String cm = new String.fromCharCodes(zstr);
+  RPCTest.created():super.created();
 
+  @observable int selectedIndex = 0;
 
-  static var alternatives = ['superlative', 'wicked cool', r'Česká mariánská' ];
-//                            'Česká mariánská' , 'sweet','fantastic', 'awesome'];
-  var random = new Random();
-
-
-
-  Super.created():super.created(){}
-
-
-  @published var superlative = alternatives[0];
-  @published var countx = "";
-  int curridx = 0;
-
-  var count = 0;
-
-  void changeIt(Event e, var detail, Node target) {
-
-    var neu = curridx;
-
-    while (neu == curridx)
-      neu = random.nextInt(alternatives.length);
-
-    String newitem = alternatives[neu];
-    curridx = neu;
-
-    var p = new BatchServerProxy('http://127.0.0.1:8394/echo');
-    print('in: $neu');
-
-    //p.timeout = 9;
-
-     //var f = p.invokeRpc('reverse', [newitem]);
-    var rnd = random.nextInt(7);
-    var f = null;
-    switch (rnd){
-      case 0:
-        p.notify("echo",newitem);
-        break;
-      case 1:
-        f = p.call("reverse");
-        break;
-      case 2:
-        f = p.call("uppercase",[newitem]);
-        break;
-      case 3:
-        f = p.call("lowercase", newitem);
-        break;
-      case 4:
-        f = p.call('throwerror', ["random message"]);
-        break;
-
-      case 5:
-        f = p.call('asyncwait', "$newitem. Tada!");
-        superlative = 'Waiting...';
-        break;
-      case 6:
-        f = p.call('_privateMethod', newitem);
-        break;
-      default:
-        f = p.call("blecth", [newitem]);
-    }
-    count += 1;
-    var s = p.call("echo", " ct: ($count)");
-
-    p.send();
-
-    if (f != null){
-    f.then((resp){
-      if (resp is Exception) throw resp;
-      superlative = resp;
-        print('return: $resp');
-        }).catchError(onFail);
-    }
-    s.then((resp){
-      //print("s is responding");
-      countx = resp;});
-
-    //superlative = f;
-
-//     superlative = p.parseResponse(t);
+  @published var theText ='Lorem ipsum dolor sit, amet animos horreat levis'
+      'magnitudinem nobis orátione parvam prómpta sapientes! Affluérét '
+      'aliquando clita contra culpa emolumento epicureis fugiamus physici '
+      'platonem principes purus restát. Comparaverit dissensio dissentio '
+      'indoctum inducitur perdiscere quaestionem! Admirer aegritudo afférré '
+      'beata celeritas diceretur erga ignorant permagna prónuntiaret '
+      'satisfacit sunt vetuit. Consiliisque indicaverunt intellegi optinéré!';
 
 
+  @published var output = '';
 
-    }
-  onFail(error){
-    //var req = error.data;
-    print(error.toString());
+  void sendEcho(Event e, var detail, Node target){
+     var method = methods[selectedIndex][1];
+     var proxy = new ServerProxy('http://127.0.0.1:8394/echo');
+     var txt = theText;
+     if (method == 'asyncwait') output = "Waiting...";
+     if (method == 'throwerror') txt = "Surprise!!";
+     proxy.call(method, txt)
+       .then((resp)=>proxy.checkError(resp))
+       .then((result){output = result;})
+       .catchError((e){
+         output = "error -- $e";
+         _logger.warning(e.toString());
+         });
   }
-
 
 }
 
+main(){
+  useHtmlConfiguration();
+  Logger.root.onRecord.listen(new LogPrintHandler());
+  Logger.root.level = Level.ALL;
+  var proxy = new ServerProxy('http://127.0.0.1:8394/sum');
+  group('JSON-RPC Protocol', (){
 
+    test("positional arguments", (){
+    proxy.call('subtract', [23, 42]).then(expectAsync1((result){expect(result, equals(-19));}));
+    proxy.call('subtract', [42, 23]).then(expectAsync1((result){expect(result, equals(19));}));
+    });
+
+    test("named arguments", (){
+    proxy.call('nsubtract', {'subtrahend':23, 'minuend':42}).then(expectAsync1((result){expect(result, equals(19));}));
+    proxy.call('nsubtract', {'minuend':42, 'subtrahend':23}).then(expectAsync1((result){expect(result, equals(19));}));
+    proxy.call('nsubtract', {'minuend':23, 'subtrahend':42}).then(expectAsync1((result){expect(result, equals(-19));}));
+    proxy.call('nsubtract', {'subtrahend':42}).then(expectAsync1((result){expect(result, equals(-42));}));
+    });
+
+    test("notification", (){
+      proxy.notify('update', [[1,2,3,4,5]]).then(expectAsync1((result){expect(result, equals(null));}));
+    });
+
+    test("no such method", (){
+      proxy.call('foobar').then(expectAsync1((result){expect(result.code, equals(-32601));}));
+    });
+
+    test("private method", (){
+      proxy.call('_private').then(expectAsync1((result){expect(result.code, equals(-32600));}));
+    });
+
+    test("basic batch", (){
+      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy.call('subtract', [23, 42]).then(expectAsync1((result){expect(result, equals(-19));}));
+      proxy.call('subtract', [42, 23]).then(expectAsync1((result){expect(result, equals(19));}));
+      proxy.call('get_data').then(expectAsync1((result){expect(result, equals(['hello',5]));}));
+      proxy.notify('update', [[1,2,3,4,5]]);
+
+      proxy.call('nsubtract', {'minuend':23, 'subtrahend':42}).then(expectAsync1((result){expect(result, equals(-19));}));
+      proxy.send();
+      });
+
+    test("batch with error on a notification", (){
+      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy.call('summation', [[1,2,3,4,5]]).then(expectAsync1((result){expect(result, equals(15));}));
+      proxy.call('subtract', [42, 23]).then(expectAsync1((result){expect(result, equals(19));}));
+      proxy.call('get_data').then(expectAsync1((result){expect(result, equals(['hello',5]));}));
+      proxy.notify('update', [[1,2,3,4,5]]);
+      proxy.notify('oopsie');
+      proxy.call('nsubtract', {'minuend':23, 'subtrahend':42}).then(expectAsync1((result){expect(result, equals(-19));}));
+      proxy.send();
+      });
+
+    test("variable url", (){
+      var proxy = new ServerProxy('http://127.0.0.1:8394/friend/Bob');
+      proxy.call('hello').then(expectAsync1((result){expect(result, equals("Hello from Bob!"));}));
+      proxy = new ServerProxy('http://127.0.0.1:8394/friend/Mika');
+      proxy.call('hello').then(expectAsync1((result){expect(result, equals("Hello from Mika!"));}));
+      });
+
+    });
+
+}

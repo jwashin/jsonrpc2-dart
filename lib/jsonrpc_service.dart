@@ -1,6 +1,11 @@
+library jsonrpc_service;
+
 import 'dart:convert';
 import 'dart:async';
 import 'dart:mirrors';
+import 'package:logging/logging.dart';
+
+final _logger = new Logger('json-rpc');
 
 var JsonRpcVersion = '2.0';
 
@@ -49,24 +54,22 @@ class JsonRpcHandler{
 
           .catchError((e){
             return {'jsonrpc': version,
-                    'error': {'code':-32602, 'message':e.toString()},
+                    'error': {'code':-32601, 'message':e.message},
                     'id':id};
-            }, test: (e)=>e is NoSuchMethodError)
+            }, test: (e)=>e is MethodNotFoundError)
+
           .catchError((e){
             return {'jsonrpc': version,
               'error': {'code':32000, 'message':e.toString()},
               'id':id};
             },test:(e)=>e is Exception)
-                    .catchError((e){
+
+          .catchError((e){
             return {'jsonrpc': version,
               'error': {'code':32001, 'message':e.toString()},
               'id':id};
             });
   }
-
-
-
-
 }
 
 shouldBatch(obj){
@@ -87,21 +90,21 @@ doJsonRpc(request, service, [crossOrigin=false]){
     else{
       if (shouldBatch(parsed))
       {
-         var outList = [];
+         var responses = [];
          for (var rpc in parsed){
            var handler = new JsonRpcHandler(rpc, service);
            var value = handler.getResponse();
-           outList.add(new Future(()=>value));
+           responses.add(new Future(()=>value));
 
          }
-         return Future.wait(outList).then((theList){
-            List newList = [];
+         return Future.wait(responses).then((theList){
+            List output = [];
             for (var item in theList){
              if (item is! Notification){
-               newList.add(item);
+               output.add(item);
              }
             }
-            return newList;
+            return output;
          });
       }
       }
@@ -111,7 +114,6 @@ doJsonRpc(request, service, [crossOrigin=false]){
 }
 
 sendResponse(request, body, crossOrigin){
-//  print ("Request is $request");
   var response = request.response;
   setJsonHeaders(response, crossOrigin);
   if (body is Notification){
@@ -119,7 +121,7 @@ sendResponse(request, body, crossOrigin){
     response.send('');}
   else{
     response.status(200);
-    print ("return is $body");
+    _logger.fine("return is $body");
     response.json(body);
   }
 }
@@ -130,7 +132,7 @@ getJsonBody(request){
   request.input.listen((data){buffer= data;},
       onDone:(){
         var s = UTF8.decode(buffer);
-        print ("incoming is $s");
+        _logger.fine("incoming is $s");
         new Future.sync((){return JSON.decode(s);})
          .then((resp){c.complete(resp);})
          .catchError((e)
@@ -150,43 +152,31 @@ class Dispatcher{
 
     var nparams;
     var pparams;
-    if (method.length > 0 && method[0] == '_'){
-      throw new JsonRpcError("Method '$method' is private, if it exists.", -32601);
-    };
-    var im = reflect(klass);
-    var mirror = im.type;
+    InstanceMirror im = reflect(klass);
+    ClassMirror mirror = im.type;
     for (var m in mirror.declarations.keys){
       var meth = MirrorSystem.getName(m);
       if (meth == method){
-//        print("method is $m");
+        if (mirror.declarations[m].isPrivate)
+          throw new JsonRpcError("Method '$method' is private.", -32600);
         if (params is Map){
-          // For now...
-          throw new JsonRpcError("Named params not implemented", -32602);
-//          var newmap = {};
-//          print ("params is $params, ${params.runtimeType}");
-//          for (var key in params.keys){
-//            print ("key is $key, ${key.runtimeType}");
-//            var ky = MirrorSystem.getName(key);
-//            print ("ky is $ky, ${ky.runtimeType}");
-//            newmap[ky] = params[key];
-//          }
-//          print(newmap);
-//          nparams = newmap;
-//          pparams = null;
+          var newmap = {};
+          for (var key in params.keys){
+            newmap[new Symbol(key)] = params[key];
+          }
+          nparams = newmap;
+          pparams = [];
         }
         else{
           pparams = params;
         }
         return new Future.sync((){
-        InstanceMirror t = im.invoke(m, pparams);
-        //return(new Future(()=>t.reflectee));
-        return t.reflectee;
+          InstanceMirror t = im.invoke(m, pparams, nparams);
+          return t.reflectee;
         });
-
       }
-
     }
-    throw new JsonRpcError("Method not found: $method.", -32601);
+    throw new MethodNotFoundError("Method not found: $method.");
   }
 }
 

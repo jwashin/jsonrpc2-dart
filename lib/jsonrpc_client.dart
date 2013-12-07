@@ -4,6 +4,7 @@ import "dart:convert";
 import "dart:async";
 //import "dart:mirrors";
 import "dart:html";
+import "package:logging/logging.dart";
 
 /* basic usage:
  *    import "package:jsonrpc_client/jsonrpc_client.dart"
@@ -33,8 +34,7 @@ import "dart:html";
  */
 
 
-
-
+final _logger = new Logger('JSON-RPC');
 
 
 class ServerProxy {
@@ -193,6 +193,12 @@ class ServerProxy {
     }
   }
 
+  checkError(response){
+    if (response is RemoteException)
+      throw response;
+    return response;
+  }
+
 }
 
 
@@ -214,9 +220,6 @@ class BatchServerProxy extends ServerProxy{
         params,
         notify:notify,
         serverVersion:serverVersion);
-
-
-
     requests.add(package);
     if (!notify){
       var c = new Completer();
@@ -228,7 +231,7 @@ class BatchServerProxy extends ServerProxy{
   send(){
     var future = _doRequest(requests);
     requests = [];
-    future.then((resp)=>new Future.sync(()=>handleResponses(resp)));
+    return future.then((resp)=>new Future.sync(()=>handleResponses(resp)));
   }
 
   handleResponses(resps){
@@ -239,6 +242,10 @@ class BatchServerProxy extends ServerProxy{
       if (id != null){
         responses[id].complete(value);
         responses.remove(id);
+      }
+      else{
+        var error = resp['error'];
+        _logger.warning(new RemoteException(error['message'], error['code'], error['data']).toString());
       }
     }
     return null;
