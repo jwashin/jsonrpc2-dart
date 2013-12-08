@@ -2,7 +2,6 @@ library jsonrpc_client;
 
 import "dart:convert";
 import "dart:async";
-//import "dart:mirrors";
 import "dart:html";
 import "package:logging/logging.dart";
 
@@ -35,7 +34,6 @@ import "package:logging/logging.dart";
 
 
 final _logger = new Logger('JSON-RPC');
-
 
 class ServerProxy {
   String url;

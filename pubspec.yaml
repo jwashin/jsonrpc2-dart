@@ -1,6 +1,6 @@
 name: jsonrpc2
 author: Jim Washington
-version: 0.1.0
+version: 0.8.9
 description: JSON-RPC utilities for web applications.
 dependencies:
   logging: any
