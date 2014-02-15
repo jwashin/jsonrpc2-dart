@@ -19,7 +19,7 @@ h1,p {
   background-color: #fff;
 }
 
-.bordered_text{
-  border: black solid 2px; 
+.bordered_text {
+  border: black solid 2px;
   padding: 1em;
 }

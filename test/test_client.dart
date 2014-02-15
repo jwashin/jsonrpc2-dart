@@ -1,9 +1,9 @@
 import 'package:unittest/unittest.dart';
 import 'package:jsonrpc2/jsonrpc_client.dart';
-import 'package:unittest/html_config.dart';
+import 'package:unittest/html_enhanced_config.dart';
 
 main(){
-  useHtmlConfiguration();
+  useHtmlEnhancedConfiguration();
   var proxy = new ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC Protocol', (){
 
@@ -17,6 +17,7 @@ main(){
     proxy.call('nsubtract', {'minuend':42, 'subtrahend':23}).then(expectAsync1((result){expect(result, equals(19));}));
     proxy.call('nsubtract', {'minuend':23, 'subtrahend':42}).then(expectAsync1((result){expect(result, equals(-19));}));
     proxy.call('nsubtract', {'subtrahend':42}).then(expectAsync1((result){expect(result, equals(-42));}));
+    proxy.call('nsubtract').then(expectAsync1((result){expect(result, equals(0));}));
     });
 
     test("notification", (){

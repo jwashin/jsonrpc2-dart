@@ -1,5 +1,4 @@
 import 'package:start/start.dart';
-import 'dart:async';
 import 'package:logging/logging.dart';
 import 'package:logging_handlers/logging_handlers_shared.dart';
 import 'package:jsonrpc2/jsonrpc_service.dart';
@@ -30,24 +29,42 @@ class TestServer{
 
   startServer(){
 
-    start(public:public, port:port, host:host).then((app){
+    
+    start(port:port, host:host).then((app){
       server = app;
-      app.post('/sum').listen((request){doJsonRpc(request, new Sum_fun(),
-          allowCrossOrigin);
-          print ("request is $request");
-      });
-      app.options('/sum').listen((request){sendOptionHeaders(request,
-          allowCrossOrigin);
+      app.static('web');
+      
+      app.post('/sum').listen((request){
+        if (allowCrossOrigin) setCrossOriginHeaders(request);
+        doJsonRpc(request, new Sum_fun());
       });
 
-      app.post('/friend/:name').listen((request){doJsonRpc(request, new Friend(request),
-          allowCrossOrigin);
+      app.options('/sum').listen((request){
+        if (allowCrossOrigin) setCrossOriginHeaders(request);
+        var response = request.response;
+        response.status(204);
+        response.send('');
       });
-      app.options('/friend/:name').listen((request){sendOptionHeaders(request,
-          allowCrossOrigin);
+
+      app.post('/friend/:name').listen((request){
+        if (allowCrossOrigin) setCrossOriginHeaders(request);
+        doJsonRpc(request, new Friend(request));
+      });
+      
+      app.options('/friend/:name').listen((request){
+        if (allowCrossOrigin) setCrossOriginHeaders(request);
+        var response = request.response;
+        response.status(204);
+        response.send('');
       });
 
     });
+  }
+  setCrossOriginHeaders(request){
+    var response = request.response;
+    response.set('Access-Control-Allow-Origin', '*');
+    response.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    response.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   }
 
 //  stopServer() => server.stop();

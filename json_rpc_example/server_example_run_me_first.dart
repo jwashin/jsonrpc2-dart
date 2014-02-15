@@ -15,30 +15,41 @@ main(){
 }
 
 class TestServer{
-  var server;
   var port = 8395;
   var host = 'localhost';
   var public = 'web';
   var JsonRpcVersion = '2.0';
-  var allowCrossOrigin=true;
+  var allowCrossOrigin = true;
 
   TestServer(this.public, this.host, [this.port]);
 
   startServer(){
 
-    start(public:public, port:port, host:host).then((app){
-      server = app;
-      app.post('/echo').listen((request){doJsonRpc(request, new EchoService(),
-          allowCrossOrigin);
+    start(port:port, host:host).then((Server app){
+      
+      app.static('web');
+      
+      app.post('/echo').listen((request){
+        if (allowCrossOrigin) setCrossOriginHeaders(request);
+        doJsonRpc(request, new EchoService());
       });
-      app.options('/echo').listen((request){sendOptionHeaders(request,
-          allowCrossOrigin);
+      
+      app.options('/echo').listen((request){
+        if (allowCrossOrigin) setCrossOriginHeaders(request);
+        var response = request.response;
+        response.status(204);
+        response.send('');
       });
+      
     });
   }
 
-  stopServer() => server.stop();
-
+  setCrossOriginHeaders(request){
+    var response = request.response;
+    response.set('Access-Control-Allow-Origin', '*');
+    response.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    response.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  }
 }
 
 
@@ -48,12 +59,8 @@ class EchoService{
 
    echo(msg)=>msg;
 
-   reverse([msg="hello"]){
-        var buffer = new StringBuffer();
-        for(int i=msg.length-1;i>=0;i--) {
-          buffer.write(msg[i]);
-        }
-        return buffer.toString();}
+   reverse([msg="hello"]) => new String.fromCharCodes(
+       new List.from(msg.codeUnits).reversed);
 
    uppercase(msg) => msg.toUpperCase();
 
@@ -61,7 +68,7 @@ class EchoService{
 
    asyncwait(msg) {
      return new Future.delayed(new Duration(seconds:3),
-         (){return "<strong>Worth waiting for?</strong> $msg!";});
+         (){return "<b>Worth waiting for?</b> $msg!";});
    }
 
    throwerror([msg]){
@@ -72,7 +79,6 @@ class EchoService{
      }
      return "An Error";
    }
-
 }
 
 

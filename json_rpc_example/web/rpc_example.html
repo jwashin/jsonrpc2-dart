@@ -5,17 +5,19 @@
 <meta charset="utf-8">
 <title>JSON-RPC Example</title>
 <link rel="stylesheet" href="rpc_example.css">
-
-<!-- import the rpc widget -->
-<link rel="import" href="rpc_widget.html">
-
 <script type="application/dart" src="rpc_example.dart"></script>
-<script src="packages/browser/dart.js"></script>
 </head>
 <body>
   <h1>JSON-RPC Example</h1>
+
   <div id="rpc_example">
-    <rpc-widget></rpc-widget>
+    <textarea id="text1" rows="15" cols="80"></textarea>
+    <br> <select id="method_chooser"></select>
+    <button id="submit">Submit</button>
+    <p>The above text is processed by the server, returned, and
+      displayed below.</p>
+    <p id="output" class="bordered_text"></p>
   </div>
+
 </body>
 </html>

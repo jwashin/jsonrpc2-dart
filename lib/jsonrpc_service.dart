@@ -20,7 +20,7 @@ class JsonRpcHandler{
    this.service = new Dispatcher(service);
   }
 
-  getResponse(){
+  makeResponse(){
     var jsonrpc = request['jsonrpc'];
     if (jsonrpc == null) version = '1.0';
     var method = request['method'];
@@ -76,7 +76,7 @@ shouldBatch(obj){
   return obj is List && obj.length > 0 && obj[0]['jsonrpc'] == '2.0';
 }
 
-doJsonRpc(request, service, [crossOrigin=false]){
+doJsonRpc(request, service){
   //var resp;
   //var response = request.response;
   getJsonBody(request)
@@ -85,7 +85,7 @@ doJsonRpc(request, service, [crossOrigin=false]){
     if (parsed is Map && parsed['jsonrpc'] == '2.0'){
       var handler = new JsonRpcHandler(parsed, service);
       handler.version = '2.0';
-      return handler.getResponse();
+      return handler.makeResponse();
     }
     else{
       if (shouldBatch(parsed))
@@ -93,7 +93,7 @@ doJsonRpc(request, service, [crossOrigin=false]){
          var responses = [];
          for (var rpc in parsed){
            var handler = new JsonRpcHandler(rpc, service);
-           var value = handler.getResponse();
+           var value = handler.makeResponse();
            responses.add(new Future(()=>value));
 
          }
@@ -109,13 +109,13 @@ doJsonRpc(request, service, [crossOrigin=false]){
       }
       }
   })
-  .then((resp){sendResponse(request, resp, crossOrigin);});
+  .then((resp){sendResponse(request, resp);});
 
 }
 
-sendResponse(request, body, crossOrigin){
+sendResponse(request, body){
   var response = request.response;
-  setJsonHeaders(response, crossOrigin);
+  setJsonHeaders(response);
   if (body is Notification){
     response.status(204);
     response.send('');}
@@ -145,14 +145,14 @@ getJsonBody(request){
 
 
 class Dispatcher{
-  var klass;
-  Dispatcher(this.klass);
+  var instance;
+  Dispatcher(this.instance);
 
   dispatch(method, params){
 
     var nparams;
     var pparams;
-    InstanceMirror im = reflect(klass);
+    InstanceMirror im = reflect(instance);
     ClassMirror mirror = im.type;
     for (var m in mirror.declarations.keys){
       var meth = MirrorSystem.getName(m);
@@ -180,22 +180,8 @@ class Dispatcher{
   }
 }
 
-sendOptionHeaders(request, crossOrigin){
-  var response = request.response;
-  if (crossOrigin) allowCrossOrigin(response);
-  response.status(204);
-  response.send('');
-}
-
-setJsonHeaders(response, [crossOrigin=false]){
+setJsonHeaders(response){
   response.set('Content-Type', 'application/json; charset=UTF-8');
-  if (crossOrigin) allowCrossOrigin(response);
-}
-
-allowCrossOrigin(response){
-  response.set('Access-Control-Allow-Origin', '*');
-  response.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  response.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 }
 
 

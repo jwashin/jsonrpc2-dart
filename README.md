@@ -84,7 +84,7 @@ The way to use a given method depends on what the server accepts.
 are all valid possible formulations. Note that 2 and 6 are equivalent. The second argument 
 to the call is required by protocol to be a List or Map, and will be enclosed in 
 a List in the background if not provided. Note that if the server's method has 
-a single List argument, you need to use something like 3. 1 is usable if the 
+a single List argument, you need to use something like 4. 1 is usable if the 
 method requires no arguments, or if all arguments are optional. Variables need to 
 be JSON serializable; in general, booleans, strings, numbers, Lists, Maps, 
 combinations of these, or objects with a toJson() method. A call will generally
@@ -103,7 +103,7 @@ call uses asynchronous methodology and will look like
 
 `proxy.checkError(value)` just throws the returned exception in a place where you
 can handle it with .catchError. If you want to do something else, the returned
-value will be the JSON-RPC "error" member defined in the JSON-RPC specification.  
+error will be the JSON-RPC "error" member defined in the JSON-RPC specification.  
 
 After a ServerProxy is created, you may set a timeout in milliseconds on any
 succeeding HTTP request.

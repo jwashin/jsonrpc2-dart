@@ -1,0 +1,21 @@
+---
+build.dart --machine --full
+Unable to open file: /home/jwashin/dartprojects/dart/jsonrpc2/json_rpc_example/packages/polymer/builder.dart'file:///home/jwashin/dartprojects/dart/jsonrpc2/json_rpc_example/build.dart': error: line 1 pos 1: library handler failed
+import 'package:polymer/builder.dart';
+^
+build.dart finished [61 ms]
+
+---
+build.dart --machine --full
+Unable to open file: /home/jwashin/dartprojects/dart/jsonrpc2/json_rpc_example/packages/polymer/builder.dart'file:///home/jwashin/dartprojects/dart/jsonrpc2/json_rpc_example/build.dart': error: line 1 pos 1: library handler failed
+import 'package:polymer/builder.dart';
+^
+build.dart finished [68 ms]
+
+---
+build.dart --machine --changed=pubspec.yaml
+Unable to open file: /home/jwashin/dartprojects/dart/jsonrpc2/json_rpc_example/packages/polymer/builder.dart'file:///home/jwashin/dartprojects/dart/jsonrpc2/json_rpc_example/build.dart': error: line 1 pos 1: library handler failed
+import 'package:polymer/builder.dart';
+^
+build.dart finished [42 ms]
+
