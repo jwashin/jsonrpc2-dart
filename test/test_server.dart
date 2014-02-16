@@ -12,20 +12,20 @@ import 'package:jsonrpc2/jsonrpc_service.dart';
 main(){
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen(new LogPrintHandler());
-  var server = new TestServer('web', '127.0.0.1', 8394);
+  TestServer server = new TestServer('127.0.0.1', 8394);
   server.startServer();
   print ("Test Server running at http://${server.host}:${server.port}");
 }
+
 
 class TestServer{
   var server;
   var port = 8394;
   var host = 'localhost';
-  var public = 'web';
   var JsonRpcVersion = '2.0';
   var allowCrossOrigin=true;
 
-  TestServer(this.public, this.host, this.port);
+  TestServer(this.host, [this.port]);
 
   startServer(){
 
@@ -36,24 +36,25 @@ class TestServer{
       
       app.post('/sum').listen((request){
         if (allowCrossOrigin) setCrossOriginHeaders(request);
-        doJsonRpc(request, new Sum_fun());
+        //request.input gets us the HttpRequest object in start...
+        doJsonRpc(request.input, new Sum_fun());
       });
 
       app.options('/sum').listen((request){
+        Response response = request.response;
         if (allowCrossOrigin) setCrossOriginHeaders(request);
-        var response = request.response;
         response.status(204);
         response.send('');
       });
 
       app.post('/friend/:name').listen((request){
         if (allowCrossOrigin) setCrossOriginHeaders(request);
-        doJsonRpc(request, new Friend(request));
+        doJsonRpc(request.input, new Friend(request));
       });
       
       app.options('/friend/:name').listen((request){
         if (allowCrossOrigin) setCrossOriginHeaders(request);
-        var response = request.response;
+        Response response = request.response;
         response.status(204);
         response.send('');
       });
@@ -61,7 +62,7 @@ class TestServer{
     });
   }
   setCrossOriginHeaders(request){
-    var response = request.response;
+    Response response = request.response;
     response.set('Access-Control-Allow-Origin', '*');
     response.set("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
     response.set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");

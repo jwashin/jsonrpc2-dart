@@ -1,3 +1,5 @@
+library json_rpc_ftests;
+
 import 'package:unittest/unittest.dart';
 import 'package:jsonrpc2/jsonrpc_client.dart';
 import 'package:unittest/html_enhanced_config.dart';

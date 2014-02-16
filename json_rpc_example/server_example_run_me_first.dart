@@ -7,7 +7,7 @@ import 'package:jsonrpc2/jsonrpc_service.dart';
 main(){
   Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen(new LogPrintHandler());
-  var server = new TestServer('web', '127.0.0.1', 8395);
+  var server = new TestServer('127.0.0.1', 8395);
   server.startServer();
   print ("Test Server running at http://${server.host}:${server.port}");
   print("Example application is at http://${server.host}:${server.port}/rpc_example.html");
@@ -17,11 +17,10 @@ main(){
 class TestServer{
   var port = 8395;
   var host = 'localhost';
-  var public = 'web';
   var JsonRpcVersion = '2.0';
   var allowCrossOrigin = true;
 
-  TestServer(this.public, this.host, [this.port]);
+  TestServer(this.host, [this.port]);
 
   startServer(){
 
@@ -29,9 +28,9 @@ class TestServer{
       
       app.static('web');
       
-      app.post('/echo').listen((request){
+      app.post('/echo').listen((Request request){
         if (allowCrossOrigin) setCrossOriginHeaders(request);
-        doJsonRpc(request, new EchoService());
+        doJsonRpc(request.input, new EchoService());
       });
       
       app.options('/echo').listen((request){
