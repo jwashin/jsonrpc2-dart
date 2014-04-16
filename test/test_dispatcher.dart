@@ -18,7 +18,6 @@ class Foo {
   throwerr(a, num b) {
     throw new Zerr('you expected this!');
   }
-
 }
 
 class Zerr implements Exception {
@@ -51,18 +50,18 @@ main() {
 
     });
 
-    test("simple object initialized with param", () {
+    test("simple object initialized with param unused", () {
       var z = new Dispatcher(new Foo("Bar"));
       z.dispatch('greet', ['Mary']).then((value) => expect(value, equals('Hi, Mary!')));
 
     });
 
-    test("simple object initialized with param 1", () {
-          var z = new Dispatcher(new Foo("Bob"));
-          z.dispatch('hello').then((value) => expect(value, equals('Hello, Bob!')));
+    test("simple object initialized with param used", () {
+      var z = new Dispatcher(new Foo("Bob"));
+      z.dispatch('hello').then((value) => expect(value, equals('Hello, Bob!')));
 
-        });
-    
+    });
+
 
     test("simple object without optional param", () {
       var z = new Dispatcher(new Foo());
@@ -76,18 +75,18 @@ main() {
 
     });
 
-    test("simple subtraction 1", () {
+    test("simple subtraction a b", () {
       var z = new Dispatcher(new Foo());
       z.dispatch('subtract', [42, 23]).then((value) => expect(value, equals(19)));
 
     });
-    test("simple subtraction 2", () {
+    test("simple subtraction b a", () {
       var z = new Dispatcher(new Foo());
       z.dispatch('subtract', [23, 42]).then((value) => expect(value, equals(-19)));
 
     });
 
-    test("simple named subtraction 1", () {
+    test("named subtraction in order", () {
       var z = new Dispatcher(new Foo());
       z.dispatch('subtract_named', [], {
         "minuend": 23,
@@ -96,7 +95,7 @@ main() {
 
     });
 
-    test("simple named subtraction 2", () {
+    test("named subtraction out of order", () {
       var z = new Dispatcher(new Foo());
       z.dispatch('subtract_named', [], {
         "subtrahend": 42,
@@ -120,27 +119,36 @@ main() {
       z.dispatch('_private_add', [3, 4.3]).then((value) => expect(value, new isInstanceOf<MethodNotFound>()));
     });
 
-    test("invalid parameters 1", () {
+    test("invalid parameters too many", () {
       var z = new Dispatcher(new Foo());
       z.dispatch('add', [3, 5, 8]).then((value) => expect(value, new isInstanceOf<InvalidParameters>()));
     });
 
-    test("invalid parameters 2", () {
+    test("invalid parameters bad value", () {
       var z = new Dispatcher(new Foo());
       z.dispatch('add', [3, "hello"]).then((value) => expect(value, new isInstanceOf<InvalidParameters>()));
     });
 
-    test("invalid parameters 3", () {
+    test("invalid parameters too few", () {
       var z = new Dispatcher(new Foo());
       z.dispatch('add', [3]).then((value) => expect(value, new isInstanceOf<InvalidParameters>()));
     });
 
-    test("internal error 1", () {
+    test("internal error", () {
       var z = new Dispatcher(new Foo());
       z.dispatch('throwerr', [3, 0]).then((value) => expect(value, new isInstanceOf<InternalError>()));
     });
 
-  
-    
+    test("private method invocation", () {
+      var z = new Dispatcher(new Foo());
+      z.dispatch('_private_add', [3, 4.3]).then((value) => expect(value, new isInstanceOf<MethodNotFound>()));
+    });
+
+    test("attempt property invocation", () {
+      var z = new Dispatcher(new Foo());
+      z.dispatch('greet_name').then((value) => expect(value, new isInstanceOf<MethodNotFound>()));
+    });
+
+
   });
 }
