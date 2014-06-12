@@ -6,7 +6,7 @@ import "dart:html";
 import "package:logging/logging.dart";
 
 /* basic usage:
- *    import "package:jsonrpc_client/jsonrpc_client.dart"
+ *    import "package:jsonrpc2/jsonrpc_client.dart"
  *
  *    var url = "http://somelocation";
  *    var proxy = new ServerProxy(url);
@@ -14,11 +14,6 @@ import "package:logging/logging.dart";
  *    request.then((value){doSomethingWithValue(value);});
  *
  * Each arg must be representable in JSON.
- *
- *
- * This is a first stab at JSON-RPC client for Dart.
- * It may contribute to js code size as-is, because
- * of the use of dart:mirrors.
  *
  * Exceptions on the remote end will throw RemoteException.
  *
@@ -55,16 +50,14 @@ class ServerProxy {
      */
 
     if (params == null) params = [];
-    var package = new JsonRpcMethod(method, params, notify: notify,
-        serverVersion: serverVersion);
+    var package = new JsonRpcMethod(method, params, notify: notify, serverVersion: serverVersion);
     if (notify) {
-      _doRequest(package);
+      _executeRequest(package);
       return new Future(() => null);
-    } else return _doRequest(package).then((rpcResponse) => handleResponse(
-        rpcResponse));
+    } else return _executeRequest(package).then((rpcResponse) => handleResponse(rpcResponse));
   }
 
-  _doRequest(package) {
+  _executeRequest(package) {
     //return a future with the JSON-RPC response
     HttpRequest request = new HttpRequest();
     request.open("POST", url, async: true);
@@ -74,26 +67,24 @@ class ServerProxy {
     request.onReadyStateChange.listen((_) {
       if (request.readyState == 4) {
         switch (request.status) {
-          
+
           case 200:
             c.complete(request);
             break;
-            
+
           case 204:
             c.complete(request);
             break;
 
           default:
-            c.completeError(new HttpStatusError(request.statusText, request,
-                package));
+            c.completeError(new HttpStatusError(request.statusText, request, package));
         }
       }
     });
     //Timeout
     request.onTimeout.listen((_) {
       //request.abort();
-      c.completeError(new TimeoutException('JsonRpcRequest timed out', request,
-          package));
+      c.completeError(new TimeoutException('JsonRpcRequest timed out', request, package));
     });
 
     // It's sent out utf-8 encoded. Without having to be told. Nice!
@@ -110,8 +101,7 @@ class ServerProxy {
 
   handleResponse(response) {
     if (response.containsKey('error')) {
-      return (new RemoteException(response['error']['message'],
-          response['error']['code'], response['error']['data']));
+      return (new RemoteException(response['error']['message'], response['error']['code'], response['error']['data']));
     } else {
       return response['result'];
     }
@@ -127,7 +117,7 @@ class ServerProxy {
 
 class BatchServerProxy extends ServerProxy {
 
-  BatchServerProxy(url): super(url);
+  BatchServerProxy(url) : super(url);
   var requests = [];
   var responses = {};
   var used_ids = {};
@@ -139,8 +129,7 @@ class BatchServerProxy extends ServerProxy {
      */
 
     if (params == null) params = [];
-    var package = new JsonRpcMethod(method, params, notify: notify,
-        serverVersion: serverVersion);
+    var package = new JsonRpcMethod(method, params, notify: notify, serverVersion: serverVersion);
     requests.add(package);
     if (!notify) {
       var c = new Completer();
@@ -150,7 +139,7 @@ class BatchServerProxy extends ServerProxy {
   }
 
   send() {
-    var future = _doRequest(requests);
+    var future = _executeRequest(requests);
     requests = [];
     return future.then((resp) => new Future.sync(() => handleResponses(resp)));
   }
@@ -165,8 +154,7 @@ class BatchServerProxy extends ServerProxy {
         responses.remove(id);
       } else {
         var error = resp['error'];
-        _logger.warning(new RemoteException(error['message'], error['code'],
-            error['data']).toString());
+        _logger.warning(new RemoteException(error['message'], error['code'], error['data']).toString());
       }
     }
     return null;
@@ -179,8 +167,7 @@ class JsonRpcMethod {
   bool notify;
   var _id;
   String serverVersion;
-  JsonRpcMethod(this.method, this.args, {this.notify: false, this.serverVersion:
-      '2.0'});
+  JsonRpcMethod(this.method, this.args, {this.notify: false, this.serverVersion: '2.0'});
 
   get id {
     if (notify) {
@@ -205,8 +192,7 @@ class JsonRpcMethod {
         if (!notify) map['id'] = id;
         break;
       case '1.0':
-        if (args is Map) throw new FormatException(
-            "Cannot use named params in JSON-RPC 1.0");
+        if (args is Map) throw new FormatException("Cannot use named params in JSON-RPC 1.0");
         map = {
           'method': method,
           'params': (args is List) ? args : [args],
@@ -227,8 +213,7 @@ class RemoteException implements Exception {
   String message;
   var data;
   RemoteException([this.message, this.code, this.data]);
-  toString() => data != null ? "RemoteException $code '$message' Data:($data))"
-      : "RemoteException $code: $message";
+  toString() => data != null ? "RemoteException $code '$message' Data:($data))" : "RemoteException $code: $message";
 }
 
 class HttpStatusError implements Exception {

@@ -4,230 +4,202 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:logging/logging.dart';
-import 'dart:io';
+//import 'dart:io';
 
+import 'rpc_exceptions.dart';
 import 'dispatcher.dart';
+
 
 final _logger = new Logger('json-rpc');
 
-var JsonRpcVersion = '2.0';
-
-/**
- * Take a Map, decoded from a JSON-RPC request, and send the 
- * method and parameters to a service object.
- * 
- * 
- * 
- */
-
-
-class StandardJsonRpcMethodRequest{
-  Map dict;
-  
-  StandardJsonRpcMethodRequest(this.dict);
-  
-  get version{
-    String version = dict['jsonrpc'];
-    if (version == null) return '1.0';
-    return version;
-  }
-  
-  get method{
-    String method = dict['method'];
-    if (method == null) throw new FormatException('Invalid request; missing "method"');
-    return dict['method'];
-  }
-  
-  get namedParams{
-    var params = dict['params'];
-    if (params is Map) return params;
-    return null;
-  }
-  
-  get positionalParams{
-    var params = dict['params'];
-    if (params is List) return params;
-    return null;
-  }
-  
-  get id{
-    return dict['id'];
-  }
-  
-}
-
-
-class JsonRpcHandler {
-  Map request;
-  Object instanceWithMethods;
-  JsonRpcHandler(this.request, this.instanceWithMethods);
-  
-  createResponse(requestData) {
-    var rq = new StandardJsonRpcMethodRequest(requestData);
-    var version = rq.version;
-    var id = rq.id;
-    var method = rq.method;
-    
-    if (method == null) throw new FormatException('Missing required element');
-    return new Future.sync(() => new Dispatcher(instanceWithMethods).dispatch(method,
-        rq.positionalParams, rq.namedParams)).then((value) {
-      if (id == null) {
-        return new Notification();
-      }
-      //print ("value is $value");
-      var resp = {
-        'result': value,
-        'id': id
-      };
-      if (version == '2.0') {
-        resp['jsonrpc'] = version;
-      }
-      if (version == '1.0') {
-        resp['error'] = null;
-      }
-      return resp;
-    }).catchError((e) {
-      return {
-        'jsonrpc': version,
-        'error': {
-          'code': e.code,
-          'message': e.message
-        },
-        'id': id
-      };
-    }, test: (e) => e is JsonRpcError).catchError((e) {
-      return {
-        'jsonrpc': version,
-        'error': {
-          'code': -32601,
-          'message': e.message
-        },
-        'id': id
-      };
-    }, test: (e) => e is MethodNotFoundError).catchError((e) {
-      return {
-        'jsonrpc': version,
-        'error': {
-          'code': -32600,
-          'message': e.toString()
-        },
-        'id': id
-      };
-    }, test: (e) => e is PrivateError).catchError((e) {
-      return {
-        'jsonrpc': version,
-        'error': {
-          'code': 32000,
-          'message': e.toString()
-        },
-        'id': id
-      };
-    }, test: (e) => e is Exception).catchError((e) {
-      return {
-        'jsonrpc': version,
-        'error': {
-          'code': 32001,
-          'message': e.toString()
-        },
-        'id': id
-      };
-    });
-  }
-}
-
-_shouldBatch(obj) {
-  _logger.fine('checking batch');
-  return obj is List && obj.length > 0 && obj[0]['jsonrpc'] == '2.0';
-}
-
-doJsonRpc(HttpRequest request, Object instance) {
-  //var resp;
-  //var response = request.response;
-  getJsonBody(request).then((parsed) {
-    //print (parsed);
-     
-    
-    if (parsed is Map && parsed['jsonrpc'] == '2.0') {
-      var handler = new JsonRpcHandler(parsed, instance);
-      return handler.createResponse(parsed);
-    } else {
-      
-      if (_shouldBatch(parsed)) {
-        var responses = [];
-        for (var rpc in parsed) {
-          _logger.fine('batch: $rpc');
-          var handler = new JsonRpcHandler(rpc, instance);
-          var value = handler.createResponse(rpc);
-          responses.add(new Future(() => value));
-
-        }
-        return Future.wait(responses).then((theList) {
-          List output = [];
-          for (var item in theList) {
-            if (item is! Notification) {
-              output.add(item);
-            }
-          }
-          return output;
-        });
-      }
-    }
-  }).then((resp) {
-    sendResponse(request, resp);
-  });
-
-}
-
-sendResponse(HttpRequest request, body) {
-  var response = request.response;
-  setJsonHeaders(response);
-  if (body is Notification) {
-    response.statusCode = 204;
-  } else {
-    response.statusCode = 200;
-    _logger.fine("return is $body");
-    response.write(JSON.encode(body));
-  }
-  response.close();
-}
-
-getJsonBody(HttpRequest request) {
-
-  Future<String> c = UTF8.decodeStream(request).then((s) => JSON.decode(s)
-      ).catchError((e) => throw new JsonRpcError(
-      "Invalid JSON was received by the server", -32700, ""));
-  return c;
-}
-
-setJsonHeaders(HttpResponse response) {
-  response.headers.contentType = new ContentType('application', 'json', charset:
-      "utf-8");
-}
+const String JSONRPC2 = '2.0';
+const String JSONRPC1 = '1.0';
+//ContentType JSON_RPC_CONTENT_TYPE = new ContentType('application', 'json', charset: "utf-8");
 
 
 class Notification {
 }
 
 
-class JsonRpcError implements Exception {
-  int code;
-  var message;
-  var data;
-  var id;
-  JsonRpcError([this.message, this.code, this.id, this.data]);
+class MethodRequest {
+  var request;
 
-  toMap() {
-    Map map = {
-      'code': code,
-      'message': message
-    };
-    if (data != null) map['data'] = data;
-    return map;
+  MethodRequest(this.request);
+
+  get version {
+    try {
+      String version = request['jsonrpc'];
+      if (version == null) return JSONRPC1;
+      if (version != JSONRPC2) {
+        throwerr(new RpcException('Invalid Request', -32600));
+      }
+      return version;
+    } catch (e) {
+      // we always get version first, so if request is not proper, fail here
+      throw makeExceptionMap(new RpcException('Invalid Request', -32600), JSONRPC2, null);
+    }
+  }
+
+  get method {
+    var method = request['method'];
+    if (method is! String) {
+      throwerr(new RpcException('Invalid Request', -32600));
+    }
+    return method;
+  }
+
+  get namedParams {
+    var params = request['params'];
+    if (params is Map) return params;
+    return null;
+  }
+
+  get positionalParams {
+    var params = request['params'];
+    if (params is List) return params;
+    return null;
+  }
+
+  get id {
+    var id = request['id'];
+    if (id is String || id is num || id == null) {
+      return id;
+    }
+    throwerr(new RpcException('Invalid Request', -32600));
+  }
+
+  throwerr(exception) {
+    throw makeExceptionMap(exception, version, request['id']);
   }
 
 }
+/* Given a parsed JSON-RPC request and an instance with methods,
+ * return a Future with a Map of the result of the instance's method or a
+ * Notification object 
+ */
+jsonRpcDispatch(request, instance) {
+  try {
+    var rq = new MethodRequest(request);
+    var version = rq.version;
+    var id = rq.id;
+    var method = rq.method;
 
-class ParseError implements Exception {
-  var message;
-  ParseError([this.message]);
+    return new Future.sync(() => new Dispatcher(instance).dispatch(method, rq.positionalParams, rq.namedParams)).then((value) {
+
+      if (id == null) {
+        return new Notification();
+      }
+
+      if (value is RpcException) {
+//        _logger.fine('$value');
+        return makeExceptionMap(value, version, id);
+      }
+
+      Map resp = {
+        'result': value,
+        'id': id
+      };
+      if (version == JSONRPC2) {
+        resp['jsonrpc'] = version;
+      }
+      if (version == JSONRPC1) {
+        resp['error'] = null;
+      }
+      return resp;
+    }).catchError((e) {
+//      _logger.fine('$e');
+      return makeExceptionMap(e, version, id);
+    });
+  } catch (e) {
+    _logger.fine('$e');
+    return new Future.sync(() => e);
+  }
+}
+
+makeExceptionMap(anException, version, [id = null]) {
+  Map resp = {
+    'id': id
+  };
+  if (version == JSONRPC1) {
+    resp['result'] = null;
+  } else {
+    resp['jsonrpc'] = version;
+  }
+  resp['error'] = {
+    'code': anException.code,
+    'message': anException.message
+  };
+  return resp;
+}
+
+_shouldBatch(obj) {
+//  _logger.fine('checking batch');
+  return obj is List && obj.length > 0;
+}
+
+/* Given a JSON-RPC-formatted request string and an instance,
+ * return a Future containing a JSON-RPC-formatted response string or null.
+ * Null means that nothing should be returned, though some transports must return something.
+*/
+jsonRpc(String request, Object instance) {
+  //_logger.fine(request);
+  try {
+    var parsed = parseJson(request);
+    return jsonRpcExec(parsed, instance).then((resp) => encodeResponse(resp));
+  } on RpcException catch (e) {
+    return new Future.sync(() => encodeResponse(makeExceptionMap(e, JSONRPC2)));
+  }
+}
+
+/*  Given a proper parsed JSON-RPC Map or a List return the proper JSON-RPC Map or List of responses, 
+ *  or a Notification object. The transport will decide how to encode into JSON and UTF-8 for delivery.
+ *  Depending on transport, Notification objects may not need 
+ *  to be delivered.
+*/
+jsonRpcExec(request, Object instance) {
+  if (request is Map && (request['jsonrpc'] == JSONRPC2 || request['jsonrpc'] == null)) {
+    _logger.fine('$request');
+    return jsonRpcDispatch(request, instance);
+  } else {
+    if (_shouldBatch(request)) {
+      var responses = [];
+      for (var rpc in request) {
+        if (rpc is Map) {
+          rpc['jsonrpc'] = JSONRPC2;
+        }
+        //_logger.fine('batch: $rpc');
+        var value = jsonRpcDispatch(rpc, instance);
+        responses.add(new Future(() => value));
+      }
+      return Future.wait(responses).then((theList) {
+        List output = [];
+        for (var item in theList) {
+          if (item is! Notification) {
+            output.add(item);
+          }
+        }
+        if (output.length > 0) {
+          return output;
+        }
+        return new Notification();
+      });
+    }
+    return new Future.sync(() => makeExceptionMap(new RpcException("Invalid request", -32600), "2.0", null));
+  }
+}
+
+parseJson(aString) {
+  try {
+    var data = JSON.decode(aString);
+    return data;
+  } catch (e) {
+    throw new RpcException("Parse error", -32700);
+  }
+}
+
+encodeResponse(aMap) {
+  if (aMap is Notification) {
+    return null;
+  }
+  return JSON.encode(aMap);
 }

@@ -27,12 +27,31 @@ Server Basics
 
 - Import the server library
 - Create a class implementing the service methods for a particular endpoint.
-- Associate the url, the request, jsonrpc, and the class. (we use start.dart for 
+- Either 
+  1. Decode the request to String from (UTF-8) character set.
+  2. Parse the JSON from the String.
+  3. Using the *jsonRpcExec* method, dispatch the request to an instance of the service class.
+  4. Stringify the (usually, a JSONable object) response.
+  5. Usually, return the response (in UTF-8).
+- or
+  1. Decode the request to String (from UTF-8).
+  2. Using the *jsonRpc* method, dispatch the request to an instance of the service class.
+  3. Encode the response (to UTF-8) and usually, return it.
+    
+- Associate the server end-point, the string, jsonrpc, and the class. (we use start.dart for 
 this example.)
 
 
         import 'package:start/start.dart';
         import 'package:jsonrpc2/jsonrpc_service.dart';
+        import 'dart:async';
+        import 'dart:convert';
+        
+        doJsonRpc(request, instance){
+          var rq = request.input;
+          Future<String> resp = UTF8.decodeStream(rq).then((stream) => jsonRpc(stream,instance));
+          return resp;
+        }
         
         class MyService{
            some_method(arg1,arg2)=>return_something_with(arg1,arg2);
@@ -144,13 +163,24 @@ Server Overview
         
         import 'package:jsonrpc2/jsonrpc_service.dart';
 
-On the server side, the main interface is a function called `doJsonRpc`. It 
-takes a Request object, an instance object, and optionally a boolean of whether
-you want to include Cross-Origin headers in the response. This is the function signature.
+On the server side, the main interface is a function called `jsonRpc`. It 
+takes a String, and an instance object.   
 
-        doJsonRpc(request, service, [crossOrigin=false]) 
-        
-The request has a POST body that is parsed from JSON into a method and args. The
+        jsonRpc(String request, Object service) 
+
+As of 0.90, this interface has become less opinionated, so it should work with pretty much any backend. 
+It takes an unencoded String and an instance of a class. It usually returns a Future<String> with the properly UTF-8 and
+JSON encoded response, though it may return null if nothing needs to be returned, in the case of a notification.
+
+This requires a bit more work to make the function work with your backend. For HTTP, the desired string for the 
+function will usually be the UTF-8 decoded body of the HTTP POST. Since HTTP requires a response, a null or empty body will suffice; for
+other protocols, returning nothing may be desired. 
+ 
+
+
+
+
+ request has a POST body that is parsed from JSON into a method and args. The
 service is an instance of a class with methods that are available at this url. 
 There is a Dispatcher involved that interrogates the code for the service and 
 invokes the methods with the params. The method gets called, some error handling

@@ -1,5 +1,8 @@
+library dispatcher;
+
 import 'dart:async';
 import 'dart:mirrors';
+import 'rpc_exceptions.dart';
 
 /**
  * A Dispatcher is initialized with a class instance and will dispatch methods of that class.
@@ -15,28 +18,7 @@ import 'dart:mirrors';
  *  
  */
 
-class DispatchException {
-  String message;
-  DispatchException([this.message]);
-}
 
-class MethodNotFound extends DispatchException {
-  MethodNotFound([message]) {
-    super.message = message;
-  }
-}
-
-class InvalidParameters extends DispatchException {
-  InvalidParameters([message]) {
-    super.message = message;
-  }
-}
-
-class InternalError extends DispatchException {
-  InternalError([message]) {
-    super.message = message;
-  }
-}
 
 symbolizeKeys(namedParams) {
   Map symbolMap = {};
@@ -70,15 +52,13 @@ class Dispatcher {
     namedParams = namedParams == null ? {} : namedParams;
     positionalParams = positionalParams == null ? [] : positionalParams;
 
-    if (!namedParams.isEmpty) {
-      namedParams = symbolizeKeys(namedParams);
-    }
+    if (!namedParams.isEmpty) namedParams = symbolizeKeys(namedParams);
+
     InstanceMirror instanceMirror = reflect(instance);
     var methodMirror = getMethodMirror(instanceMirror, methodName);
     if (methodMirror == null) {
-      return new Future.sync(() {
-        return new MethodNotFound("Method not found: $methodName");
-      });
+      return new Future.sync(() {return new MethodNotFound("Method not found: $methodName");});
+      //return new MethodNotFound("Method not found: $methodName");
     }
     return new Future.sync(() {
       InstanceMirror t;
@@ -89,7 +69,10 @@ class Dispatcher {
       } on NoSuchMethodError catch (e) {
         return new InvalidParameters('$e');
       } catch (e) {
-        return new InternalError('$e');
+        if (e is RuntimeException){
+          return e;
+        }
+        return new RuntimeException(e);
       }
       return t.reflectee;
     });
