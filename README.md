@@ -149,7 +149,7 @@ if the server supports, and you are doing a lot of little calls, and bandwidth
 is at a premium. Yes, you can include notifications in a batch, too.
 
 **NOTE:** Unicode text in methods and data can get wonky if you allow the net to make assumptions about
-character sets. A &lt;meta charset="UTF-8"&gt; tag in the &lt;head&gt; of the page can prevent headaches.   
+character sets. A `<meta charset="UTF-8">` tag in the `<head>` of the page can prevent headaches.   
 
 
 Server Implementation Details
@@ -200,7 +200,7 @@ specification are specifically included.
 
 **server1\_for\_client_test.dart**
 
-- provides a server for the client test. uses start.dart as framework.
+- provides a server for the client test. uses package:start.dart as framework.
 
 **server2\_for\_client_test.dart**
 
