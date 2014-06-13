@@ -1,12 +1,13 @@
 name: jsonrpc2
 version: 0.9.0
 author: Jim Washington <washington.jim@gmail.com>
-description: JSON-RPC utilities for web applications.
+description: JSON-RPC (v2.0) utilities for web applications.
 homepage: https://github.com/jwashin/jsonrpc2-dart
 dependencies:
   browser: '>=0.10.0+2 <0.11.0'
   logging: '>=0.9.1+1 <0.10.0'
   logging_handlers: '>=0.8.0 <0.8.1'
 dev_dependencies:
+  http_server: any
   start: 0.2.4
   unittest: <0.12.0

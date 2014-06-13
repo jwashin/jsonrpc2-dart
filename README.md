@@ -38,12 +38,18 @@ implementation. That said, using the library should be fairly easy with the tran
 
 - Create a class implementing the service methods at an endpoint.
 - Either (jsonRpcExec)
+
+  
   1. Decode the request payload to String from (UTF-8) character set.
   2. Parse the JSON from the String.
   3. Using the *jsonRpcExec* method, dispatch the request to an instance of the service class.
   4. Stringify the (usually, a JSONable object) response.
   5. Usually, return the response (in UTF-8).
+
+
 - or (jsonRpc)
+
+
   1. Decode the request payload to String (from UTF-8).
   2. Using the *jsonRpc* method, dispatch the request to an instance of the service class.
   3. Encode the response (to UTF-8) and usually, return it.
@@ -78,12 +84,12 @@ the above a little bit differently.
 The way to use a given method depends on what the server accepts. It is a client responsibility to
 match the server's API.
 
-        1. proxy.call('some_method')
-        2. proxy.call('some_method', 'some text')
-        3. proxy.call('some_method', [arg1,arg2])
-        4. proxy.call('some_method', [[single,list,of,items]])
-        5. proxy.call('some_method', {'named_arg_a':23,'named_arg_b':'skiddoo'})
-        6. proxy.call('some_method', ['some text'])
+        1. proxy.call('method_a')
+        2. proxy.call('method_b', 'some text')
+        3. proxy.call('method_c', [arg1,arg2])
+        4. proxy.call('method_d', [[single,list,of,items]])
+        5. proxy.call('method_e', {'named_arg_a':23,'named_arg_b':'skiddoo'})
+        6. proxy.call('method_b', ['some text'])
         
 are all valid possible formulations. Note that 2 and 6 are equivalent. The second argument 
 to the call is required by protocol to be a List or Map, and will be enclosed in 
@@ -136,14 +142,14 @@ JSON-RPC 2.0 supports a "batch" technique. For this, use BatchServerProxy
         proxy.call('some_method').then(something_with_this_value...
         proxy.call('some_other_method', 'some text').then(something else...
         [...]
-        proxy.send()
+        proxy.send();
 
-`proxy.send()` will batch the calls into a single http request. This may be handy
+`proxy.send();` will batch the calls into a single http request. This may be handy
 if the server supports, and you are doing a lot of little calls, and bandwidth 
 is at a premium. Yes, you can include notifications in a batch, too.
 
 **NOTE:** Unicode text in methods and data can get wonky if you allow the net to make assumptions about
-character sets. A <meta charset="UTF-8"> tag in the <head> of the page can prevent headaches.   
+character sets. A &lt;meta charset="UTF-8"&gt; tag in the &lt;head&gt; of the page can prevent headaches.   
 
 
 Server Implementation Details
@@ -188,7 +194,7 @@ specification are specifically included.
 
 - provides the server-side API for the client-server tests
 
-**client\_test.dart** with **client_test.html***
+**client\_test.dart** with **client_test.html**
 
 - tests web client functionality using unittest/html\_enhanced\_config
 
