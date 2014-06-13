@@ -1,4 +1,4 @@
-library test_client;
+library client_test;
 
 import 'package:unittest/unittest.dart';
 import 'package:jsonrpc2/jsonrpc_client.dart';

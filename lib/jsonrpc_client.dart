@@ -139,9 +139,11 @@ class BatchServerProxy extends ServerProxy {
   }
 
   send() {
-    var future = _executeRequest(requests);
-    requests = [];
-    return future.then((resp) => new Future.sync(() => handleResponses(resp)));
+    if (requests.length > 0) {
+      Future future = _executeRequest(requests);
+      requests = [];
+      return future.then((resp) => new Future.sync(() => handleResponses(resp)));
+    }
   }
 
   handleResponses(resps) {

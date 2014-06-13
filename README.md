@@ -12,7 +12,7 @@ Client Basics
 
 - Import the client library.
 - Create a ServerProxy with the url for the desired endpoint.
-- Call a method on that endpoint, check for error, and do something with the result.
+- Call a method on that endpoint, error check, and do something with the result.
 
  
         import 'package:jsonrpc2/jsonrpc_client.dart';
@@ -25,52 +25,36 @@ Client Basics
 Server Basics
 -------------
 
+This server library does not know anything about transport; it only associates the JSON-RPC request with an instance
+that implements the remote methods, and returns a result. Network and transport issues are outside the scope of this
+implementation. That said, using the library should be fairly easy with the transport or framework you are using.
+
+
 - Import the server library
-- Create a class implementing the service methods for a particular endpoint.
-- Either 
-  1. Decode the request to String from (UTF-8) character set.
+
+
+        import 'package:jsonrpc2/jsonrpc_service.dart';
+
+
+- Create a class implementing the service methods at an endpoint.
+- Either (jsonRpcExec)
+  1. Decode the request payload to String from (UTF-8) character set.
   2. Parse the JSON from the String.
   3. Using the *jsonRpcExec* method, dispatch the request to an instance of the service class.
   4. Stringify the (usually, a JSONable object) response.
   5. Usually, return the response (in UTF-8).
-- or
-  1. Decode the request to String (from UTF-8).
+- or (jsonRpc)
+  1. Decode the request payload to String (from UTF-8).
   2. Using the *jsonRpc* method, dispatch the request to an instance of the service class.
   3. Encode the response (to UTF-8) and usually, return it.
     
-- Associate the server end-point, the string, jsonrpc, and the class. (we use start.dart for 
-this example.)
 
-
-        import 'package:start/start.dart';
-        import 'package:jsonrpc2/jsonrpc_service.dart';
-        import 'dart:async';
-        import 'dart:convert';
-        
-        doJsonRpc(request, instance){
-          var rq = request.input;
-          Future<String> resp = UTF8.decodeStream(rq).then((stream) => jsonRpc(stream,instance));
-          return resp;
-        }
-        
-        class MyService{
-           some_method(arg1,arg2)=>return_something_with(arg1,arg2);
-        }
-        
-        class MyServer{
-          [...]
-          startServer(){
-            start(public:public, port:port, host:host).then((app){
-              server = app;
-              app.post('/endpoint1')
-                  .listen((request){doJsonRpc(request, new MyService());
-              });
-            });
-          }
-        }
-
-Client Details
+Client Implementation Details
 --------------
+
+This client implementation is for web (HTTP) client only. It shouldn't take much effort 
+to revisit this code for other transports. 
+
 
         import 'package:jsonrpc2/jsonrpc_client.dart';
 
@@ -86,18 +70,19 @@ for example, in Dart
         proxy.some_method(arg1); //not implemented!
 
 but (trust me on this) in Dart, this requires dart:mirrors and currently increases
-javascript code size by a large factor (six, recently). So, instead, we will spell
+javascript code size by a large factor (not actually recently checked). So, instead, we will spell
 the above a little bit differently.
 
         proxy.call('some_method', arg1); //less javascript bloat!
 
-The way to use a given method depends on what the server accepts.
+The way to use a given method depends on what the server accepts. It is a client responsibility to
+match the server's API.
 
         1. proxy.call('some_method')
         2. proxy.call('some_method', 'some text')
         3. proxy.call('some_method', [arg1,arg2])
         4. proxy.call('some_method', [[single,list,of,items]])
-        5. proxy.call('some_method', {'namedarg_a':23,'namedarg_b':'skiddoo'})
+        5. proxy.call('some_method', {'named_arg_a':23,'named_arg_b':'skiddoo'})
         6. proxy.call('some_method', ['some text'])
         
 are all valid possible formulations. Note that 2 and 6 are equivalent. The second argument 
@@ -157,48 +142,61 @@ JSON-RPC 2.0 supports a "batch" technique. For this, use BatchServerProxy
 if the server supports, and you are doing a lot of little calls, and bandwidth 
 is at a premium. Yes, you can include notifications in a batch, too.
 
+**NOTE:** Unicode text in methods and data can get wonky if you allow the net to make assumptions about
+character sets. A <meta charset="UTF-8"> tag in the <head> of the page can prevent headaches.   
 
-Server Overview
+
+Server Implementation Details
 ---------------
         
         import 'package:jsonrpc2/jsonrpc_service.dart';
 
-On the server side, the main interface is a function called `jsonRpc`. It 
-takes a String, and an instance object.   
+For server side application, the API has two alternative functions, `jsonRpc` and `jsonRpcExec`. 
 
-        jsonRpc(String request, Object service) 
+jsonRpc takes a String JSON-RPC request and an instance object, and ultimately returns a String or null.   
 
-As of 0.90, this interface has become less opinionated, so it should work with pretty much any backend. 
-It takes an unencoded String and an instance of a class. It usually returns a Future<String> with the properly UTF-8 and
-JSON encoded response, though it may return null if nothing needs to be returned, in the case of a notification.
+        Future jsonRpc(String request, Object service) 
 
-This requires a bit more work to make the function work with your backend. For HTTP, the desired string for the 
-function will usually be the UTF-8 decoded body of the HTTP POST. Since HTTP requires a response, a null or empty body will suffice; for
-other protocols, returning nothing may be desired. 
- 
+jsonRpcExec takes a decoded JSON-RPC request (List or Map) and an instance object, and ultimately returns a List or Map or Notification Object.
 
+        Future jsonRpcExec(Object request, Object service)
+        
+The choice of whether to use jsonRpc or jsonRpcExec depends on the server framework being used. Sometimes, it is easier to obtain the String
+representation of the JSON-RPC request, and sometimes, it may be easier to obtain the JSON-RPC request as a parsed JSON object. This JSON-RPC
+server implementation is not opinionated about frameworks, or even transports. This implementation should work the same for transports other than
+HTTP. 
 
-
-
- request has a POST body that is parsed from JSON into a method and args. The
-service is an instance of a class with methods that are available at this url. 
-There is a Dispatcher involved that interrogates the code for the service and 
-invokes the methods with the params. The method gets called, some error handling
-occurs, and a response is returned.  This code probably only works with 
-start.dart, but probably could work with other Dart servers with little effort. 
-You may make the service instance reflect the url or persistence scheme by 
-creating the instance using those parameters.   
-
-Example
---------------
-
-There is a polymer-based client and start.dart-based server pair in the "example"
-folder. For best results, run the server first. Cross-origin headers are in-place
-so `rpc_example.html` should work directly in Dart Editor/Dartium.
+**NOTE:** If the jsonRpc method returns null, or if the jsonRpcExec method returns a `Notification` object, this indicates that the request was a notification, 
+and, according to the JSON-RPC specification, no response should be sent. The transport implementation must choose how to handle this. 
 
 Tests
 ---------
 
-Tests are in the "test" folder. Run the server first for best results.
-Cross-origin headers are in-place so `test_client.html` should run directly in Dart 
-Editor/Dartium.
+Tests are in the "test" folder. Particularly, the client and server tests provide usage examples. 
+
+**test_dispatcher.dart** 
+
+- tests the Dispatcher functionality. The dispatcher is the thing that actually associates the method and parameters with the instance object, 
+calling the method and returning the result or an error.
+
+**test\_jsonrpc2\_service.dart** 
+
+- tests the jsonRpc and jsonRpcExec functions. Both JSON-RPC 1.0 and JSON-RPC 2.0 specifications are exercised. Tests of the examples in the JSON-RPC 2.0
+specification are specifically included.
+
+**rpc_methods.dart**
+
+- provides the server-side API for the client-server tests
+
+**client\_test.dart** with **client_test.html***
+
+- tests web client functionality using unittest/html\_enhanced\_config
+
+**server1\_for\_client_test.dart**
+
+- provides a server for the client test. uses start.dart as framework.
+
+**server2\_for\_client_test.dart**
+
+- provides an alternative server for the client test. uses package:http_server as framework.
+

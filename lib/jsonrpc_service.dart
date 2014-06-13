@@ -167,7 +167,7 @@ jsonRpcExec(request, Object instance) {
         if (rpc is Map) {
           rpc['jsonrpc'] = JSONRPC2;
         }
-        //_logger.fine('batch: $rpc');
+        _logger.fine('in batch: $rpc');
         var value = jsonRpcDispatch(rpc, instance);
         responses.add(new Future(() => value));
       }
@@ -197,9 +197,9 @@ parseJson(aString) {
   }
 }
 
-encodeResponse(aMap) {
-  if (aMap is Notification) {
+encodeResponse(response) {
+  if (response is Notification) {
     return null;
   }
-  return JSON.encode(aMap);
+  return JSON.encode(response);
 }
