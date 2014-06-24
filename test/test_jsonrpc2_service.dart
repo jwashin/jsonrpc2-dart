@@ -200,14 +200,7 @@ main() {
         "params": ['43'],
         "id": 3
       }, new Foo()).then(expectAsync((result) {
-        expect(result, equals({
-          "jsonrpc": "2.0",
-          "error": {
-            "code": -32602,
-            "message": "type 'String' is not a subtype of type 'num' of 'other'."
-          },
-          "id": 3
-        }));
+        expect(result['error']['code'], equals(-32602));
       }));
     });
   });
