@@ -36,6 +36,7 @@ class ExampleMethodsClass {
   notify_hello(args) {
     return args;
   }
+
   get_data() {
     return ['hello', 5];
   }
@@ -52,6 +53,7 @@ class ExampleMethodsClass {
 
 class Friend {
   String name;
+
   Friend(this.name);
 
   hello() => "Hello from $name!";
@@ -61,6 +63,7 @@ class Friend {
 
 class RandomException implements Exception {
   var message = 'Random Exception. Boo!';
+
   RandomException([this.message]);
 
   toString() => "RandomException: $message";
