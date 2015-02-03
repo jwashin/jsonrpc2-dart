@@ -22,6 +22,13 @@ Client Basics
              .then((result){do_something_with(result);})
              .catchError((error){handle(error);});
 
+
+- dart:io (command line) is the same, except you import the io client module.
+
+
+        import 'package:jsonrpc2/jsonrpc_io_client.dart';
+
+
 Server Basics
 -------------
 
@@ -115,18 +122,6 @@ call uses asynchronous methodology and will look like
 can handle it with .catchError. If you want to do something else, the returned
 error will be the JSON-RPC "error" member defined in the JSON-RPC specification.  
 
-After a ServerProxy is created, you may set a timeout in milliseconds on any
-succeeding HTTP request.
-
-        proxy = new ServerProxy('http://example.com/some_endpoint');
-        proxy.timeout = 3000;
-        proxy.call('some_method',[arg1, arg2])
-             .then((returned)=>proxy.checkError(returned))
-             .then((result){do_something_with(result);})
-             .catchError((error){handleTimeout(error);},
-                  test:(error)=>error is TimeoutException);
-             .catchError((error){handle(error);});
-
 If you do not want or need the return value (The default return is null in most 
 languages), you may send a notification.
 
@@ -197,6 +192,10 @@ specification are specifically included.
 **client\_test.dart** with **client_test.html**
 
 - tests web client functionality using unittest/html\_enhanced\_config
+
+**io_client\_test.dart**
+
+- tests command line (dart:io) functionality
 
 **server1\_for\_client_test.dart**
 

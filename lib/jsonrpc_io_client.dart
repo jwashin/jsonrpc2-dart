@@ -7,7 +7,7 @@ import "package:logging/logging.dart";
 import "client_base.dart";
 
 /* basic usage:
- *    import "package:jsonrpc2/jsonrpc_client.dart"
+ *    import "package:jsonrpc2/jsonrpc_io_client.dart"
  *
  *    var url = "http://somelocation";
  *    var proxy = new ServerProxy(url);
@@ -17,12 +17,6 @@ import "client_base.dart";
  * Each arg must be representable in JSON.
  *
  * Exceptions on the remote end will throw RemoteException.
- *
- * Optionally you may set timeout.
- *
- *   var proxy = new ServerProxy(url);
- *   proxy.timeout=300;
- *
  *
  */
 

@@ -14,10 +14,6 @@ import "package:logging/logging.dart";
  *
  * Exceptions on the remote end will throw RemoteException.
  *
- * Optionally you may set timeout.
- *
- *   var proxy = new ServerProxy(url);
- *   proxy.timeout=300;
  *
  */
 
@@ -28,7 +24,7 @@ final _logger = new Logger('JSON-RPC');
 
 class ServerProxyBase {
   String url;
-  int timeout = 0;
+  //int timeout = 0;
   String serverVersion = '2.0';
   ServerProxyBase(this.url);
 
@@ -79,8 +75,8 @@ class BatchServerProxyBase {
 
   BatchServerProxyBase();
 
-  get timeout => proxy.timeout;
-  set timeout(int t){proxy.timeout = timeout;}
+  //get timeout => proxy.timeout;
+  //set timeout(int t){proxy.timeout = timeout;}
 
   List requests = [];
   Map responses = {};

@@ -1,5 +1,5 @@
 name: jsonrpc2
-version: 0.9.4
+version: 0.9.5
 author: Jim Washington <washington.jim@gmail.com>
 description: JSON-RPC (v2.0) utilities for web applications.
 homepage: https://github.com/jwashin/jsonrpc2-dart
