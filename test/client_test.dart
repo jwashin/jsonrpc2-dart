@@ -3,6 +3,12 @@ library client_test;
 import 'package:unittest/unittest.dart';
 import 'package:jsonrpc2/jsonrpc_client.dart';
 import 'package:unittest/html_enhanced_config.dart';
+import "classb.dart";
+
+
+class MyClass {
+  MyClass();
+}
 
 main() {
   useHtmlEnhancedConfiguration();
@@ -65,6 +71,39 @@ main() {
       }));
     });
 
+    test("not JSON-serializable", () {
+      try {
+        proxy.call('subtract', [3, 0 / 0]);
+      } catch (e) {
+        expect(e, isUnsupportedError);
+      }
+    });
+
+    test("class instance not JSON-serializable", () {
+      try {
+        proxy.call('subtract', [3, new MyClass()]);
+      } catch (e) {
+        expect(e, isUnsupportedError);
+      }
+    });
+
+    test("serializable class - see classb.dart", () {
+      proxy.call('s1', [new ClassB("hello", "goodbye")]).then(expectAsync((result) {
+        expect(result, equals('hello'));
+      }));
+    });
+
+    test("custom error", () {
+      proxy.call('baloo', ['sam']).then(expectAsync((result) {
+        expect(result, equals('Balooing sam, as requested.'));
+      }));
+      proxy.call('baloo', ['frotz']).then(expectAsync((result) => result)).then((returned) => proxy.checkError(returned)).then((result) {
+        // shouldn't get here
+        throw new Exception(result);
+      }).catchError((e) {
+        expect(e.code, equals(34));
+      });
+    });
 
     test("no such method", () {
       proxy.call('foobar').then(expectAsync((result) {

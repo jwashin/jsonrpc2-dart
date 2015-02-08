@@ -19,6 +19,18 @@ class Foo {
   throwerr(a, num b) {
     throw new Zerr('you expected this!');
   }
+  typeerror(a){
+    try{
+      return a + 9;
+    }
+    on TypeError catch(e){
+      throw new RuntimeException('Cannot add string and number', -22, [a,9]);
+    }
+  }
+  divzerotest(a){
+    return a / 0;
+  }
+
 }
 
 class Zerr implements Exception {
@@ -145,5 +157,22 @@ main() {
     var z = new Dispatcher(new Foo());
     z.dispatch('greet_name').then((value) => expect(value, new isInstanceOf<MethodNotFound>()));
   });
+
+  test("catch TypeError in application code", () {
+      var z = new Dispatcher(new Foo());
+      z.dispatch('typeerror', ['a']).then((value) => expect(value, new isInstanceOf<RuntimeException>()));
+    });
+
+  test("divide by zero", () {
+        var z = new Dispatcher(new Foo());
+        z.dispatch('divzerotest', [3]).then((value) => expect(value, double.INFINITY));
+      });
+
+  test("zero over zero", () {
+          var z = new Dispatcher(new Foo());
+          z.dispatch('divzerotest', [0]).then((value) => expect(value.isNaN, true));
+        });
+
+
 
 }

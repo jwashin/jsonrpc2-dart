@@ -23,7 +23,7 @@ Client Basics
              .catchError((error){handle(error);});
 
 
-- dart:io (command line) is the same, except you import the io client module.
+- dart:io (command line) client is the same, except you import the io client module.
 
 
         import 'package:jsonrpc2/jsonrpc_io_client.dart';
@@ -65,11 +65,21 @@ implementation. That said, using the library should be fairly easy with the tran
 Client Implementation Details
 --------------
 
-This client implementation is for web (HTTP) client only. It shouldn't take much effort 
-to revisit this code for other transports. 
+There are two client implementations provided here, one for dart in web pages, and one using dart:io library.  
+These client implementations work mostly the same, and are for web (HTTP) client only, but
+it shouldn't take much effort to repurpose this code for other transports. 
+
+For a web page client (using dart:http),  
 
 
         import 'package:jsonrpc2/jsonrpc_client.dart';
+
+
+or, for a web client in a "console" script (using dart:io), 
+
+
+        import 'package:jsonrpc2/jsonrpc_io_client.dart';
+
 
 On a web server somewhere out there, there is a url that has the methods you need.
 
@@ -100,7 +110,7 @@ match the server's API.
         
 are all valid possible formulations. Note that 2 and 6 are equivalent. The second argument 
 to the call is required by protocol to be a List or Map, and will be enclosed in 
-a List in the background if not provided. Note that if the server's method has 
+a List in the background if only a single argument is provided. Note that if the server's method has 
 a single List argument, you need to use something like 4. 1 is usable if the 
 method requires no arguments, or if all arguments are optional. Variables need to 
 be JSON serializable; in general, booleans, strings, numbers, Lists, Maps, 
@@ -170,6 +180,24 @@ HTTP.
 **NOTE:** If the jsonRpc method returns null, or if the jsonRpcExec method returns a `Notification` object, this indicates that the request was a notification, 
 and, according to the JSON-RPC specification, no response should be sent. The transport implementation must choose how to handle this. 
 
+**Application Exceptions**
+
+For the JSON-RPC methods in server-side application code, all Exceptions have been explicitly caught by this implementation so that 
+the error may be sent on to the client. Any exception that is not TypeError or NoSuchMethodError will be returned, by default, as 
+RuntimeError, code -32000.  As a side-effect of the way that the Dispatcher detects InvalidParameters, TypeErrors in application code will
+return, by default, an InvalidParameters exception. It may be necessary to catch TypeErrors that may arise in your application code and 
+re-throw them as RuntimeExceptions.  
+
+To send meaningful exceptions and error codes to the client,
+
+        import 'package:jsonrpc2/rpc_exceptions.dart' show RuntimeException;
+
+The RuntimeException constructor wants a message, a code and, optionally, JSON-serializable data . The message can be any String. 
+The code is an integer that is not in the range -32768 to -32000. For your application, you are free to create an API of error codes
+and messages that make sense for client error handling. RuntimeExceptions, when thrown in server-side JSON-RPC methods, behave just like 
+any other Exception, but they are transmitted, when thrown, to inform the client of application exceptions.
+
+
 Tests
 ---------
 
@@ -195,7 +223,7 @@ specification are specifically included.
 
 **io_client\_test.dart**
 
-- tests command line (dart:io) functionality
+- tests console script (dart:io) functionality
 
 **server1\_for\_client_test.dart**
 

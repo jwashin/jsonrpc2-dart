@@ -32,6 +32,16 @@ class Foo {
   update(a, b, c, d, e) {}
   echo(something) => something;
   oops(a) => 3 + a;
+  oops1(a) {
+    try {
+      return 3 + a;
+    } on TypeError catch (e) {
+      throw new RuntimeException("Oops! Can't add numbers and strings!", -22, [3, a]);
+    }
+  }
+  divzero(p) => p / 0;
+
+  my_object() => new MyObject();
 
 }
 
@@ -40,6 +50,9 @@ class Zerr implements Exception {
   Zerr(this.message);
 }
 
+class MyObject{
+
+}
 
 main() {
 
@@ -167,7 +180,7 @@ main() {
         expect(result, equals({
           'jsonrpc': '2.0',
           'error': {
-            'code': -32603,
+            'code': -32000,
             'message': 'you expected this!'
           },
           'id': 1
@@ -193,7 +206,7 @@ main() {
       }));
     });
 
-    test("unexpected runtime error", () {
+    test("TypeError in application code, unhandled", () {
       jsonRpcExec({
         "jsonrpc": "2.0",
         "method": "oops",
@@ -203,7 +216,62 @@ main() {
         expect(result['error']['code'], equals(-32602));
       }));
     });
+
+    test("TypeError in application code, handled", () {
+      jsonRpcExec({
+        "jsonrpc": "2.0",
+        "method": "oops1",
+        "params": ['43'],
+        "id": 3
+      }, new Foo()).then(expectAsync((result) {
+        expect(result['error']['code'], equals(-22));
+        expect(result['error']['data'], equals([3, '43']));
+      }));
+    });
+
+    test("not JSON serializable", () {
+          jsonRpc('''{
+        "jsonrpc": "2.0",
+        "method": "my_object",
+        "params": [],
+        "id": 34
+      }''', new Foo()).then(expectAsync((result) {
+            expect(JSON.decode(result), equals({
+              "jsonrpc": "2.0",
+              "error": {
+                "code": -32601,
+                "message": "Result was not JSON-serializable (Instance of \'MyObject\')."
+              },
+              "id": null
+            }));
+          }));
+        });
+
+
+    test("divzero", () {
+      jsonRpc('''{
+        "jsonrpc": "2.0",
+        "method": "divzero",
+        "params": [3],
+        "id":34
+      }''', new Foo()).then(expectAsync((result) {
+        expect(JSON.decode(result), equals({
+          "jsonrpc": "2.0",
+          "error": {
+            "code": -32601,
+            "message": "Result was not JSON-serializable (Infinity)."
+          },
+          "id": null
+        }));
+      }));
+    });
+
+
+
+
   });
+
+
 
 
   group('jsonrpc_1.0', () {
@@ -379,6 +447,12 @@ main() {
       }));
     });
 
+
+
+
+
+
+
     test("batch invalid JSON", () {
       jsonRpc('''[{"jsonrpc": "2.0", 
               "method": "sum", 
@@ -395,6 +469,10 @@ main() {
         }));
       }));
     });
+
+
+
+
 
     test("batch empty array", () {
       jsonRpc('[]', new Foo()).then(expectAsync((result) {

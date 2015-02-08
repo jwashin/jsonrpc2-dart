@@ -2,7 +2,11 @@ library io_client_test;
 
 import 'package:unittest/unittest.dart';
 import 'package:jsonrpc2/jsonrpc_io_client.dart';
+import "classb.dart";
 
+class MyClass {
+  MyClass();
+}
 
 main() {
   var proxy = new ServerProxy('http://127.0.0.1:8394/sum');
@@ -64,6 +68,50 @@ main() {
       }));
     });
 
+    test("not JSON-serializable", () {
+      try {
+        proxy.call('subtract', [3, 0 / 0]);
+      } catch (e) {
+        expect(e, isUnsupportedError);
+      }
+    });
+
+    test("class instance not JSON-serializable", () {
+      try {
+        proxy.call('subtract', [3, new MyClass()]);
+      } catch (e) {
+        expect(e, isUnsupportedError);
+      }
+    });
+
+
+    test("serializable class - see classb.dart", () {
+      proxy.call('s1', [new ClassB("hello", "goodbye")]).then(expectAsync((result) {
+        expect(result, equals('hello'));
+      }));
+    });
+
+
+    test("custom error", () {
+      proxy.call('baloo', ['sam']).then(expectAsync((result) {
+        expect(result, equals('Balooing sam, as requested.'));
+      }));
+      proxy.call('baloo', ['frotz']).then(expectAsync((result) => result)).then((returned) => proxy.checkError(returned)).then((result) {
+        // shouldn't get here
+        throw new Exception(result);
+      }).catchError((e) {
+        expect(e.code, equals(34));
+      });
+    });
+
+    test("unplanned error", () {
+      proxy.call('raiseMe', ['hello']).then(expectAsync((result) => result)).then((returned) => proxy.checkError(returned)).then((result) {
+        // shouldn't get here
+        throw new Exception(result);
+      }).catchError((e) {
+        expect(e.code, equals(-32000));
+      });
+    });
 
     test("no such method", () {
       proxy.call('foobar').then(expectAsync((result) {

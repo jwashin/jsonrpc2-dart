@@ -75,7 +75,7 @@ class MethodRequest {
 }
 /* Given a parsed JSON-RPC request and an instance with methods,
  * return a Future with a Map of the result of the instance's method or a
- * Notification object 
+ * Notification object
  */
 jsonRpcDispatch(request, instance) {
   try {
@@ -129,6 +129,11 @@ makeExceptionMap(anException, version, [id = null]) {
     'code': anException.code,
     'message': anException.message
   };
+
+  var data = anException.data;
+  if (data != null) {
+    resp['error']['data'] = anException.data;
+  }
   return resp;
 }
 
@@ -151,9 +156,9 @@ jsonRpc(String request, Object instance) {
   }
 }
 
-/*  Given a proper parsed JSON-RPC Map or a List return the proper JSON-RPC Map or List of responses, 
+/*  Given a proper parsed JSON-RPC Map or a List return the proper JSON-RPC Map or List of responses,
  *  or a Notification object. The transport will decide how to encode into JSON and UTF-8 for delivery.
- *  Depending on transport, Notification objects may not need 
+ *  Depending on transport, Notification objects may not need
  *  to be delivered.
 */
 jsonRpcExec(request, Object instance) {
@@ -201,5 +206,10 @@ encodeResponse(response) {
   if (response is Notification) {
     return null;
   }
-  return JSON.encode(response);
+  try {
+    return JSON.encode(response);
+
+  } catch (e) {
+    return JSON.encode(makeExceptionMap(new RpcException("Result was not JSON-serializable (${response['result']}).", -32601), "2.0", null));
+  }
 }

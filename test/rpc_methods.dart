@@ -1,5 +1,8 @@
 library rpc_methods;
 
+import "../lib/rpc_exceptions.dart";
+import "classb.dart";
+
 var cheapPersistence = '';
 
 
@@ -30,6 +33,27 @@ class ExampleMethodsClass {
     }
     return sum;
   }
+
+  raiseMe(var something){
+    throw something;
+  }
+
+
+  baloo(var arg){
+    if (arg == 'frotz'){
+      throw new RuntimeException('Cannot baloo with ${arg}!', 34);
+    }
+    return 'Balooing ${arg}, as requested.';
+  }
+
+  divzero(p){
+    return p/0;
+  }
+
+  s1(amap){
+    return classBFromMap(amap).s1;
+  }
+
 
   _private() => "Not public; you can't see this!";
 

@@ -16,7 +16,7 @@ import "client_base.dart";
  *
  * Each arg must be representable in JSON.
  *
- * Exceptions on the remote end will throw RemoteException.
+ * Exceptions on the remote end will throw RpcException.
  *
  */
 
@@ -58,7 +58,16 @@ class ServerProxy extends ServerProxyBase {
 //    });
 
     // It's sent out utf-8 encoded. Without having to be told. Nice!
-    request.send(JSON.encode(package));
+    try{
+
+      request.send(JSON.encode(package));
+    } catch (e){
+      throw new UnsupportedError('Item (${package}) could not be serialized to JSON');
+      //throw e;
+    }
+
+
+
     return c.future.then((request) => new Future(() {
       String body = request.responseText;
       if (request.status == 204 || body.isEmpty) {
