@@ -1,0 +1,1 @@
+0.9.5 2015-02-08 added dart:io client, and updated docs. updated tests, particularly about JSON serializability.
