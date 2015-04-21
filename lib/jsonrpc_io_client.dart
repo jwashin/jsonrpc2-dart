@@ -3,7 +3,7 @@ library jsonrpc_io_client;
 import "dart:convert";
 import "dart:async";
 import "dart:io";
-import "package:logging/logging.dart";
+//import "package:logging/logging.dart";
 import "client_base.dart";
 
 /* basic usage:
@@ -20,11 +20,11 @@ import "client_base.dart";
  *
  */
 
-
-final _logger = new Logger('JSON-RPC');
+//final _logger = new Logger('JSON-RPC');
 
 class ServerProxy extends ServerProxyBase {
-  ServerProxy(String url) : super(url);
+  bool persistentConnection;
+  ServerProxy(String url, [bool this.persistentConnection=true]) :super(url);
   executeRequest(package) {
     //return a future with the JSON-RPC response
     HttpClient conn = new HttpClient();
@@ -32,16 +32,18 @@ class ServerProxy extends ServerProxyBase {
     Completer c = new Completer();
     var payload;
     try {
-          payload = JSON.encode(package);
-        } catch (e) {
-          throw new UnsupportedError('Item (${package}) could not be serialized to JSON');
-        }
+      payload = JSON.encode(package);
+    } catch (e) {
+      throw new UnsupportedError(
+          'Item (${package}) could not be serialized to JSON');
+    }
     return conn.postUrl(Uri.parse(url)).then((HttpClientRequest request) {
       request.headers.add('Content-Type', 'application/json; charset=UTF-8');
+      // persistentConnection leads to 15-second delay returning on end of script
+      request.persistentConnection = persistentConnection;
       request.write(payload);
       return request.close();
-    })
-    .then((HttpClientResponse response) {
+    }).then((HttpClientResponse response) {
       response.transform(UTF8.decoder).listen((contents) {
         JsonContent += contents.toString();
       }, onDone: () {
@@ -50,7 +52,8 @@ class ServerProxy extends ServerProxyBase {
         } else if (response.statusCode == 200) {
           c.complete(JSON.decode(JsonContent));
         } else {
-          c.completeError(new TransportStatusError(response.statusCode, response, package));
+          c.completeError(
+              new TransportStatusError(response.statusCode, response, package));
         }
       });
     }).then((_) {
@@ -59,10 +62,9 @@ class ServerProxy extends ServerProxyBase {
   }
 }
 
-
 class BatchServerProxy extends BatchServerProxyBase {
   ServerProxy proxy;
-  BatchServerProxy(url) {
-    proxy = new ServerProxy(url);
+  BatchServerProxy(url, [persistentConnection=true]) {
+    proxy = new ServerProxy(url, persistentConnection);
   }
 }

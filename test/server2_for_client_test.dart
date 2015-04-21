@@ -11,14 +11,14 @@ import 'rpc_methods.dart';
 final int port = 8394;
 
 /*
- * Test server for test_client.dart. Uses http_server package. 
+ * Test server for test_client.dart. Uses http_server package.
  */
 
 final _logger = new Logger('test_server');
 
 main() {
-  Logger.root.level = Level.ALL;
-  Logger.root.onRecord.listen(new LogPrintHandler());
+//  Logger.root.level = Level.ALL;
+//  Logger.root.onRecord.listen(new LogPrintHandler());
 
   HttpServer.bind(InternetAddress.LOOPBACK_IP_V4, port).then((server) {
     print("Test Server running at http://${InternetAddress.LOOPBACK_IP_V4.address}:${port}\n");

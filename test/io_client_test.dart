@@ -8,8 +8,11 @@ class MyClass {
   MyClass();
 }
 
+bool persistentConnection = false;
+
+
 main() {
-  var proxy = new ServerProxy('http://127.0.0.1:8394/sum');
+  var proxy = new ServerProxy('http://127.0.0.1:8394/sum', persistentConnection);
   group('JSON-RPC', () {
 
     test("positional arguments", () {
@@ -132,7 +135,7 @@ main() {
     });
 
     test("basic batch", () {
-      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum',persistentConnection);
       proxy.call('subtract', [23, 42]).then(expectAsync((result) {
         expect(result, equals(-19));
       }));
@@ -154,7 +157,7 @@ main() {
     });
 
     test("batch with error on a notification", () {
-      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum',persistentConnection);
       proxy.call('summation', [[1, 2, 3, 4, 5]]).then(expectAsync((result) {
         expect(result, equals(15));
       }));
@@ -176,11 +179,11 @@ main() {
     });
 
     test("variable url", () {
-      var proxy = new ServerProxy('http://127.0.0.1:8394/friend/Bob');
+      var proxy = new ServerProxy('http://127.0.0.1:8394/friend/Bob',persistentConnection);
       proxy.call('hello').then(expectAsync((result) {
         expect(result, equals("Hello from Bob!"));
       }));
-      proxy = new ServerProxy('http://127.0.0.1:8394/friend/Mika');
+      proxy = new ServerProxy('http://127.0.0.1:8394/friend/Mika',persistentConnection);
       proxy.call('hello').then(expectAsync((result) {
         expect(result, equals("Hello from Mika!"));
       }));

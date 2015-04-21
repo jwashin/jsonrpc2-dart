@@ -13,9 +13,12 @@ import 'rpc_methods.dart';
 
 final _logger = new Logger('test_server');
 
-main() {
-  Logger.root.level = Level.ALL;
-  Logger.root.onRecord.listen(new LogPrintHandler());
+main() => startServer();
+
+
+startServer() {
+  //Logger.root.level = Level.ALL;
+  //Logger.root.onRecord.listen(new LogPrintHandler());
 
   var server = new TestServer('127.0.0.1', 8394);
   server.startServer();

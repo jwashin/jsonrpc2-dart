@@ -4,6 +4,7 @@ import 'package:unittest/unittest.dart';
 import '../lib/jsonrpc_service.dart';
 import '../lib/rpc_exceptions.dart';
 import 'dart:convert';
+import 'dart:async';
 
 
 class Foo {
@@ -36,12 +37,16 @@ class Foo {
     try {
       return 3 + a;
     } on TypeError catch (e) {
-      throw new RuntimeException("Oops! Can't add numbers and strings!", -22, [3, a]);
+      throw new RuntimeException("Oops! Can't add ${a.runtimeType} to number.", -22, [3, a]);
     }
   }
   divzero(p) => p / 0;
 
   my_object() => new MyObject();
+
+  future3() => new Future(() {
+    return 3;
+  });
 
 }
 
@@ -50,7 +55,7 @@ class Zerr implements Exception {
   Zerr(this.message);
 }
 
-class MyObject{
+class MyObject {
 
 }
 
@@ -225,27 +230,28 @@ main() {
         "id": 3
       }, new Foo()).then(expectAsync((result) {
         expect(result['error']['code'], equals(-22));
+        expect(result['error']['message'], equals('Oops! Can\'t add String to number.'));
         expect(result['error']['data'], equals([3, '43']));
       }));
     });
 
     test("not JSON serializable", () {
-          jsonRpc('''{
+      jsonRpc('''{
         "jsonrpc": "2.0",
         "method": "my_object",
         "params": [],
         "id": 34
       }''', new Foo()).then(expectAsync((result) {
-            expect(JSON.decode(result), equals({
-              "jsonrpc": "2.0",
-              "error": {
-                "code": -32601,
-                "message": "Result was not JSON-serializable (Instance of \'MyObject\')."
-              },
-              "id": null
-            }));
-          }));
-        });
+        expect(JSON.decode(result), equals({
+          "jsonrpc": "2.0",
+          "error": {
+            "code": -32601,
+            "message": "Result was not JSON-serializable (Instance of \'MyObject\')."
+          },
+          "id": null
+        }));
+      }));
+    });
 
 
     test("divzero", () {
@@ -262,6 +268,21 @@ main() {
             "message": "Result was not JSON-serializable (Infinity)."
           },
           "id": null
+        }));
+      }));
+    });
+
+    test("future returned from method", () {
+      jsonRpc('''{
+        "jsonrpc": "2.0",
+        "method": "future3",
+        "params": [],
+        "id":19
+      }''', new Foo()).then(expectAsync((result) {
+        expect(JSON.decode(result), equals({
+          'result': 3,
+          'id': 19,
+          'jsonrpc': '2.0'
         }));
       }));
     });

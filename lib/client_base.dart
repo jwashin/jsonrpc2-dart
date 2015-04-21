@@ -1,6 +1,10 @@
 library jsonrpc_client_base;
 import "dart:async";
-import "package:logging/logging.dart";
+//import "package:logging/logging.dart";
+
+//final _logger = new Logger('JSON-RPC');
+//Logger.root.level = Level.ALL;
+//Logger.root.onRecord.listen(new LogPrintHandler());
 
 /* basic usage:
  *    import "package:jsonrpc2/jsonrpc_client.dart"
@@ -8,7 +12,8 @@ import "package:logging/logging.dart";
  *    var url = "http://somelocation";
  *    var proxy = new ServerProxy(url);
  *    Future request = proxy.call("someServerMethod", [arg1, arg2 ]);
- *    request.then((value){doSomethingWithValue(value);});
+ *    request.then((returned)=>proxy.checkError(returned))
+ *    .then((value){doSomethingWithValue(value);});
  *
  * Each arg must be representable in JSON.
  *
@@ -16,12 +21,6 @@ import "package:logging/logging.dart";
  *
  *
  */
-
-
-final _logger = new Logger('JSON-RPC');
-//Logger.root.level = Level.ALL;
-//Logger.root.onRecord.listen(new LogPrintHandler());
-
 class ServerProxyBase {
   String url;
   //int timeout = 0;
@@ -80,13 +79,13 @@ class BatchServerProxyBase {
 
   List requests = [];
   Map responses = {};
-  Map used_ids = {};
+//  Map used_ids = {};
 
+  /* Package and send the request.
+   * Return a Future with the HttpRequest object
+   */
 
-  call(method, [params = null, notify = false]) {
-    /* Package and send the request.
-     * Return a Future with the HttpRequest object
-     */
+  call(method, [params=null, notify=false]) {
 
     if (params == null) params = [];
     var package = new JsonRpcMethod(method, params, notify: notify, serverVersion: proxy.serverVersion);
@@ -98,7 +97,7 @@ class BatchServerProxyBase {
     }
   }
 
-  notify(method, [params = null]) => call(method, params, true);
+  notify(method, [params=null]) => call(method, params, true);
 
   send() {
     if (requests.length > 0) {
@@ -117,8 +116,8 @@ class BatchServerProxyBase {
         responses[id].complete(value);
         responses.remove(id);
       } else {
-        var error = resp['error'];
-        _logger.warning(new RemoteException(error['message'], error['code'], error['data']).toString());
+//        var error = resp['error'];
+//        _logger.warning(new RemoteException(error['message'], error['code'], error['data']).toString());
       }
     }
     return null;
