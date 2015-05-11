@@ -222,7 +222,7 @@ main() {
       }));
     });
 
-    test("TypeError in application code, handled", () {
+    test("TypeError in application code, handled (dart -c checked mode only)", () {
       jsonRpcExec({
         "jsonrpc": "2.0",
         "method": "oops1",

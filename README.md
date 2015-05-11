@@ -186,7 +186,7 @@ For the JSON-RPC methods in server-side application code, all Exceptions have be
 the error may be sent on to the client. Any exception that is not TypeError or NoSuchMethodError will be returned, by default, as 
 RuntimeError, code -32000.  As a side-effect of the way that the Dispatcher detects InvalidParameters, TypeErrors in application code will
 return, by default, an InvalidParameters exception. It may be necessary to catch TypeErrors that may arise in your application code and 
-re-throw them as RuntimeExceptions.  
+re-throw them as RuntimeExceptions, and this probably will work only if the server is running in "checked mode". 
 
 To send meaningful exceptions and error codes to the client,
 
