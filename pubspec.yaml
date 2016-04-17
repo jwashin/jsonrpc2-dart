@@ -3,11 +3,13 @@ version: 0.9.9
 author: Jim Washington <washington.jim@gmail.com>
 description: JSON-RPC (v2.0) utilities for web applications.
 homepage: https://github.com/jwashin/jsonrpc2-dart
+environment:
+  sdk: ">=1.8.0 <2.0.0"
+
 dependencies:
   browser: ^0.10.0
-  logging: ^0.11.0
+  logging:  ^0.11.0
   logging_handlers: ^0.8.0
-  barback: any
 dev_dependencies:
   http_server: any
   start: ^0.2.4
