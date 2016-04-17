@@ -1,46 +1,43 @@
 library rpc_exceptions;
 
-class RpcException implements Exception{
+class RpcException implements Exception {
   int code = 0;
   String message;
-  var data;
+  dynamic data;
   RpcException([this.message, this.code]);
-  toString() {
-    return this.message;
+  String toString() {
+    return message;
   }
 }
 
 class MethodNotFound extends RpcException {
-  MethodNotFound([message = '', code = -32601]) {
-    this.message = message;
-    this.code = code;
-  }
+  MethodNotFound([String msg = '', int newCode = -32601]) : super(msg, newCode);
 }
 
 class InvalidParameters extends RpcException {
-  InvalidParameters([message = '', code = -32602]) {
-    this.message = message;
-    this.code = -32602;
-  }
+  InvalidParameters([String msg = '', int newCode = -32602])
+      : super(msg, newCode);
 }
 
 class RuntimeException extends RpcException {
-  var error;
-  RuntimeException([message = '', code = -32000, data=null]) {
-    this.data = data;
-    if (message is Exception) {
-      this.error = message;
-      this.message = error.message;
+  dynamic error;
+  RuntimeException(
+      [dynamic newMessage = '', int newCode = -32000, dynamic newData = null]) {
+    data = newData;
+    code = newCode;
+    if (newMessage is Exception) {
+      error = newMessage;
+      try {
+        code = newMessage.code;
+      } on NoSuchMethodError {
+        code = -32000;
+      }
+      message = error.message;
+    } else if (newMessage is Error) {
+      error = message;
+      message = "$newMessage";
+    } else {
+      message = newMessage;
     }
-    else if (message is Error){
-     this.error = message;
-     this.message = "$message";
-    }
-
-    else {
-      this.message = message;
-
-    }
-    this.code = code;
   }
 }

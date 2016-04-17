@@ -24,18 +24,18 @@ import "client_base.dart";
 
 class ServerProxy extends ServerProxyBase {
   bool persistentConnection;
-  ServerProxy(String url, [bool this.persistentConnection=true]) :super(url);
-  executeRequest(package) {
+  ServerProxy(String url, [this.persistentConnection = true]) : super(url);
+  Future<dynamic> executeRequest(dynamic package) {
     //return a future with the JSON-RPC response
     HttpClient conn = new HttpClient();
-    String JsonContent = '';
-    Completer c = new Completer();
-    var payload;
+    String jsonContent = '';
+    Completer<dynamic> c = new Completer<dynamic>();
+    String payload;
     try {
       payload = JSON.encode(package);
     } catch (e) {
       throw new UnsupportedError(
-          'Item (${package}) could not be serialized to JSON');
+          'Item ($package) could not be serialized to JSON');
     }
     return conn.postUrl(Uri.parse(url)).then((HttpClientRequest request) {
       request.headers.add('Content-Type', 'application/json; charset=UTF-8');
@@ -44,13 +44,13 @@ class ServerProxy extends ServerProxyBase {
       request.write(payload);
       return request.close();
     }).then((HttpClientResponse response) {
-      response.transform(UTF8.decoder).listen((contents) {
-        JsonContent += contents.toString();
+      response.transform(UTF8.decoder).listen((dynamic contents) {
+        jsonContent += contents.toString();
       }, onDone: () {
-        if (response.statusCode == 204 || JsonContent.isEmpty) {
+        if (response.statusCode == 204 || jsonContent.isEmpty) {
           c.complete(null);
         } else if (response.statusCode == 200) {
-          c.complete(JSON.decode(JsonContent));
+          c.complete(JSON.decode(jsonContent));
         } else {
           c.completeError(
               new TransportStatusError(response.statusCode, response, package));
@@ -64,7 +64,7 @@ class ServerProxy extends ServerProxyBase {
 
 class BatchServerProxy extends BatchServerProxyBase {
   ServerProxy proxy;
-  BatchServerProxy(url, [persistentConnection=true]) {
+  BatchServerProxy(String url, [bool persistentConnection = true]) {
     proxy = new ServerProxy(url, persistentConnection);
   }
 }

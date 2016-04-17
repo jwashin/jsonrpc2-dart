@@ -27,7 +27,6 @@ class Dispatcher {
  * namedParams should be a Map of String:value or null.
  */
   dispatch(String methodName, [positionalParams = null, namedParams = null]) {
-
     namedParams = namedParams == null ? {} : namedParams;
     positionalParams = positionalParams == null ? [] : positionalParams;
 

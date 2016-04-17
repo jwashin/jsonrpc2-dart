@@ -62,7 +62,6 @@ class ExampleMethodsClass {
   }
 
   ping() => true;
-
 }
 
 class Friend {

@@ -9,17 +9,13 @@ import 'package:logging/logging.dart';
 import 'rpc_exceptions.dart';
 import 'dispatcher.dart';
 
-
 final _logger = new Logger('json-rpc');
 
 const String JSONRPC2 = '2.0';
 const String JSONRPC1 = '1.0';
 //ContentType JSON_RPC_CONTENT_TYPE = new ContentType('application', 'json', charset: "utf-8");
 
-
-class Notification {
-}
-
+class Notification {}
 
 class MethodRequest {
   var request;
@@ -31,19 +27,20 @@ class MethodRequest {
       String version = request['jsonrpc'];
       if (version == null) return JSONRPC1;
       if (version != JSONRPC2) {
-        throwerr(new RpcException('Invalid Request', -32600));
+        throwError(new RpcException('Invalid Request', -32600));
       }
       return version;
     } catch (e) {
       // we always get version first, so if request is not proper, fail here
-      throw makeExceptionMap(new RpcException('Invalid Request', -32600), JSONRPC2, null);
+      throw makeExceptionMap(
+          new RpcException('Invalid Request', -32600), JSONRPC2, null);
     }
   }
 
   get method {
     var method = request['method'];
     if (method is! String) {
-      throwerr(new RpcException('Invalid Request', -32600));
+      throwError(new RpcException('Invalid Request', -32600));
     }
     return method;
   }
@@ -65,14 +62,14 @@ class MethodRequest {
     if (id is String || id is num || id == null) {
       return id;
     }
-    throwerr(new RpcException('Invalid Request', -32600));
+    throwError(new RpcException('Invalid Request', -32600));
   }
 
-  throwerr(exception) {
+  throwError(exception) {
     throw makeExceptionMap(exception, version, request['id']);
   }
-
 }
+
 /* Given a parsed JSON-RPC request and an instance with methods,
  * return a Future with a Map of the result of the instance's method or a
  * Notification object
@@ -84,8 +81,8 @@ jsonRpcDispatch(request, instance) {
     var id = rq.id;
     var method = rq.method;
 
-    return new Future.sync(() => new Dispatcher(instance).dispatch(method, rq.positionalParams, rq.namedParams)).then((value) {
-
+    return new Future.sync(() => new Dispatcher(instance)
+        .dispatch(method, rq.positionalParams, rq.namedParams)).then((value) {
       if (id == null) {
         return new Notification();
       }
@@ -95,10 +92,7 @@ jsonRpcDispatch(request, instance) {
         return makeExceptionMap(value, version, id);
       }
 
-      Map resp = {
-        'result': value,
-        'id': id
-      };
+      Map resp = {'result': value, 'id': id};
       if (version == JSONRPC2) {
         resp['jsonrpc'] = version;
       }
@@ -117,18 +111,13 @@ jsonRpcDispatch(request, instance) {
 }
 
 makeExceptionMap(anException, version, [id = null]) {
-  Map resp = {
-    'id': id
-  };
+  Map resp = {'id': id};
   if (version == JSONRPC1) {
     resp['result'] = null;
   } else {
     resp['jsonrpc'] = version;
   }
-  resp['error'] = {
-    'code': anException.code,
-    'message': anException.message
-  };
+  resp['error'] = {'code': anException.code, 'message': anException.message};
 
   var data = anException.data;
   if (data != null) {
@@ -162,7 +151,8 @@ jsonRpc(String request, Object instance) {
  *  to be delivered.
 */
 jsonRpcExec(request, Object instance) {
-  if (request is Map && (request['jsonrpc'] == JSONRPC2 || request['jsonrpc'] == null)) {
+  if (request is Map &&
+      (request['jsonrpc'] == JSONRPC2 || request['jsonrpc'] == null)) {
     _logger.fine('$request');
     return jsonRpcDispatch(request, instance);
   } else {
@@ -189,7 +179,8 @@ jsonRpcExec(request, Object instance) {
         return new Notification();
       });
     }
-    return new Future.sync(() => makeExceptionMap(new RpcException("Invalid request", -32600), "2.0", null));
+    return new Future.sync(() => makeExceptionMap(
+        new RpcException("Invalid request", -32600), "2.0", null));
   }
 }
 
@@ -208,8 +199,12 @@ encodeResponse(response) {
   }
   try {
     return JSON.encode(response);
-
   } catch (e) {
-    return JSON.encode(makeExceptionMap(new RpcException("Result was not JSON-serializable (${response['result']}).", -32601), "2.0", null));
+    return JSON.encode(makeExceptionMap(
+        new RpcException(
+            "Result was not JSON-serializable (${response['result']}).",
+            -32601),
+        "2.0",
+        null));
   }
 }

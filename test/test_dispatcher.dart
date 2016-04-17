@@ -1,36 +1,39 @@
 library dispatcher_unit_tests;
 
-import 'package:unittest/unittest.dart';
-import '../lib/dispatcher.dart';
-import '../lib/rpc_exceptions.dart';
-
+import 'package:test/test.dart';
+import 'package:jsonrpc2/dispatcher.dart';
+import 'package:jsonrpc2/rpc_exceptions.dart';
 
 class Foo {
-  String greet_name;
-  Foo([this.greet_name = "Stranger"]);
-
-  hi() => 'Hi!';
-  hello() => "Hello, $greet_name!";
-  greet([name]) => (name == null) ? "Hello, ${greet_name}!" : "Hi, $name!";
-  add(num a, num b) => a + b;
-  _private_add(num a, num b) => a + b;
-  subtract(num a, num b) => a - b;
-  subtract_named({num minuend, num subtrahend}) => minuend - subtrahend;
-  throwerr(a, num b) {
+  String greetName;
+  Foo([this.greetName = "Stranger"]);
+  String hi() => 'Hi!';
+  String hello() => "Hello, $greetName!";
+  String greet([String name]) =>
+      (name == null) ? "Hello, $greetName!" : "Hi, $name!";
+  num add(num a, num b) => a + b;
+  num _privateAdd(num a, num b) => a + b;
+  num subtract(num a, num b) => a - b;
+  num subtractNamed({num minuend, num subtrahend}) => minuend - subtrahend;
+  dynamic throwerr(num a, num b) {
     throw new Zerr('you expected this!');
   }
-  typeerror(a){
-    try{
+
+  dynamic typeerror(dynamic a) {
+    try {
       return a + 9;
-    }
-    on TypeError catch(e){
-      throw new RuntimeException('Cannot add string and number', -22, [a,9]);
+    } on TypeError {
+      throw new RuntimeException('Cannot add string and number', -22, [a, 9]);
     }
   }
-  divzerotest(a){
+
+  num divzerotest(num a) {
     return a / 0;
   }
 
+  num usePrivateAdd(num a, num b) {
+    return _privateAdd(a, b);
+  }
 }
 
 class Zerr implements Exception {
@@ -38,141 +41,138 @@ class Zerr implements Exception {
   Zerr(this.message);
 }
 
-
-main() {
+void main() {
   test("symbolize", () {
-    expect(symbolizeKeys({
-      "a": 1
-    }), equals({
-      new Symbol("a"): 1
-    }));
+    expect(symbolizeKeys({"a": 1}), equals({new Symbol("a"): 1}));
   });
 
   test("simple object", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('hi').then((value) => expect(value, equals('Hi!')));
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('hi').then((String value) => expect(value, equals('Hi!')));
   });
 
   test("simple object with param", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('greet', ['Mary']).then((value) => expect(value, equals('Hi, Mary!')));
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('greet', ['Mary']).then(
+        (String value) => expect(value, equals('Hi, Mary!')));
   });
 
   test("simple object initialized with param unused", () {
-    var z = new Dispatcher(new Foo("Bar"));
-    z.dispatch('greet', ['Mary']).then((value) => expect(value, equals('Hi, Mary!')));
-
+    Dispatcher z = new Dispatcher(new Foo("Bar"));
+    z.dispatch('greet', ['Mary']).then(
+        (String value) => expect(value, equals('Hi, Mary!')));
   });
 
   test("simple object initialized with param used", () {
-    var z = new Dispatcher(new Foo("Bob"));
-    z.dispatch('hello').then((value) => expect(value, equals('Hello, Bob!')));
-
+    Dispatcher z = new Dispatcher(new Foo("Bob"));
+    z
+        .dispatch('hello')
+        .then((String value) => expect(value, equals('Hello, Bob!')));
   });
 
   test("simple object without optional param", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('greet').then((value) => expect(value, equals('Hello, Stranger!')));
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z
+        .dispatch('greet')
+        .then((String value) => expect(value, equals('Hello, Stranger!')));
   });
 
   test("simple addition", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('add', [3, 4]).then((value) => expect(value, equals(7)));
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('add', [3, 4]).then((num value) => expect(value, equals(7)));
   });
 
   test("simple subtraction a b", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('subtract', [42, 23]).then((value) => expect(value, equals(19)));
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch(
+        'subtract', [42, 23]).then((num value) => expect(value, equals(19)));
   });
   test("simple subtraction b a", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('subtract', [23, 42]).then((value) => expect(value, equals(-19)));
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch(
+        'subtract', [23, 42]).then((num value) => expect(value, equals(-19)));
   });
 
   test("named subtraction in order", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('subtract_named', [], {
-      "minuend": 23,
-      "subtrahend": 42
-    }).then((value) => expect(value, equals(-19)));
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('subtractNamed', [], {"minuend": 23, "subtrahend": 42}).then(
+        (num value) => expect(value, equals(-19)));
   });
 
   test("named subtraction out of order", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('subtract_named', [], {
-      "subtrahend": 42,
-      "minuend": 23
-    }).then((value) => expect(value, equals(-19)));
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('subtractNamed', [], {"subtrahend": 42, "minuend": 23}).then(
+        (num value) => expect(value, equals(-19)));
   });
 
   test("mixed nums", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('add', [3, 4.3]).then((value) => expect(value, equals(7.3)));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('add', [3, 4.3]).then((num value) => expect(value, equals(7.3)));
   });
 
   test("method not found", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('zadd', [3, 4.3]).then((value) => expect(value, new isInstanceOf<MethodNotFound>()));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('zadd', [3, 4.3]).then(
+        (dynamic value) => expect(value, new isInstanceOf<MethodNotFound>()));
   });
 
   test("private method call", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('_private_add', [3, 4.3]).then((value) => expect(value, new isInstanceOf<MethodNotFound>()));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('_privateAdd', [3, 4.3]).then(
+        (dynamic value) => expect(value, new isInstanceOf<MethodNotFound>()));
   });
 
   test("invalid parameters too many", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('add', [3, 5, 8]).then((value) => expect(value, new isInstanceOf<InvalidParameters>()));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('add', [3, 5, 8]).then((dynamic value) =>
+        expect(value, new isInstanceOf<InvalidParameters>()));
   });
 
   test("invalid parameters bad value", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('add', [3, "hello"]).then((value) => expect(value, new isInstanceOf<InvalidParameters>()));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('add', [3, "hello"]).then((dynamic value) =>
+        expect(value, new isInstanceOf<InvalidParameters>()));
   });
 
   test("invalid parameters too few", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('add', [3]).then((value) => expect(value, new isInstanceOf<InvalidParameters>()));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('add', [3]).then((dynamic value) =>
+        expect(value, new isInstanceOf<InvalidParameters>()));
   });
 
   test("internal error", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('throwerr', [3, 0]).then((value) => expect(value, new isInstanceOf<RuntimeException>()));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('throwerr', [3, 0]).then(
+        (dynamic value) => expect(value, new isInstanceOf<RuntimeException>()));
   });
 
   test("private method invocation", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('_private_add', [3, 4.3]).then((value) => expect(value, new isInstanceOf<MethodNotFound>()));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('_private_add', [3, 4.3]).then(
+        (dynamic value) => expect(value, new isInstanceOf<MethodNotFound>()));
   });
 
   test("attempt property invocation", () {
-    var z = new Dispatcher(new Foo());
-    z.dispatch('greet_name').then((value) => expect(value, new isInstanceOf<MethodNotFound>()));
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('greet_name').then(
+        (dynamic value) => expect(value, new isInstanceOf<MethodNotFound>()));
   });
 
   test("catch TypeError in application code", () {
-      var z = new Dispatcher(new Foo());
-      z.dispatch('typeerror', ['a']).then((value) => expect(value, new isInstanceOf<RuntimeException>()));
-    });
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch('typeerror', ['a']).then(
+        (dynamic value) => expect(value, new isInstanceOf<RuntimeException>()));
+  });
 
   test("divide by zero", () {
-        var z = new Dispatcher(new Foo());
-        z.dispatch('divzerotest', [3]).then((value) => expect(value, double.INFINITY));
-      });
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch(
+        'divzerotest', [3]).then((num value) => expect(value, double.INFINITY));
+  });
 
   test("zero over zero", () {
-          var z = new Dispatcher(new Foo());
-          z.dispatch('divzerotest', [0]).then((value) => expect(value.isNaN, true));
-        });
-
-
-
+    Dispatcher z = new Dispatcher(new Foo());
+    z.dispatch(
+        'divzerotest', [0]).then((num value) => expect(value.isNaN, true));
+  });
 }

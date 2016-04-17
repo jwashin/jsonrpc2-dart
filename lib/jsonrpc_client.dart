@@ -20,12 +20,10 @@ import "client_base.dart";
  *
  */
 
-
 //final _logger = new Logger('JSON-RPC');
 
 class ServerProxy extends ServerProxyBase {
   ServerProxy(String url) : super(url);
-
 
   executeRequest(package) {
     //return a future with the JSON-RPC response
@@ -37,7 +35,6 @@ class ServerProxy extends ServerProxyBase {
     request.onReadyStateChange.listen((_) {
       if (request.readyState == 4) {
         switch (request.status) {
-
           case 200:
             c.complete(request);
             break;
@@ -47,42 +44,40 @@ class ServerProxy extends ServerProxyBase {
             break;
 
           default:
-            c.completeError(new TransportStatusError(request.statusText, request, package));
+            c.completeError(
+                new TransportStatusError(request.statusText, request, package));
         }
       }
     });
-    //Timeout
-//    request.onTimeout.listen((_) {
-//      //request.abort();
-//      c.completeError(new TimeoutException('JsonRpcRequest timed out'));
-//    });
-
     // It's sent out utf-8 encoded. Without having to be told. Nice!
-    try{
-
-      request.send(JSON.encode(package));
-    } catch (e){
-      throw new UnsupportedError('Item (${package}) could not be serialized to JSON');
-      //throw e;
+    String p;
+    try {
+      p = JSON.encode(package);
+    } catch (e) {
+      throw new UnsupportedError(
+          'Item (${package}) could not be serialized to JSON');
     }
 
-
+    request.send(p);
 
     return c.future.then((request) => new Future(() {
-      String body = request.responseText;
-      if (request.status == 204 || body.isEmpty) {
-        return null;
-      } else {
-        return JSON.decode(body);
-      }
-    }));
+          String body = request.responseText;
+          if (request.status == 204 || body.isEmpty) {
+            return null;
+          } else {
+            return JSON.decode(body);
+          }
+        }));
+  }
+
+  handleError(e) {
+    print('$e');
   }
 }
 
-
-class BatchServerProxy extends BatchServerProxyBase{
+class BatchServerProxy extends BatchServerProxyBase {
   ServerProxy proxy;
-  BatchServerProxy(url){
+  BatchServerProxy(url) {
     proxy = new ServerProxy(url);
-    }
+  }
 }

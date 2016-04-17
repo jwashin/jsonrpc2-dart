@@ -10,7 +10,7 @@ import "dart:async";
 /* basic usage:
  *    import "package:jsonrpc2/jsonrpc_client.dart"
  *
- *    var url = "http://somelocation";
+ *    var url = "http://some/location";
  *    var proxy = new ServerProxy(url);
  *    Future request = proxy.call("someServerMethod", [arg1, arg2 ]);
  *    request.then((returned)=>proxy.checkError(returned))
@@ -24,8 +24,10 @@ import "dart:async";
  */
 class ServerProxyBase {
   String url;
+
   //int timeout = 0;
   String serverVersion = '2.0';
+
   ServerProxyBase(this.url);
 
   notify(method, [params = null]) {
@@ -47,8 +49,9 @@ class ServerProxyBase {
     if (notify) {
       executeRequest(package);
       return new Future(() => null);
-    } else return executeRequest(package)
-        .then((rpcResponse) => handleResponse(rpcResponse));
+    } else
+      return executeRequest(package)
+          .then((rpcResponse) => handleResponse(rpcResponse));
   }
 
   executeRequest(package) {
@@ -78,8 +81,9 @@ class BatchServerProxyBase {
   //get timeout => proxy.timeout;
   //set timeout(int t){proxy.timeout = timeout;}
 
-  List requests = [];
-  Map responses = {};
+  List _requests = [];
+  Map _responses = {};
+
 //  Map used_ids = {};
 
   /* Package and send the request.
@@ -90,10 +94,10 @@ class BatchServerProxyBase {
     if (params == null) params = [];
     var package = new JsonRpcMethod(method, params,
         notify: notify, serverVersion: proxy.serverVersion);
-    requests.add(package);
+    _requests.add(package);
     if (!notify) {
       var c = new Completer();
-      responses[package.id] = c;
+      _responses[package.id] = c;
       return c.future;
     }
   }
@@ -101,22 +105,22 @@ class BatchServerProxyBase {
   notify(method, [params = null]) => call(method, params, true);
 
   send() {
-    if (requests.length > 0) {
-      Future future = proxy.executeRequest(requests);
-      requests = [];
+    if (_requests.length > 0) {
+      Future future = proxy.executeRequest(_requests);
+      _requests = [];
       return future
           .then((resp) => new Future.sync(() => handleResponses(resp)));
     }
   }
 
-  handleResponses(resps) {
-    for (var resp in resps) {
-      var value = proxy.handleResponse(resp);
+  handleResponses(responses) {
+    for (var response in responses) {
+      var value = proxy.handleResponse(response);
       //if (value is Exception) throw value;
-      var id = resp['id'];
+      var id = response['id'];
       if (id != null) {
-        responses[id].complete(value);
-        responses.remove(id);
+        _responses[id].complete(value);
+        _responses.remove(id);
       } else {
 //        var error = resp['error'];
 //        _logger.warning(new RemoteException(error['message'], error['code'], error['data']).toString());
@@ -132,6 +136,7 @@ class JsonRpcMethod {
   bool notify;
   var _id;
   String serverVersion;
+
   JsonRpcMethod(this.method, this.args,
       {this.notify: false, this.serverVersion: '2.0'});
 
@@ -158,8 +163,8 @@ class JsonRpcMethod {
         if (!notify) map['id'] = id;
         break;
       case '1.0':
-        if (args is Map) throw new FormatException(
-            "Cannot use named params in JSON-RPC 1.0");
+        if (args is Map)
+          throw new FormatException("Cannot use named params in JSON-RPC 1.0");
         map = {
           'method': method,
           'params': (args is List) ? args : [args],
@@ -177,7 +182,9 @@ class RemoteException implements Exception {
   int code;
   String message;
   var data;
+
   RemoteException([this.message, this.code, this.data]);
+
   toString() => data != null
       ? "RemoteException $code '$message' Data:($data))"
       : "RemoteException $code: $message";
@@ -187,6 +194,8 @@ class TransportStatusError implements Exception {
   var message;
   var data;
   var request;
+
   TransportStatusError([this.message, this.request, this.data]);
+
   toString() => "$message";
 }

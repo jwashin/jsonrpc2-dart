@@ -1,17 +1,16 @@
 library client_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 import 'package:jsonrpc2/jsonrpc_client.dart';
-import 'package:unittest/html_enhanced_config.dart';
+//import 'package:unittest/html_enhanced_config.dart';
 //import 'dart:async';
-import "classb.dart";
+import "../servers_for_testing/classb.dart";
 
 class MyClass {
   MyClass();
 }
 
 main() {
-  useHtmlEnhancedConfiguration();
   var proxy = new ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
     test("positional arguments", () async {
@@ -41,7 +40,9 @@ main() {
     });
 
     test("notification", () async {
-      var result = await proxy.notify('update', [[1, 2, 3, 4, 5]]);
+      var result = await proxy.notify('update', [
+        [1, 2, 3, 4, 5]
+      ]);
       expect(result, equals(null));
     });
 
@@ -58,7 +59,7 @@ main() {
 
     test("not JSON-serializable", () async {
       try {
-        var result = await proxy.call('subtract', [3, 0 / 0]);
+        await proxy.call('subtract', [3, 0 / 0]);
       } catch (e) {
         expect(e, isUnsupportedError);
       }
@@ -66,7 +67,7 @@ main() {
 
     test("class instance not JSON-serializable", () async {
       try {
-        var result = await proxy.call('subtract', [3, new MyClass()]);
+        await proxy.call('subtract', [3, new MyClass()]);
       } catch (e) {
         expect(e, isUnsupportedError);
       }
@@ -113,20 +114,23 @@ main() {
       var result3 = proxy.call('get_data');
       proxy.notify('update', ['happy Tuesday']);
       var result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
-      var resp = proxy.send();
+      proxy.send();
       expect(await result1, equals(-19));
       expect(await result2, equals(19));
       expect(await result3, equals(['hello', 5]));
       expect(await result4, equals(-19));
-
     });
 
     test("batch with error on a notification", () async {
       proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
-      var result1 = proxy.call('summation', [[1, 2, 3, 4, 5]]);
+      var result1 = proxy.call('summation', [
+        [1, 2, 3, 4, 5]
+      ]);
       var result2 = proxy.call('subtract', [42, 23]);
       var result3 = proxy.call('get_data');
-      proxy.notify('update', [[1, 2, 3, 4, 5]]);
+      proxy.notify('update', [
+        [1, 2, 3, 4, 5]
+      ]);
       proxy.notify('oopsie');
       var result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
       proxy.send();
@@ -139,10 +143,10 @@ main() {
     test("variable url", () async {
       var proxy = new ServerProxy('http://127.0.0.1:8394/friend/Bob');
       var result1 = await proxy.call('hello');
-        expect(result1, equals("Hello from Bob!"));
+      expect(result1, equals("Hello from Bob!"));
       proxy = new ServerProxy('http://127.0.0.1:8394/friend/Mika');
       var result2 = proxy.call('hello');
-        expect(await result2, equals("Hello from Mika!"));
+      expect(await result2, equals("Hello from Mika!"));
     });
   });
 }
