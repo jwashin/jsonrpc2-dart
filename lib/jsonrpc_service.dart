@@ -171,8 +171,9 @@ jsonRpcExec(request, Object instance) {
           rpc['jsonrpc'] = JSONRPC2;
           dynamic value = jsonRpcDispatch(rpc, instance);
           responses.add(new Future(() => value));
-        } else{
-          responses.add(new Future(() => makeExceptionMap(new RpcException("Invalid request", -32600),"2.0",null)));
+        } else {
+          responses.add(new Future(() => makeExceptionMap(
+              new RpcException("Invalid request", -32600), "2.0", null)));
         }
 //        _logger.fine('in batch: $rpc');
 

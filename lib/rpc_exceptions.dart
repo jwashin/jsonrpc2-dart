@@ -28,7 +28,7 @@ class RuntimeException extends RpcException {
     if (newMessage is Exception) {
       error = newMessage;
       code = -32000;
-      if (newMessage is RpcException){
+      if (newMessage is RpcException) {
         code = newMessage.code;
       }
       message = error.message;
