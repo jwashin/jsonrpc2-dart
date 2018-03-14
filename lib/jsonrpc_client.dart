@@ -76,7 +76,7 @@ class ServerProxy extends ServerProxyBase {
 }
 
 class BatchServerProxy extends BatchServerProxyBase {
-  ServerProxy proxy;
+//  ServerProxy proxy;
   BatchServerProxy(url) {
     proxy = new ServerProxy(url);
   }

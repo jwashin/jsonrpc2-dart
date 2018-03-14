@@ -1,6 +1,7 @@
 library jsonrpc_client_base;
 
 import "dart:async";
+import "rpc_exceptions.dart";
 //import "package:logging/logging.dart";
 
 //final _logger = new Logger('JSON-RPC');
@@ -68,7 +69,7 @@ class ServerProxyBase {
   }
 
   checkError(response) {
-    if (response is RemoteException) throw response;
+    if (response is RuntimeException) throw response;
     return response;
   }
 }
@@ -186,8 +187,8 @@ class RemoteException implements Exception {
   RemoteException([this.message, this.code, this.data]);
 
   toString() => data != null
-      ? "RemoteException $code '$message' Data:($data))"
-      : "RemoteException $code: $message";
+      ? "RemoteException $code: '$message' Data:($data))"
+      : "RemoteException $code: '$message'";
 }
 
 class TransportStatusError implements Exception {

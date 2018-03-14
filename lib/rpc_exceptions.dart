@@ -27,10 +27,9 @@ class RuntimeException extends RpcException {
     code = newCode;
     if (newMessage is Exception) {
       error = newMessage;
-      try {
+      code = -32000;
+      if (newMessage is RpcException){
         code = newMessage.code;
-      } on NoSuchMethodError {
-        code = -32000;
       }
       message = error.message;
     } else if (newMessage is Error) {

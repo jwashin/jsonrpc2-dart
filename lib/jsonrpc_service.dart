@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:async';
 
 import 'package:logging/logging.dart';
-//import 'dart:io';
 
 import 'rpc_exceptions.dart';
 import 'dispatcher.dart';
@@ -18,7 +17,7 @@ const String JSONRPC1 = '1.0';
 class Notification {}
 
 class MethodRequest {
-  var request;
+  Map<String, dynamic> request;
 
   MethodRequest(this.request);
 
@@ -27,20 +26,20 @@ class MethodRequest {
       String version = request['jsonrpc'];
       if (version == null) return JSONRPC1;
       if (version != JSONRPC2) {
-        throwError(new RpcException('Invalid Request', -32600));
+        throwError(new RpcException('Invalid request', -32600));
       }
       return version;
     } catch (e) {
       // we always get version first, so if request is not proper, fail here
       throw makeExceptionMap(
-          new RpcException('Invalid Request', -32600), JSONRPC2, null);
+          new RpcException('Invalid request', -32600), JSONRPC2, null);
     }
   }
 
   get method {
-    var method = request['method'];
+    dynamic method = request['method'];
     if (method is! String) {
-      throwError(new RpcException('Invalid Request', -32600));
+      throwError(new RpcException('Invalid request', -32600));
     }
     return method;
   }
@@ -58,7 +57,7 @@ class MethodRequest {
   }
 
   get id {
-    var id = request['id'];
+    dynamic id = request['id'];
     if (id is String || id is num || id == null) {
       return id;
     }
@@ -128,7 +127,15 @@ makeExceptionMap(anException, version, [id = null]) {
 
 _shouldBatch(obj) {
 //  _logger.fine('checking batch');
-  return obj is List && obj.length > 0;
+
+  if (obj is! List) return false;
+  if (obj.length < 1) return false;
+//  for (dynamic item in obj) {
+//    if (item is! Map) {
+//      return false;
+//    } else if (item is Map && !item.containsKey('method')) return false;
+//  }
+  return true;
 }
 
 /* Given a JSON-RPC-formatted request string and an instance,
@@ -153,22 +160,26 @@ jsonRpc(String request, Object instance) {
 jsonRpcExec(request, Object instance) {
   if (request is Map &&
       (request['jsonrpc'] == JSONRPC2 || request['jsonrpc'] == null)) {
-    _logger.fine('$request');
+//    _logger.fine('$request');
     return jsonRpcDispatch(request, instance);
   } else {
-    if (_shouldBatch(request)) {
-      var responses = [];
+    if (request is List && _shouldBatch(request)) {
+      List<Future> responses = [];
+
       for (var rpc in request) {
         if (rpc is Map) {
           rpc['jsonrpc'] = JSONRPC2;
+          dynamic value = jsonRpcDispatch(rpc, instance);
+          responses.add(new Future(() => value));
+        } else{
+          responses.add(new Future(() => makeExceptionMap(new RpcException("Invalid request", -32600),"2.0",null)));
         }
-        _logger.fine('in batch: $rpc');
-        var value = jsonRpcDispatch(rpc, instance);
-        responses.add(new Future(() => value));
+//        _logger.fine('in batch: $rpc');
+
       }
       return Future.wait(responses).then((theList) {
         List output = [];
-        for (var item in theList) {
+        for (dynamic item in theList) {
           if (item is! Notification) {
             output.add(item);
           }

@@ -4,24 +4,24 @@ import 'package:test/test.dart';
 import 'package:jsonrpc2/jsonrpc_client.dart';
 //import 'package:unittest/html_enhanced_config.dart';
 //import 'dart:async';
-import "../servers_for_testing/classb.dart";
+import "package:jsonrpc2/src/classb.dart";
 
 class MyClass {
   MyClass();
 }
 
 main() {
-  var proxy = new ServerProxy('http://127.0.0.1:8394/sum');
+  dynamic proxy = new ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
     test("positional arguments", () async {
-      var result = await proxy.call('subtract', [23, 42]);
+      int result = await proxy.call('subtract', [23, 42]);
       expect(result, equals(-19));
       result = await proxy.call('subtract', [42, 23]);
       expect(result, equals(19));
     });
 
     test("named arguments", () async {
-      var result =
+      int result =
           await proxy.call('nsubtract', {'subtrahend': 23, 'minuend': 42});
       expect(result, equals(19));
 

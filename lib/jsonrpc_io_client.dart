@@ -63,7 +63,7 @@ class ServerProxy extends ServerProxyBase {
 }
 
 class BatchServerProxy extends BatchServerProxyBase {
-  ServerProxy proxy;
+  dynamic proxy;
   BatchServerProxy(String url, [bool persistentConnection = true]) {
     proxy = new ServerProxy(url, persistentConnection);
   }

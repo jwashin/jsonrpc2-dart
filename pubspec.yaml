@@ -14,3 +14,6 @@ dev_dependencies:
   http_server: any
   start: ^0.2.4
   test: ^0.12.0
+web:
+  compiler:
+    debug: dartdevc

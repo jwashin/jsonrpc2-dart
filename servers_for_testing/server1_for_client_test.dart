@@ -3,7 +3,7 @@ import 'package:logging/logging.dart';
 import 'package:start/start.dart';
 import 'package:jsonrpc2/jsonrpc_service.dart';
 
-import 'rpc_methods.dart';
+import 'package:jsonrpc2/src/rpc_methods.dart';
 
 /*
  * Test server. Uses start.dart and works with test_client.dart

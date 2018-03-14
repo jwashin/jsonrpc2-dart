@@ -17,7 +17,7 @@ import 'rpc_exceptions.dart';
  */
 
 class Dispatcher {
-  var instance;
+  dynamic instance;
   Dispatcher(this.instance);
 /*
  * Invoke named method with parameters on the instance and return a Future of the result, if possible.
@@ -26,7 +26,9 @@ class Dispatcher {
  * positionalParams should be a List or null.
  * namedParams should be a Map of String:value or null.
  */
-  dispatch(String methodName, [positionalParams = null, namedParams = null]) {
+  dispatch(String methodName,
+      [List<dynamic> positionalParams = null,
+      Map<String, dynamic> namedParams = null]) {
     namedParams = namedParams == null ? {} : namedParams;
     positionalParams = positionalParams == null ? [] : positionalParams;
 
@@ -34,7 +36,8 @@ class Dispatcher {
       positionalParams = [positionalParams];
     }
 
-    if (!namedParams.isEmpty) namedParams = symbolizeKeys(namedParams);
+    Map<Symbol, dynamic> symbolMap;
+    if (!namedParams.isEmpty) symbolMap = symbolizeKeys(namedParams);
 
     InstanceMirror instanceMirror = reflect(instance);
     var methodMirror = getMethodMirror(instanceMirror, methodName);
@@ -46,7 +49,7 @@ class Dispatcher {
     return new Future.sync(() {
       InstanceMirror t;
       try {
-        t = instanceMirror.invoke(methodMirror, positionalParams, namedParams);
+        t = instanceMirror.invoke(methodMirror, positionalParams, symbolMap);
       } on TypeError catch (e) {
         return new InvalidParameters('$e');
       } on NoSuchMethodError catch (e) {
@@ -66,9 +69,9 @@ class Dispatcher {
  * Convenience method for making a Map of Symbol:value out of a Map of String:value.
  * We have to do this to the Map of namedParams for use in the invoke method of InstanceMirror.
 */
-symbolizeKeys(namedParams) {
-  Map symbolMap = {};
-  for (var key in namedParams.keys) {
+symbolizeKeys(Map<String, dynamic> namedParams) {
+  Map<Symbol, dynamic> symbolMap = {};
+  for (String key in namedParams.keys) {
     symbolMap[new Symbol(key)] = namedParams[key];
   }
   return symbolMap;
@@ -81,10 +84,10 @@ symbolizeKeys(namedParams) {
 */
 getMethodMirror(instanceMirror, methodName) {
   ClassMirror classMirror = instanceMirror.type;
-  for (var classMember in classMirror.declarations.keys) {
+  for (Symbol classMember in classMirror.declarations.keys) {
     String instanceMethod = MirrorSystem.getName(classMember);
     if (instanceMethod == methodName) {
-      var methodMirror = classMirror.declarations[classMember];
+      DeclarationMirror methodMirror = classMirror.declarations[classMember];
       if (methodMirror is! MethodMirror || methodMirror.isPrivate) return null;
       return classMember;
     }

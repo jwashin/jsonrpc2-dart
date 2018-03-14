@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import 'package:jsonrpc2/jsonrpc_io_client.dart';
 
 import 'dart:async';
-import "../servers_for_testing/classb.dart";
+import "package:jsonrpc2/src/classb.dart";
 
 class MyClass {
   MyClass();
@@ -79,14 +79,14 @@ void main() {
     });
 
     test("custom error", () async {
-      var result = await proxy.call('baloo', ['sam']);
+      dynamic result = await proxy.call('baloo', ['sam']);
       expect(result, equals('Balooing sam, as requested.'));
 
       result = await proxy.call('baloo', ['frotz']);
       try {
         proxy.checkError(result);
         // should not get here
-        throw new Exception(result);
+//        throw new Exception(result);
       } catch (e) {
         expect(e.code, equals(34));
       }

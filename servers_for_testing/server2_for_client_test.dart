@@ -5,7 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:http_server/http_server.dart';
 import 'package:jsonrpc2/jsonrpc_service.dart';
 
-import 'rpc_methods.dart';
+import 'package:jsonrpc2/src/rpc_methods.dart';
 
 final int port = 8394;
 
@@ -33,10 +33,12 @@ main() {
         case 'POST':
           //_logger.fine(body.body);
           String pathCheck = request.uri.pathSegments[0];
-          var instance = new ExampleMethodsClass();
+          dynamic instance;
           if (pathCheck == 'friend') {
-            String friendname = request.uri.pathSegments[1];
-            instance = new Friend(friendname);
+            String friendName = request.uri.pathSegments[1];
+            instance = new Friend(friendName);
+          } else{
+            instance = new ExampleMethodsClass();
           }
 
           jsonRpcExec(body.body, instance).then((result) {
