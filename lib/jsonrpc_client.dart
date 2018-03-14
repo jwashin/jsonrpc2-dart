@@ -25,30 +25,31 @@ import "client_base.dart";
 class ServerProxy extends ServerProxyBase {
   ServerProxy(String url) : super(url);
 
-  executeRequest(package) {
+  executeRequest(package) async {
     //return a future with the JSON-RPC response
     HttpRequest request = new HttpRequest();
-    request.open("POST", url, async: true);
+//    request.open("POST", url, async: true);
+//    request.open("POST", url);
     //request.timeout = timeout;
-    request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-    var c = new Completer();
-    request.onReadyStateChange.listen((_) {
-      if (request.readyState == 4) {
-        switch (request.status) {
-          case 200:
-            c.complete(request);
-            break;
-
-          case 204:
-            c.complete(request);
-            break;
-
-          default:
-            c.completeError(
-                new TransportStatusError(request.statusText, request, package));
-        }
-      }
-    });
+//    request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+//    var c = new Completer();
+//    request.onReadyStateChange.listen((_) {
+//      if (request.readyState == 4) {
+//        switch (request.status) {
+//          case 200:
+//            c.complete(request);
+//            break;
+//
+//          case 204:
+//            c.complete(null);
+//            break;
+//
+//          default:
+//            c.completeError(
+//                new TransportStatusError(request.statusText, request, package));
+//        }
+//      }
+//    });
     // It's sent out utf-8 encoded. Without having to be told. Nice!
     String p;
     try {
@@ -58,16 +59,33 @@ class ServerProxy extends ServerProxyBase {
           'Item (${package}) could not be serialized to JSON');
     }
 
-    request.send(p);
+    request
+      ..open('POST', url)
+      ..setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+      ..send(p);
 
-    return c.future.then((request) => new Future(() {
-          String body = request.responseText;
-          if (request.status == 204 || body.isEmpty) {
-            return null;
-          } else {
-            return JSON.decode(body);
-          }
-        }));
+    // request.onReadyStateChange.listen(print);
+    await request.onLoadEnd.first;
+
+    String body = request.responseText;
+    return new Future(() {
+      if (request.status == 204 || body.isEmpty) {
+        return null;
+      } else {
+        return JSON.decode(body);
+      }
+    });
+
+//    request.send(p);
+
+//    return c.future.then((request) => new Future(() {
+//          String body = request.responseText;
+//          if (request.status == 204 || body.isEmpty) {
+//            return null;
+//          } else {
+//            return JSON.decode(body);
+//          }
+//        }));
   }
 
   handleError(e) {
@@ -76,8 +94,8 @@ class ServerProxy extends ServerProxyBase {
 }
 
 class BatchServerProxy extends BatchServerProxyBase {
-//  ServerProxy proxy;
-  BatchServerProxy(url) {
+  dynamic proxy;
+  BatchServerProxy(String url) {
     proxy = new ServerProxy(url);
   }
 }

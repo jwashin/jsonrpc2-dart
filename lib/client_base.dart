@@ -35,9 +35,9 @@ class ServerProxyBase {
     return call(method, params, true);
   }
 
-  retry(package) {
-    return call(package.method, package.args, package.notify);
-  }
+//  retry(package) {
+//    return call(package.method, package.args, package.notify);
+//  }
 
   call(method, [params = null, notify = false]) {
     /* Package and send the request.
@@ -59,7 +59,7 @@ class ServerProxyBase {
     //this requires implementation in subclasses
   }
 
-  handleResponse(response) {
+  dynamic handleResponse(Map<String, dynamic> response) {
     if (response.containsKey('error')) {
       return (new RemoteException(response['error']['message'],
           response['error']['code'], response['error']['data']));
@@ -68,22 +68,22 @@ class ServerProxyBase {
     }
   }
 
-  checkError(response) {
+  dynamic checkError(dynamic response) {
     if (response is RuntimeException) throw response;
     return response;
   }
 }
 
 class BatchServerProxyBase {
-  var proxy;
+  dynamic proxy;
 
   BatchServerProxyBase();
 
   //get timeout => proxy.timeout;
   //set timeout(int t){proxy.timeout = timeout;}
 
-  List _requests = [];
-  Map _responses = {};
+  List<JsonRpcMethod> _requests = [];
+  Map<dynamic, Completer> _responses = {};
 
 //  Map used_ids = {};
 
@@ -91,13 +91,13 @@ class BatchServerProxyBase {
    * Return a Future with the HttpRequest object
    */
 
-  call(method, [params = null, notify = false]) {
+  call(method, [params = null, notify = false]) async {
     if (params == null) params = [];
-    var package = new JsonRpcMethod(method, params,
+    JsonRpcMethod package = new JsonRpcMethod(method, params,
         notify: notify, serverVersion: proxy.serverVersion);
     _requests.add(package);
     if (!notify) {
-      var c = new Completer();
+      Completer c = new Completer();
       _responses[package.id] = c;
       return c.future;
     }
@@ -117,7 +117,6 @@ class BatchServerProxyBase {
   handleResponses(responses) {
     for (var response in responses) {
       var value = proxy.handleResponse(response);
-      //if (value is Exception) throw value;
       var id = response['id'];
       if (id != null) {
         _responses[id].complete(value);
@@ -133,27 +132,21 @@ class BatchServerProxyBase {
 
 class JsonRpcMethod {
   String method;
-  var args;
+  dynamic args;
   bool notify;
-  var _id;
+  int _id;
   String serverVersion;
 
   JsonRpcMethod(this.method, this.args,
       {this.notify: false, this.serverVersion: '2.0'});
 
   get id {
-    if (notify) {
-      return null;
-    } else {
-      if (_id == null) _id = this.hashCode;
-      return _id;
-    }
+    if (_id == null) _id = this.hashCode;
+    return notify ? null : _id;
   }
 
-  set id(var value) => _id = value;
-
   toJson() {
-    Map map;
+    Map<String, dynamic> map;
     switch (serverVersion) {
       case '2.0':
         map = {
@@ -182,7 +175,7 @@ class JsonRpcMethod {
 class RemoteException implements Exception {
   int code;
   String message;
-  var data;
+  dynamic data;
 
   RemoteException([this.message, this.code, this.data]);
 

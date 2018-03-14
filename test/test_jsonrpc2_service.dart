@@ -1,3 +1,4 @@
+@TestOn("vm")
 library jsonrpc2_server_tests;
 
 import 'package:test/test.dart';

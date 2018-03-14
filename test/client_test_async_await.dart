@@ -1,3 +1,4 @@
+@TestOn("browser")
 library client_test;
 
 import 'package:test/test.dart';
@@ -79,14 +80,14 @@ main() {
     });
 
     test("custom error", () async {
-      var result = await proxy.call('baloo', ['sam']);
+      dynamic result = await proxy.call('baloo', ['sam']);
       expect(result, equals('Balooing sam, as requested.'));
 
       result = await proxy.call('baloo', ['frotz']);
       try {
         proxy.checkError(result);
         // should not get here
-        throw new Exception(result);
+//        throw new Exception(result);
       } catch (e) {
         expect(e.code, equals(34));
       }

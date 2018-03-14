@@ -1,3 +1,4 @@
+@TestOn("vm")
 library dispatcher_unit_tests;
 
 import 'package:test/test.dart';

@@ -1,3 +1,4 @@
+@TestOn("vm")
 library io_client_test;
 
 import 'package:test/test.dart';
@@ -63,19 +64,12 @@ main() {
     });
 
     test("not JSON-serializable", () {
-      try {
-        proxy.call('subtract', [3, 0 / 0]);
-      } catch (e) {
-        expect(e, isUnsupportedError);
-      }
+      expect(proxy.call('subtract', [3, 0 / 0]), throwsUnsupportedError);
     });
 
     test("class instance not JSON-serializable", () {
-      try {
-        proxy.call('subtract', [3, new MyClass()]);
-      } catch (e) {
-        expect(e, isUnsupportedError);
-      }
+      expect(
+          proxy.call('subtract', [3, new MyClass()]), throwsUnsupportedError);
     });
 
     test("serializable class - see classb.dart", () {
@@ -89,19 +83,19 @@ main() {
         expect(result, equals('Balooing sam, as requested.'));
       });
       dynamic result = await proxy.call('baloo', ['frotz']);
-      try{
+      try {
         proxy.checkError(result);
-      } catch (e){
+      } catch (e) {
         expect(e.code, equals(34));
       }
     });
 
     test("unplanned error", () async {
       dynamic result = await proxy.call('raiseMe', '[Hello]');
-      try{
+      try {
         proxy.checkError(result);
-      } catch(e){
-        expect (e.code, equals(-32000));
+      } catch (e) {
+        expect(e.code, equals(-32000));
       }
       // FYI
       //expect ('$result', equals("RemoteException -32000: [Hello]"));
