@@ -1,8 +1,6 @@
 # Created by .ignore support plugin (hsz.mobi)
-.idea/encodings.xml
-.idea/inspectionProfiles/
-.idea/jsonrpc2-dart.iml
-.idea/misc.xml
-.idea/modules.xml
-.idea/workspace.xml
-.idea/libraries
+.idea
+.pub
+build
+pubspec.lock
+.packages
