@@ -1,2 +1,3 @@
-0.9.5 2015-02-08 added dart:io client, and updated docs. updated tests, particularly about JSON serializability.
-                 basically all the same, but updated. cleanups of dynamic vs var. strong mode capable now.
+0.9.5  2015-02-08  added dart:io client, and updated docs. updated tests, particularly about JSON serializability.
+0.9.10 2018-03-14  basically all the same, but updated. cleanups of dynamic vs var. strong mode capable now.
+

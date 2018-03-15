@@ -11,8 +11,13 @@ import "client_base.dart";
  *
  *    var url = "http://somelocation";
  *    var proxy = new ServerProxy(url);
- *    Future request = proxy.call("someServerMethod", [arg1, arg2 ]);
- *    request.then((value){doSomethingWithValue(value);});
+ *    response = await proxy.call("someServerMethod", [arg1, arg2 ]);
+ *    try{
+ *        proxy.checkError(response);
+ *    }catch(e){
+ *        //do error handling with error e...
+ *        }
+ *    print("$response");
  *
  * Each arg must be representable in JSON.
  *
@@ -28,29 +33,6 @@ class ServerProxy extends ServerProxyBase {
   executeRequest(package) async {
     //return a future with the JSON-RPC response
     HttpRequest request = new HttpRequest();
-//    request.open("POST", url, async: true);
-//    request.open("POST", url);
-    //request.timeout = timeout;
-//    request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-//    var c = new Completer();
-//    request.onReadyStateChange.listen((_) {
-//      if (request.readyState == 4) {
-//        switch (request.status) {
-//          case 200:
-//            c.complete(request);
-//            break;
-//
-//          case 204:
-//            c.complete(null);
-//            break;
-//
-//          default:
-//            c.completeError(
-//                new TransportStatusError(request.statusText, request, package));
-//        }
-//      }
-//    });
-    // It's sent out utf-8 encoded. Without having to be told. Nice!
     String p;
     try {
       p = JSON.encode(package);
@@ -58,13 +40,11 @@ class ServerProxy extends ServerProxyBase {
       throw new UnsupportedError(
           'Item (${package}) could not be serialized to JSON');
     }
-
     request
       ..open('POST', url)
       ..setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
       ..send(p);
 
-    // request.onReadyStateChange.listen(print);
     await request.onLoadEnd.first;
 
     String body = request.responseText;
@@ -75,17 +55,6 @@ class ServerProxy extends ServerProxyBase {
         return JSON.decode(body);
       }
     });
-
-//    request.send(p);
-
-//    return c.future.then((request) => new Future(() {
-//          String body = request.responseText;
-//          if (request.status == 204 || body.isEmpty) {
-//            return null;
-//          } else {
-//            return JSON.decode(body);
-//          }
-//        }));
   }
 
   handleError(e) {
