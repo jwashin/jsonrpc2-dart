@@ -1,7 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
-.idea
-.pub
-build
+.idea/
+.pub/
+build/
 pubspec.lock
 .packages
 web/
