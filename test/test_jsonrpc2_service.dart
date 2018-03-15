@@ -15,7 +15,7 @@ class Foo {
   hello() => "Hello, $greet_name!";
   greet([name]) => (name == null) ? "Hello, ${greet_name}!" : "Hi, $name!";
   sum(a, b, d) => a + b + d;
-  add(num a, num b) => a + b;
+  add(num a, num b) => _private_add(a, b);
   runtimeException(obj) {
     if (obj != 'frob') {
       throw new RuntimeException(
@@ -456,13 +456,13 @@ main() {
       jsonRpc('[1]', new Foo()).then((result) {
         expect(
             JSON.decode(result),
-            equals(
-              [{
+            equals([
+              {
                 "jsonrpc": "2.0",
                 "error": {"code": -32600, "message": "Invalid request"},
                 "id": null
-              }]
-            ));
+              }
+            ]));
       });
     });
 

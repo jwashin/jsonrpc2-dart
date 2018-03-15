@@ -47,14 +47,16 @@ class ExampleMethodsClass {
 
   s1(amap) => ClassB.fromMap(amap).s1;
 
-  _private() => "Not public; you can't see this!";
+  _private() => "hello";
 
   notify_hello(args) {
     return args;
   }
 
   get_data() {
-    return ['hello', 5];
+    // just to remove a nagging Analysis
+    String hello = _private();
+    return [hello, 5];
   }
 
   oopsie() {
