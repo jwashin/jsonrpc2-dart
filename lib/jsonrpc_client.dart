@@ -19,7 +19,7 @@ import "client_base.dart";
  *        }
  *    print("$response");
  *
- * Each arg must be representable in JSON.
+ * Each arg must be representable in json.
  *
  * Exceptions on the remote end will throw RpcException.
  *
@@ -35,7 +35,7 @@ class ServerProxy extends ServerProxyBase {
     HttpRequest request = new HttpRequest();
     String p;
     try {
-      p = JSON.encode(package);
+      p = json.encode(package);
     } catch (e) {
       throw new UnsupportedError(
           'Item (${package}) could not be serialized to JSON');
@@ -52,7 +52,7 @@ class ServerProxy extends ServerProxyBase {
       if (request.status == 204 || body.isEmpty) {
         return null;
       } else {
-        return JSON.decode(body);
+        return json.decode(body);
       }
     });
   }

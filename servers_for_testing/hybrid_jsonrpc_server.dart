@@ -54,7 +54,7 @@ hybridMain(StreamChannel channel) async {
           if (result is Notification) {
             response.write('');
           } else {
-            response.write(JSON.encode(result));
+            response.write(json.encode(result));
           }
           response.close();
         });

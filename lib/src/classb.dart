@@ -12,5 +12,5 @@ class ClassB {
 
 main() {
   ClassB s = new ClassB('abc', '123');
-  print(JSON.encode(s));
+  print(json.encode(s));
 }

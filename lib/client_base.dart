@@ -17,7 +17,7 @@ import "rpc_exceptions.dart";
  *    request.then((returned)=>proxy.checkError(returned))
  *    .then((value){doSomethingWithValue(value);});
  *
- * Each arg must be representable in JSON.
+ * Each arg must be representable in json.
  *
  * Exceptions on the remote end will throw RemoteException.
  *

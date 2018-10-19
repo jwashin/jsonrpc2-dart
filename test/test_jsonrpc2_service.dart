@@ -209,7 +209,7 @@ main() {
       }''',
           new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals({
               "jsonrpc": "2.0",
               "error": {
@@ -232,7 +232,7 @@ main() {
       }''',
           new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals({
               "jsonrpc": "2.0",
               "error": {
@@ -253,7 +253,7 @@ main() {
         "id":19
       }''',
           new Foo()).then((result) {
-        expect(JSON.decode(result),
+        expect(json.decode(result),
             equals({'result': 3, 'id': 19, 'jsonrpc': '2.0'}));
       });
     });
@@ -304,7 +304,7 @@ main() {
         "id": 1
       }''',
           new Foo()).then((result) {
-        expect(JSON.decode(result),
+        expect(json.decode(result),
             equals({"jsonrpc": "2.0", "result": 19, "id": 1}));
       });
     });
@@ -318,7 +318,7 @@ main() {
         "id": 2
       }''',
           new Foo()).then((result) {
-        expect(JSON.decode(result),
+        expect(json.decode(result),
             equals({"jsonrpc": "2.0", "result": -19, "id": 2}));
       });
     });
@@ -335,7 +335,7 @@ main() {
         "id": 3
       }''',
           new Foo()).then((result) {
-        expect(JSON.decode(result),
+        expect(json.decode(result),
             equals({"jsonrpc": "2.0", "result": 19, "id": 3}));
       });
     });
@@ -352,7 +352,7 @@ main() {
         "id": 4
       }''',
           new Foo()).then((result) {
-        expect(JSON.decode(result),
+        expect(json.decode(result),
             equals({"jsonrpc": "2.0", "result": 19, "id": 4}));
       });
     });
@@ -378,7 +378,7 @@ main() {
       }''',
           new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals({
               "jsonrpc": "2.0",
               "error": {"code": -32601, "message": "Method not found: foobar"},
@@ -395,7 +395,7 @@ main() {
                   "baz''',
           new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals({
               "jsonrpc": "2.0",
               "error": {"code": -32700, "message": "Parse error"},
@@ -413,7 +413,7 @@ main() {
       }''',
           new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals({
               "jsonrpc": "2.0",
               "error": {"code": -32600, "message": "Invalid request"},
@@ -431,7 +431,7 @@ main() {
               {"jsonrpc": "2.0", "method"]''',
           new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals({
               "jsonrpc": "2.0",
               "error": {"code": -32700, "message": "Parse error"},
@@ -443,7 +443,7 @@ main() {
     test("batch empty array", () {
       jsonRpc('[]', new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals({
               "jsonrpc": "2.0",
               "error": {"code": -32600, "message": "Invalid request"},
@@ -455,7 +455,7 @@ main() {
     test("batch invalid but not empty", () {
       jsonRpc('[1]', new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals([
               {
                 "jsonrpc": "2.0",
@@ -469,7 +469,7 @@ main() {
     test("invalid batch", () {
       jsonRpc('[1,2,3]', new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals([
               {
                 "jsonrpc": "2.0",
@@ -500,7 +500,7 @@ main() {
         {"jsonrpc": "2.0", "method": "get_data", "id": "9"} ]''',
           new Foo()).then((result) {
         expect(
-            JSON.decode(result),
+            json.decode(result),
             equals([
               {"jsonrpc": "2.0", "result": 7, "id": "1"},
               {"jsonrpc": "2.0", "result": 19, "id": "2"},
@@ -546,7 +546,7 @@ main() {
             "params": ["México: Hello, 世界"]
           }''',
           new Foo()).then((result) {
-        expect(JSON.decode(result),
+        expect(json.decode(result),
             equals({'jsonrpc': '2.0', "result": "México: Hello, 世界", "id": 1}));
       });
     });

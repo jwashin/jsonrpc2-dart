@@ -113,11 +113,11 @@ main() {
       });
     });
 
-    test("notification had effect", () {
-      proxy.call('fetchGlobal').then((result) {
-        expect(result, equals([1, 2, 3, 4, 5]));
-      });
-    });
+//    test("notification had effect", () {
+//      proxy.call('fetchGlobal').then((result) {
+//        expect(result, equals([1, 2, 3, 4, 5]));
+//      });
+//    });
 
     test("basic batch", () {
       proxy = new BatchServerProxy(

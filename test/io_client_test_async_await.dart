@@ -103,53 +103,53 @@ void main() {
       expect(result.code, equals(-32601));
     });
 
-    test("notification had effect", () async {
-      List<num> result = await proxy.call('fetchGlobal');
-      expect(result, equals([1, 2, 3, 4, 5]));
+//    test("notification had effect", () async {
+//      List<num> result = await proxy.call('fetchGlobal');
+//      expect(result, equals([1, 2, 3, 4, 5]));
+//    });
+
+    test("basic batch", () async {
+      BatchServerProxy proxy =
+          new BatchServerProxy('http://127.0.0.1:8394/sum');
+      Future<dynamic> result1 = proxy.call('subtract', [23, 42]);
+      Future<dynamic> result2 = proxy.call('subtract', [42, 23]);
+      Future<dynamic> result3 = proxy.call('get_data');
+      proxy.notify('update', ['happy Tuesday']);
+      Future<dynamic> result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
+      proxy.send();
+      expect(await result1, equals(-19));
+      expect(await result2, equals(19));
+      expect(await result3, equals(['hello', 5]));
+      expect(await result4, equals(-19));
     });
 
-//    test("basic batch", () async {
-//      BatchServerProxy proxy =
-//          new BatchServerProxy('http://127.0.0.1:8394/sum');
-//      Future<num> result1 = proxy.call('subtract', [23, 42]);
-//      Future<num> result2 = proxy.call('subtract', [42, 23]);
-//      Future<List<dynamic>> result3 = proxy.call('get_data');
-//      proxy.notify('update', ['happy Tuesday']);
-//      Future<num> result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
-//      proxy.send();
-//      expect(await result1, equals(-19));
-//      expect(await result2, equals(19));
-//      expect(await result3, equals(['hello', 5]));
-//      expect(await result4, equals(-19));
-//    });
-
-//    test("batch with error on a notification", () async {
-//      BatchServerProxy proxy =
-//          new BatchServerProxy('http://127.0.0.1:8394/sum');
-//      Future<num> result1 = proxy.call('summation', [
-//        [1, 2, 3, 4, 5]
-//      ]);
-//      Future<num> result2 = proxy.call('subtract', [42, 23]);
-//      Future<dynamic> result3 = proxy.call('get_data');
-//      proxy.notify('update', [
-//        [1, 2, 3, 4, 5]
-//      ]);
-//      proxy.notify('oopsie');
-//      Future<num> result4 =
-//          proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
-//      proxy.send();
-//      expect(await result4, equals(-19));
-//      expect(await result3, equals(['hello', 5]));
-//      expect(await result2, equals(19));
-//      expect(await result1, equals(15));
-//    });
+    test("batch with error on a notification", () async {
+      BatchServerProxy proxy =
+          new BatchServerProxy('http://127.0.0.1:8394/sum');
+      Future<dynamic> result1 = proxy.call('summation', [
+        [1, 2, 3, 4, 5]
+      ]);
+      Future<dynamic> result2 = proxy.call('subtract', [42, 23]);
+      Future<dynamic> result3 = proxy.call('get_data');
+      proxy.notify('update', [
+        [1, 2, 3, 4, 5]
+      ]);
+      proxy.notify('oopsie');
+      Future<dynamic> result4 =
+          proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
+      proxy.send();
+      expect(await result4, equals(-19));
+      expect(await result3, equals(['hello', 5]));
+      expect(await result2, equals(19));
+      expect(await result1, equals(15));
+    });
 
     test("variable url", () async {
       ServerProxy proxy = new ServerProxy('http://127.0.0.1:8394/friend/Bob');
       String result1 = await proxy.call('hello');
       expect(result1, equals("Hello from Bob!"));
       proxy = new ServerProxy('http://127.0.0.1:8394/friend/Mika');
-      Future<String> result2 = proxy.call('hello');
+      Future<dynamic> result2 = proxy.call('hello');
       expect(await result2, equals("Hello from Mika!"));
     });
   });

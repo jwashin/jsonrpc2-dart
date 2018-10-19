@@ -3,7 +3,7 @@ library rpc_methods;
 import "package:jsonrpc2/rpc_exceptions.dart";
 import "package:jsonrpc2/src/classb.dart";
 
-var cheapPersistence = '';
+dynamic cheapPersistence;
 
 class ExampleMethodsClass {
   subtract(minuend, subtrahend) => minuend - subtrahend;

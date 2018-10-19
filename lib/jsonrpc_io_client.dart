@@ -14,7 +14,7 @@ import "client_base.dart";
  *    Future request = proxy.call("someServerMethod", [arg1, arg2 ]);
  *    request.then((value){doSomethingWithValue(value);});
  *
- * Each arg must be representable in JSON.
+ * Each arg must be representable in json.
  *
  * Exceptions on the remote end will throw RpcException.
  *
@@ -30,7 +30,7 @@ class ServerProxy extends ServerProxyBase {
 
     String payload;
     try {
-      payload = JSON.encode(package);
+      payload = json.encode(package);
     } catch (e) {
       throw new UnsupportedError(
           'Item ($package) could not be serialized to JSON');
@@ -47,13 +47,13 @@ class ServerProxy extends ServerProxyBase {
     String jsonContent = '';
     Completer c = new Completer();
 
-    response.transform(UTF8.decoder).listen((dynamic contents) {
+    response.transform(utf8.decoder).listen((dynamic contents) {
       jsonContent += contents.toString();
     }, onDone: () {
       if (response.statusCode == 204 || jsonContent.isEmpty) {
         c.complete(null);
       } else if (response.statusCode == 200) {
-        c.complete(JSON.decode(jsonContent));
+        c.complete(json.decode(jsonContent));
       } else {
         c.completeError(
             new TransportStatusError(response.statusCode, response, package));
