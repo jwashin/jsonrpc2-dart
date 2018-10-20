@@ -37,7 +37,7 @@ main() {
           if (pathCheck == 'friend') {
             String friendName = request.uri.pathSegments[1];
             instance = new Friend(friendName);
-          } else{
+          } else {
             instance = new ExampleMethodsClass();
           }
 

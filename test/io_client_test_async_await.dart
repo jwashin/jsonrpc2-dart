@@ -115,7 +115,8 @@ void main() {
       Future<dynamic> result2 = proxy.call('subtract', [42, 23]);
       Future<dynamic> result3 = proxy.call('get_data');
       proxy.notify('update', ['happy Tuesday']);
-      Future<dynamic> result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
+      Future<dynamic> result4 =
+          proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
       proxy.send();
       expect(await result1, equals(-19));
       expect(await result2, equals(19));

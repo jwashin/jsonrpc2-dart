@@ -16,4 +16,4 @@ dev_dependencies:
   http_server: any
 #  start: any
   test: any
-  stream_channel: ^1.6.0
+  #stream_channel: ^1.6.0

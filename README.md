@@ -225,11 +225,7 @@ specification are specifically included.
 
 - tests console script (dart:io) functionality
 
-**server1\_for\_client_test.dart**
-
-- provides a server for the client test. uses package:start.dart as framework.
-
 **server2\_for\_client_test.dart**
 
-- provides an alternative server for the client test. uses package:http_server as framework.
+- provides a server for the client test. uses package:http_server as framework.
 
