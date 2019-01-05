@@ -26,13 +26,13 @@ class ServerProxy extends ServerProxyBase {
 
   dynamic executeRequest(dynamic package) async {
     //return a future with the JSON-RPC response
-    HttpClient conn = new HttpClient();
+    HttpClient conn = HttpClient();
 
     String payload;
     try {
       payload = json.encode(package);
     } catch (e) {
-      throw new UnsupportedError(
+      throw UnsupportedError(
           'Item ($package) could not be serialized to JSON');
     }
     HttpClientRequest request = await conn.postUrl(Uri.parse(url));
@@ -45,7 +45,7 @@ class ServerProxy extends ServerProxyBase {
     HttpClientResponse response = await request.close();
 
     String jsonContent = '';
-    Completer c = new Completer();
+    Completer c = Completer();
 
     response.transform(utf8.decoder).listen((dynamic contents) {
       jsonContent += contents.toString();
@@ -56,7 +56,7 @@ class ServerProxy extends ServerProxyBase {
         c.complete(json.decode(jsonContent));
       } else {
         c.completeError(
-            new TransportStatusError(response.statusCode, response, package));
+            TransportStatusError(response.statusCode, response, package));
       }
     });
 
@@ -67,6 +67,6 @@ class ServerProxy extends ServerProxyBase {
 class BatchServerProxy extends BatchServerProxyBase {
   dynamic proxy;
   BatchServerProxy(String url, [bool persistentConnection = true]) {
-    proxy = new ServerProxy(url, persistentConnection);
+    proxy = ServerProxy(url, persistentConnection);
   }
 }

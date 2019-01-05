@@ -12,7 +12,7 @@ class MyClass {
 
 dynamic proxy;
 void main() {
-  proxy = new ServerProxy('http://127.0.0.1:8394/sum');
+  proxy = ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
     test("positional arguments", () {
       proxy.call('subtract', [23, 42]).then((result) {
@@ -68,11 +68,11 @@ void main() {
 
     test("class instance not JSON-serializable", () {
       expect(
-          proxy.call('subtract', [3, new MyClass()]), throwsUnsupportedError);
+          proxy.call('subtract', [3, MyClass()]), throwsUnsupportedError);
     });
 
     test("serializable class - see classb.dart", () {
-      proxy.call('s1', [new ClassB("hello", "goodbye")]).then((result) {
+      proxy.call('s1', [ClassB("hello", "goodbye")]).then((result) {
         expect(result, equals('hello'));
       });
     });
@@ -108,7 +108,7 @@ void main() {
     });
 
     test("basic batch", () {
-      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       proxy.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
       });
@@ -127,7 +127,7 @@ void main() {
     });
 
     test("batch with error on a notification", () {
-      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       proxy.call('summation', [
         [1, 2, 3, 4, 5]
       ]).then((result) {
@@ -150,11 +150,11 @@ void main() {
     });
 
     test("variable url", () {
-      ServerProxy proxy = new ServerProxy('http://127.0.0.1:8394/friend/Bob');
+      ServerProxy proxy = ServerProxy('http://127.0.0.1:8394/friend/Bob');
       proxy.call('hello').then((result) {
         expect(result, equals("Hello from Bob!"));
       });
-      proxy = new ServerProxy('http://127.0.0.1:8394/friend/Mika');
+      proxy = ServerProxy('http://127.0.0.1:8394/friend/Mika');
       proxy.call('hello').then((result) {
         expect(result, equals("Hello from Mika!"));
       });

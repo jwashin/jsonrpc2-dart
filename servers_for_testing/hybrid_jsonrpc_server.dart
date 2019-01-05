@@ -24,7 +24,7 @@ hybridMain(StreamChannel channel) async {
 
   print("Test Server running at "
       "http://${InternetAddress.loopbackIPv4.address}:${port}\n");
-  server.transform(new HttpBodyHandler()).listen((HttpRequestBody body) {
+  server.transform(HttpBodyHandler()).listen((HttpRequestBody body) {
     HttpRequest request = body.request;
     switch (request.method) {
       case 'OPTIONS':
@@ -38,9 +38,9 @@ hybridMain(StreamChannel channel) async {
         dynamic instance;
         if (pathCheck == 'friend') {
           String friendName = request.uri.pathSegments[1];
-          instance = new Friend(friendName);
+          instance = Friend(friendName);
         } else {
-          instance = new ExampleMethodsClass();
+          instance = ExampleMethodsClass();
         }
 
         jsonRpcExec(body.body, instance).then((result) {

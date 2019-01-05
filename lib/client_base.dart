@@ -45,11 +45,11 @@ class ServerProxyBase {
      */
 
     if (params == null) params = [];
-    var package = new JsonRpcMethod(method, params,
+    var package = JsonRpcMethod(method, params,
         notify: notify, serverVersion: serverVersion);
     if (notify) {
       executeRequest(package);
-      return new Future(() => null);
+      return Future(() => null);
     } else
       return executeRequest(package)
           .then((rpcResponse) => handleResponse(rpcResponse));
@@ -61,7 +61,7 @@ class ServerProxyBase {
 
   dynamic handleResponse(Map<String, dynamic> response) {
     if (response.containsKey('error')) {
-      return (new RemoteException(response['error']['message'],
+      return (RemoteException(response['error']['message'],
           response['error']['code'], response['error']['data']));
     } else {
       return response['result'];
@@ -93,11 +93,11 @@ class BatchServerProxyBase {
 
   call(method, [params = null, notify = false]) async {
     if (params == null) params = [];
-    JsonRpcMethod package = new JsonRpcMethod(method, params,
+    JsonRpcMethod package = JsonRpcMethod(method, params,
         notify: notify, serverVersion: proxy.serverVersion);
     _requests.add(package);
     if (!notify) {
-      Completer c = new Completer();
+      Completer c = Completer();
       _responses[package.id] = c;
       return c.future;
     }
@@ -110,7 +110,7 @@ class BatchServerProxyBase {
       Future future = proxy.executeRequest(_requests);
       _requests = [];
       return future
-          .then((resp) => new Future.sync(() => handleResponses(resp)));
+          .then((resp) => Future.sync(() => handleResponses(resp)));
     }
   }
 
@@ -158,7 +158,7 @@ class JsonRpcMethod {
         break;
       case '1.0':
         if (args is Map)
-          throw new FormatException("Cannot use named params in JSON-RPC 1.0");
+          throw FormatException("Cannot use named params in JSON-RPC 1.0");
         map = {
           'method': method,
           'params': (args is List) ? args : [args],

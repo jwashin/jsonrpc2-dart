@@ -12,7 +12,7 @@ class MyClass {
 }
 
 main() {
-  dynamic proxy = new ServerProxy('http://127.0.0.1:8394/sum');
+  dynamic proxy = ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
     test("positional arguments", () async {
       int result = await proxy.call('subtract', [23, 42]);
@@ -68,14 +68,14 @@ main() {
 
     test("class instance not JSON-serializable", () async {
       try {
-        await proxy.call('subtract', [3, new MyClass()]);
+        await proxy.call('subtract', [3, MyClass()]);
       } catch (e) {
         expect(e, isUnsupportedError);
       }
     });
 
     test("serializable class - see classb.dart", () async {
-      var result = await proxy.call('s1', [new ClassB("hello", "goodbye")]);
+      var result = await proxy.call('s1', [ClassB("hello", "goodbye")]);
       expect(result, equals('hello'));
     });
 
@@ -109,7 +109,7 @@ main() {
     });
 
     test("basic batch", () async {
-      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       var result1 = proxy.call('subtract', [23, 42]);
       var result2 = proxy.call('subtract', [42, 23]);
       var result3 = proxy.call('get_data');
@@ -123,7 +123,7 @@ main() {
     });
 
     test("batch with error on a notification", () async {
-      proxy = new BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       var result1 = proxy.call('summation', [
         [1, 2, 3, 4, 5]
       ]);
@@ -142,10 +142,10 @@ main() {
     });
 
     test("variable url", () async {
-      var proxy = new ServerProxy('http://127.0.0.1:8394/friend/Bob');
+      var proxy = ServerProxy('http://127.0.0.1:8394/friend/Bob');
       var result1 = await proxy.call('hello');
       expect(result1, equals("Hello from Bob!"));
-      proxy = new ServerProxy('http://127.0.0.1:8394/friend/Mika');
+      proxy = ServerProxy('http://127.0.0.1:8394/friend/Mika');
       var result2 = proxy.call('hello');
       expect(await result2, equals("Hello from Mika!"));
     });

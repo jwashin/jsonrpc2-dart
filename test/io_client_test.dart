@@ -13,7 +13,7 @@ bool persistentConnection = false;
 
 main() {
   dynamic proxy =
-      new ServerProxy('http://127.0.0.1:8394/sum', persistentConnection);
+      ServerProxy('http://127.0.0.1:8394/sum', persistentConnection);
   group('JSON-RPC', () {
     test("positional arguments", () {
       proxy.call('subtract', [23, 42]).then((result) {
@@ -69,11 +69,11 @@ main() {
 
     test("class instance not JSON-serializable", () {
       expect(
-          proxy.call('subtract', [3, new MyClass()]), throwsUnsupportedError);
+          proxy.call('subtract', [3, MyClass()]), throwsUnsupportedError);
     });
 
     test("serializable class - see classb.dart", () {
-      proxy.call('s1', [new ClassB("hello", "goodbye")]).then((result) {
+      proxy.call('s1', [ClassB("hello", "goodbye")]).then((result) {
         expect(result, equals('hello'));
       });
     });
@@ -120,7 +120,7 @@ main() {
 //    });
 
     test("basic batch", () {
-      proxy = new BatchServerProxy(
+      proxy = BatchServerProxy(
           'http://127.0.0.1:8394/sum', persistentConnection);
       proxy.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
@@ -140,7 +140,7 @@ main() {
     });
 
     test("batch with error on a notification", () {
-      proxy = new BatchServerProxy(
+      proxy = BatchServerProxy(
           'http://127.0.0.1:8394/sum', persistentConnection);
       proxy.call('summation', [
         [1, 2, 3, 4, 5]
@@ -164,12 +164,12 @@ main() {
     });
 
     test("variable url", () {
-      var proxy = new ServerProxy(
+      var proxy = ServerProxy(
           'http://127.0.0.1:8394/friend/Bob', persistentConnection);
       proxy.call('hello').then((result) {
         expect(result, equals("Hello from Bob!"));
       });
-      proxy = new ServerProxy(
+      proxy = ServerProxy(
           'http://127.0.0.1:8394/friend/Mika', persistentConnection);
       proxy.call('hello').then((result) {
         expect(result, equals("Hello from Mika!"));

@@ -36,7 +36,7 @@ class ExampleMethodsClass {
 
   baloo(var arg) {
     if (arg == 'frotz') {
-      throw new RuntimeException('Cannot baloo with ${arg}!', 34);
+      throw RuntimeException('Cannot baloo with ${arg}!', 34);
     }
     return 'Balooing ${arg}, as requested.';
   }
@@ -60,7 +60,7 @@ class ExampleMethodsClass {
   }
 
   oopsie() {
-    throw new RandomException('Whoops!');
+    throw RandomException('Whoops!');
   }
 
   ping() => true;

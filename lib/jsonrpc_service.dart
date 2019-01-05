@@ -8,7 +8,7 @@ import 'package:logging/logging.dart';
 import 'rpc_exceptions.dart';
 import 'dispatcher.dart';
 
-final _logger = new Logger('json-rpc');
+final _logger = Logger('json-rpc');
 
 const String JSONRPC2 = '2.0';
 const String JSONRPC1 = '1.0';
@@ -26,20 +26,20 @@ class MethodRequest {
       String version = request['jsonrpc'];
       if (version == null) return JSONRPC1;
       if (version != JSONRPC2) {
-        throwError(new RpcException('Invalid request', -32600));
+        throwError(RpcException('Invalid request', -32600));
       }
       return version;
     } catch (e) {
       // we always get version first, so if request is not proper, fail here
       throw makeExceptionMap(
-          new RpcException('Invalid request', -32600), JSONRPC2, null);
+          RpcException('Invalid request', -32600), JSONRPC2, null);
     }
   }
 
   get method {
     dynamic method = request['method'];
     if (method is! String) {
-      throwError(new RpcException('Invalid request', -32600));
+      throwError(RpcException('Invalid request', -32600));
     }
     return method;
   }
@@ -61,7 +61,7 @@ class MethodRequest {
     if (id is String || id is num || id == null) {
       return id;
     }
-    throwError(new RpcException('Invalid Request', -32600));
+    throwError(RpcException('Invalid Request', -32600));
   }
 
   throwError(exception) {
@@ -75,15 +75,15 @@ class MethodRequest {
  */
 jsonRpcDispatch(request, instance) {
   try {
-    var rq = new MethodRequest(request);
+    var rq = MethodRequest(request);
     var version = rq.version;
     var id = rq.id;
     var method = rq.method;
 
-    return new Future.sync(() => new Dispatcher(instance)
+    return Future.sync(() => Dispatcher(instance)
         .dispatch(method, rq.positionalParams, rq.namedParams)).then((value) {
       if (id == null) {
-        return new Notification();
+        return Notification();
       }
 
       if (value is RpcException) {
@@ -105,7 +105,7 @@ jsonRpcDispatch(request, instance) {
     });
   } catch (e) {
     _logger.fine('$e');
-    return new Future.sync(() => e);
+    return Future.sync(() => e);
   }
 }
 
@@ -148,7 +148,7 @@ jsonRpc(String request, Object instance) {
     var parsed = parseJson(request);
     return jsonRpcExec(parsed, instance).then((resp) => encodeResponse(resp));
   } on RpcException catch (e) {
-    return new Future.sync(() => encodeResponse(makeExceptionMap(e, JSONRPC2)));
+    return Future.sync(() => encodeResponse(makeExceptionMap(e, JSONRPC2)));
   }
 }
 
@@ -170,10 +170,10 @@ jsonRpcExec(request, Object instance) {
         if (rpc is Map) {
           rpc['jsonrpc'] = JSONRPC2;
           dynamic value = jsonRpcDispatch(rpc, instance);
-          responses.add(new Future(() => value));
+          responses.add(Future(() => value));
         } else {
-          responses.add(new Future(() => makeExceptionMap(
-              new RpcException("Invalid request", -32600), "2.0", null)));
+          responses.add(Future(() => makeExceptionMap(
+              RpcException("Invalid request", -32600), "2.0", null)));
         }
 //        _logger.fine('in batch: $rpc');
 
@@ -188,11 +188,11 @@ jsonRpcExec(request, Object instance) {
         if (output.length > 0) {
           return output;
         }
-        return new Notification();
+        return Notification();
       });
     }
-    return new Future.sync(() => makeExceptionMap(
-        new RpcException("Invalid request", -32600), "2.0", null));
+    return Future.sync(() => makeExceptionMap(
+        RpcException("Invalid request", -32600), "2.0", null));
   }
 }
 
@@ -201,7 +201,7 @@ parseJson(aString) {
     var data = json.decode(aString);
     return data;
   } catch (e) {
-    throw new RpcException("Parse error", -32700);
+    throw RpcException("Parse error", -32700);
   }
 }
 
@@ -213,7 +213,7 @@ encodeResponse(response) {
     return json.encode(response);
   } catch (e) {
     return json.encode(makeExceptionMap(
-        new RpcException(
+        RpcException(
             "Result was not JSON-serializable (${response['result']}).",
             -32601),
         "2.0",

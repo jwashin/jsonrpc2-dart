@@ -42,23 +42,23 @@ class Dispatcher {
     InstanceMirror instanceMirror = reflect(instance);
     var methodMirror = getMethodMirror(instanceMirror, methodName);
     if (methodMirror == null) {
-      return new Future.sync(() {
-        return new MethodNotFound("Method not found: $methodName");
+      return Future.sync(() {
+        return MethodNotFound("Method not found: $methodName");
       });
     }
-    return new Future.sync(() {
+    return Future.sync(() {
       InstanceMirror t;
       try {
         t = instanceMirror.invoke(methodMirror, positionalParams, symbolMap);
       } on TypeError catch (e) {
-        return new InvalidParameters('$e');
+        return InvalidParameters('$e');
       } on NoSuchMethodError catch (e) {
-        return new InvalidParameters('$e');
+        return InvalidParameters('$e');
       } catch (e) {
         if (e is RuntimeException) {
           return e;
         }
-        return new RuntimeException(e);
+        return RuntimeException(e);
       }
       return t.reflectee;
     });
@@ -72,7 +72,7 @@ class Dispatcher {
 symbolizeKeys(Map<String, dynamic> namedParams) {
   Map<Symbol, dynamic> symbolMap = {};
   for (String key in namedParams.keys) {
-    symbolMap[new Symbol(key)] = namedParams[key];
+    symbolMap[Symbol(key)] = namedParams[key];
   }
   return symbolMap;
 }

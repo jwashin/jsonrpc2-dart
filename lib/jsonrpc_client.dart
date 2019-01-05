@@ -32,12 +32,12 @@ class ServerProxy extends ServerProxyBase {
 
   executeRequest(package) async {
     //return a future with the JSON-RPC response
-    HttpRequest request = new HttpRequest();
+    HttpRequest request = HttpRequest();
     String p;
     try {
       p = json.encode(package);
     } catch (e) {
-      throw new UnsupportedError(
+      throw UnsupportedError(
           'Item (${package}) could not be serialized to JSON');
     }
     request
@@ -48,7 +48,7 @@ class ServerProxy extends ServerProxyBase {
     await request.onLoadEnd.first;
 
     String body = request.responseText;
-    return new Future(() {
+    return Future(() {
       if (request.status == 204 || body.isEmpty) {
         return null;
       } else {
@@ -65,6 +65,6 @@ class ServerProxy extends ServerProxyBase {
 class BatchServerProxy extends BatchServerProxyBase {
   dynamic proxy;
   BatchServerProxy(String url) {
-    proxy = new ServerProxy(url);
+    proxy = ServerProxy(url);
   }
 }

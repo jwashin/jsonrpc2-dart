@@ -12,7 +12,7 @@ class MyClass {
 }
 
 void main() {
-  ServerProxy proxy = new ServerProxy('http://127.0.0.1:8394/sum');
+  ServerProxy proxy = ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
     test("positional arguments", () async {
       num result = await proxy.call('subtract', [23, 42]);
@@ -68,14 +68,14 @@ void main() {
 
     test("class instance not JSON-serializable", () async {
       try {
-        await proxy.call('subtract', [3, new MyClass()]);
+        await proxy.call('subtract', [3, MyClass()]);
       } catch (e) {
         expect(e, isUnsupportedError);
       }
     });
 
     test("serializable class - see classb.dart", () async {
-      var result = await proxy.call('s1', [new ClassB("hello", "goodbye")]);
+      var result = await proxy.call('s1', [ClassB("hello", "goodbye")]);
       expect(result, equals('hello'));
     });
 
@@ -110,7 +110,7 @@ void main() {
 
     test("basic batch", () async {
       BatchServerProxy proxy =
-          new BatchServerProxy('http://127.0.0.1:8394/sum');
+          BatchServerProxy('http://127.0.0.1:8394/sum');
       Future<dynamic> result1 = proxy.call('subtract', [23, 42]);
       Future<dynamic> result2 = proxy.call('subtract', [42, 23]);
       Future<dynamic> result3 = proxy.call('get_data');
@@ -126,7 +126,7 @@ void main() {
 
     test("batch with error on a notification", () async {
       BatchServerProxy proxy =
-          new BatchServerProxy('http://127.0.0.1:8394/sum');
+          BatchServerProxy('http://127.0.0.1:8394/sum');
       Future<dynamic> result1 = proxy.call('summation', [
         [1, 2, 3, 4, 5]
       ]);
@@ -146,10 +146,10 @@ void main() {
     });
 
     test("variable url", () async {
-      ServerProxy proxy = new ServerProxy('http://127.0.0.1:8394/friend/Bob');
+      ServerProxy proxy = ServerProxy('http://127.0.0.1:8394/friend/Bob');
       String result1 = await proxy.call('hello');
       expect(result1, equals("Hello from Bob!"));
-      proxy = new ServerProxy('http://127.0.0.1:8394/friend/Mika');
+      proxy = ServerProxy('http://127.0.0.1:8394/friend/Mika');
       Future<dynamic> result2 = proxy.call('hello');
       expect(await result2, equals("Hello from Mika!"));
     });
