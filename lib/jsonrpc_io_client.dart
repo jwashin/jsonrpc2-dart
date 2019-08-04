@@ -47,7 +47,7 @@ class ServerProxy extends ServerProxyBase {
     String jsonContent = '';
     Completer c = Completer();
 
-    response.transform(utf8.decoder).listen((dynamic contents) {
+    utf8.decoder.bind(response).listen((dynamic contents) {
       jsonContent += contents.toString();
     }, onDone: () {
       if (response.statusCode == 204 || jsonContent.isEmpty) {
