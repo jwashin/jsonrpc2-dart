@@ -10,17 +10,32 @@ import 'dispatcher.dart';
 
 final _logger = Logger('json-rpc');
 
+/// Version string for JSON-RPC v2
 const String JSONRPC2 = '2.0';
-const String JSONRPC1 = '1.0';
-//ContentType JSON_RPC_CONTENT_TYPE = new ContentType('application', 'json', charset: "utf-8");
 
+/// version string for v1
+const String JSONRPC1 = '1.0';
+
+/// Empty class. We just need to say a response "is" a Notification
 class Notification {}
 
+/// [MethodRequest] holds a specially formed JSON object
+/// requesting to perform a method on the server.
+///
+/// It has "method", "params", and usually "id" and 'jsonrpc" members
+/// * method is the method to invoke
+/// * params is the args. if Map? named args. if List? positional args.
+/// * id identifies the response for when it is returned to the sender.
+/// * jsonrpc is version for the JSON-RPC specification currently 2.0
+///
 class MethodRequest {
+  /// [request] is the Map decoded from the incoming chunk of JSON
   Map<String, dynamic> request;
 
+  /// constructor
   MethodRequest(this.request);
 
+  /// [version] is new in JSON-RPC v2, so handle appropriately
   get version {
     try {
       String version = request['jsonrpc'];
@@ -36,6 +51,7 @@ class MethodRequest {
     }
   }
 
+  /// what method does the client want the server to do?
   get method {
     dynamic method = request['method'];
     if (method is! String) {
@@ -109,7 +125,7 @@ jsonRpcDispatch(request, instance) {
   }
 }
 
-makeExceptionMap(anException, version, [id = null]) {
+makeExceptionMap(anException, version, [id]) {
   Map resp = {'id': id};
   if (version == JSONRPC1) {
     resp['result'] = null;
@@ -185,14 +201,14 @@ jsonRpcExec(request, Object instance) {
             output.add(item);
           }
         }
-        if (output.length > 0) {
+        if (output.isNotEmpty) {
           return output;
         }
         return Notification();
       });
     }
-    return Future.sync(() => makeExceptionMap(
-        RpcException("Invalid request", -32600), "2.0", null));
+    return Future.sync(() =>
+        makeExceptionMap(RpcException("Invalid request", -32600), "2.0", null));
   }
 }
 

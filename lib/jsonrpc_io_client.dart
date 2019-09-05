@@ -24,7 +24,7 @@ class ServerProxy extends ServerProxyBase {
   bool persistentConnection;
   ServerProxy(String url, [this.persistentConnection = true]) : super(url);
 
-  dynamic executeRequest(dynamic package) async {
+  dynamic executeRequest(JsonRpcMethod package) async {
     //return a future with the JSON-RPC response
     HttpClient conn = HttpClient();
 
@@ -32,8 +32,7 @@ class ServerProxy extends ServerProxyBase {
     try {
       payload = json.encode(package);
     } catch (e) {
-      throw UnsupportedError(
-          'Item ($package) could not be serialized to JSON');
+      throw UnsupportedError('Item ($package) could not be serialized to JSON');
     }
     HttpClientRequest request = await conn.postUrl(Uri.parse(url));
     request.headers.add('Content-Type', 'application/json; charset=UTF-8');

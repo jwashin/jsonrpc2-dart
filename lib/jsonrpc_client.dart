@@ -11,7 +11,7 @@ import "client_base.dart";
  *
  *    var url = "http://somelocation";
  *    var proxy = new ServerProxy(url);
- *    response = await proxy.call("someServerMethod", [arg1, arg2 ]);
+ *    Future response = await proxy.call("someServerMethod", [arg1, arg2 ]);
  *    try{
  *        proxy.checkError(response);
  *    }catch(e){
