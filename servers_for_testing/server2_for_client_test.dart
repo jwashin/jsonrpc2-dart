@@ -40,7 +40,7 @@ main() {
           } else {
             instance = ExampleMethodsClass();
           }
-
+          /// import this function from [jsonrpc2/jsonrpc_service.dart]
           jsonRpcExec(body.body, instance).then((result) {
             //_logger.fine(result);
             setCrossOriginHeaders(request);

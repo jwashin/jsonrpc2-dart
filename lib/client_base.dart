@@ -5,14 +5,14 @@ import "rpc_exceptions.dart";
 
 /// [ServerProxyBase] is a base class for a JSON-RPC v2 client.
 ///
-/// ServerPaoxy is intended to be subclassed. It does most of the client-side
+/// ServerProxyBase is intended to be subclassed. It does most of the client-side
 /// functionality needed for JSON-RPC v2, but the transport details are
 /// missing and must be provided by overriding the [executeRequest] method.
 /// [ServerProxy] in [jsonrpc_client.dart] and [jsonrpc_io_client.dart] are
 /// implementations as http client for a web page and http client for a command
 /// line utility, respectively.
 ///
-/// basic usage (ServerProxy is a descendant class of ServerProxyBase):
+/// basic usage (ServerProxy here is a descendant class of ServerProxyBase):
 /// ```
 /// import "package:jsonrpc2/jsonrpc_client.dart"
 /// var url = "http://some/location";
@@ -24,7 +24,7 @@ import "rpc_exceptions.dart";
 /// Each arg must be representable in json.
 ///
 /// Exceptions on the remote end may throw [RemoteException].
-class ServerProxyBase {
+abstract class ServerProxyBase {
   /// Server will be identified with a url, so here's the place for it.
   String url;
 
@@ -53,8 +53,8 @@ class ServerProxyBase {
     }
   }
 
-  /// We are transport independent. executeRequest must be implemented in a subclass
-  dynamic executeRequest(JsonRpcMethod package) {}
+  /// We are transport independent. Abstract method [executeRequest] must be implemented in a subclass
+  Future<Map<String, dynamic>> executeRequest(JsonRpcMethod package);
 
   /// Return the result of calling the method, but first, check for error.
   dynamic handleResponse(Map<String, dynamic> response) {
@@ -95,16 +95,19 @@ class BatchServerProxyBase {
   Map<dynamic, Completer> _responses = {};
 
   /// Package, but do not send an individual request.
-  /// Hold a Future to fill when the request is actually sent. 
+  /// Hold a Future to fill when the request is actually sent.
   Future<dynamic> call(method, [params, notify = false]) async {
     if (params == null) params = [];
+
     /// We create a JsonRpcMethod for each method request
     JsonRpcMethod package = JsonRpcMethod(method, params,
         notify: notify, serverVersion: proxy.serverVersion);
+
     /// and we add it to our list
     _requests.add(package);
-    /// If we care about the response, register a Completer and 
-    /// put that in our Map of responses. 
+
+    /// If we care about the response, register a Completer and
+    /// put that in our Map of responses.
     if (!notify) {
       Completer c = Completer();
       _responses[package.id] = c;
@@ -124,9 +127,9 @@ class BatchServerProxyBase {
     }
   }
 
-  /// In Batch mode, responses return in a batch. They have ids, so fill in
-  /// the map of responses.
-  handleResponses(responses) {
+  /// In Batch mode, responses also return in a batch. The individual responses
+  /// have ids, so plug them into the Map of responses to complete those Futures.
+  void handleResponses(responses) {
     for (var response in responses) {
       var value = proxy.handleResponse(response);
       var id = response['id'];
@@ -134,31 +137,40 @@ class BatchServerProxyBase {
         _responses[id].complete(value);
         _responses.remove(id);
       } else {
+// not really sure what to do with errors here
 //        var error = resp['error'];
 //        _logger.warning(new RemoteException(error['message'], error['code'], error['data']).toString());
       }
     }
-    return null;
   }
 }
 
-/// JsonRpcMethod class holds name and args of a method request for JSON-RPC v2 formatting
+/// JsonRpcMethod class holds name and args of a method request for JSON-RPC v2
 ///
 /// Initialize with a string methodname and list or map of params
 /// if [notify] is true, output format will be as "notification"
 /// [id] is an int automatically generated from hashCode
 class JsonRpcMethod {
+  /// [method] is the name of the method at the server
   String method;
+
+  /// [args] is arguments to the method at the server. May be Map or List or nil
   dynamic args;
+
+  /// Do we care about the response value?
   bool notify;
+
+  /// private. It's auto-generated, but we hold on to it in case we need it more than once
   int _id;
+
+  /// It's '2.0' until further notice, or if a client is in the dark ages.
   String serverVersion;
 
   /// constructor
   JsonRpcMethod(this.method, this.args,
       {this.notify: false, this.serverVersion: '2.0'});
 
-  /// create id from hashcode when requested
+  /// create id from hashcode when first requested
   get id {
     if (_id == null) _id = this.hashCode;
     return notify ? null : _id;
@@ -189,20 +201,22 @@ class JsonRpcMethod {
     return map;
   }
 
-  /// useful string representation for debugging
+  /// A useful string representation for debugging, etc.
   toString() => "JsonRpcMethod: ${toJson()}";
 }
 
 /// [RemoteException] may be used in user client-server code for exceptions
 /// not related to the actual transport.
-/// For example, "this is not quite right", not "this is broken"
 ///
+/// It's for telling the user, "this is not quite right", not "this is broken".
 class RemoteException implements Exception {
   /// code for the exception. This is not for the JSON-RPC error codes.
   int code;
 
-  /// helpful message
+  /// maybe a helpful message
   String message;
+
+  /// maybe some helpful data
   dynamic data;
 
   /// constructor
@@ -213,12 +227,21 @@ class RemoteException implements Exception {
       : "RemoteException $code: '$message'";
 }
 
-/// [TransportStatusError]
+/// [TransportStatusError] is an error related to the chosen transport.
+///
+/// If you want to identifiy errors in your HTTP or WebSockets transport,
+/// for example, this provides a hook for that purpose.
 class TransportStatusError implements Exception {
+  /// maybe a helpful message
   var message;
+
+  /// maybe some helpful data
   var data;
+
+  /// maybe the request itself
   var request;
 
+  /// constructor
   TransportStatusError([this.message, this.request, this.data]);
 
   toString() => "$message";
