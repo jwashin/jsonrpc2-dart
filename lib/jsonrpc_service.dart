@@ -30,7 +30,6 @@ class Notification {}
 /// * params is the args. if Map? named args. if List? positional args.
 /// * id identifies the response for when it is returned to the sender.
 /// * jsonrpc is version for the JSON-RPC specification currently 2.0
-///
 class MethodRequest {
   /// [request] is the Map decoded from the incoming chunk of JSON
   Map<String, dynamic> request;
