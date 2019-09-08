@@ -31,7 +31,7 @@ class ServerProxy extends ServerProxyBase {
   /// [executeRequest], overriding the abstract method
   ///
   /// return a future with the JSON-RPC response
-  Future<Map<String, dynamic>> executeRequest(JsonRpcMethod package) async {
+  Future<dynamic> executeRequest(dynamic package) async {
     /// init a client connection
     HttpClient conn = HttpClient();
 

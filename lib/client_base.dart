@@ -54,7 +54,7 @@ abstract class ServerProxyBase {
   }
 
   /// We are transport independent. Abstract method [executeRequest] must be implemented in a subclass
-  Future<Map<String, dynamic>> executeRequest(JsonRpcMethod package);
+  Future<dynamic> executeRequest(JsonRpcMethod package);
 
   /// Return the result of calling the method, but first, check for error.
   dynamic handleResponse(Map<String, dynamic> response) {
