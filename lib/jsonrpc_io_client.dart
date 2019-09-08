@@ -49,7 +49,7 @@ class ServerProxy extends ServerProxyBase {
     request.headers.add('Content-Type', 'application/json; charset=UTF-8');
 
     /// Implementation detail: persistentConnection (default) leads to 15-second delay returning at end of script
-    /// Set it to false if you are impatient. Makes little difference
+    /// Set it to false if you are impatient. Makes little difference unless you are waiting for a testing script.
     request.persistentConnection = persistentConnection;
 
     request.write(payload);
