@@ -3,5 +3,6 @@
 2.0.0  2019-01-05  works happily with Dart 2.1
 2.0.1  2019-08-05  update for dartlang 2.5.0 Breaking change #36900: Declare return types of Uint8List
 2.0.2  2019-09-04  took some hints from pub.dev for syntactical niceness
+2.0.3  2019-09-08  triple-slash docs everywhere, as requested.
 
 

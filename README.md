@@ -16,7 +16,7 @@ Client Basics
 
  
         import 'package:jsonrpc2/jsonrpc_client.dart';
-        proxy = new ServerProxy('http://example.com/some_endpoint');
+        proxy = ServerProxy('http://example.com/some_endpoint');
         proxy.call('some_method',[arg1, arg2])
              .then((returned)=>proxy.checkError(returned))
              .then((result){do_something_with(result);})
@@ -85,7 +85,7 @@ On a web server somewhere out there, there is a url that has the methods you nee
 
 To use JSON-RPC with that server, create a proxy to that server at that url.
    
-        proxy = new ServerProxy('http://example.com/some_endpoint');
+        proxy = ServerProxy('http://example.com/some_endpoint');
 
 Everyone prefers a proxy setup that is syntactically in tune with the language being used,
 for example, in Dart
@@ -143,7 +143,7 @@ when something fails.
         
 JSON-RPC 2.0 supports a "batch" technique. For this, use BatchServerProxy
 
-        proxy = new BatchServerProxy(url); 
+        proxy = BatchServerProxy(url); 
         proxy.call('some_method').then(something_with_this_value...
         proxy.call('some_other_method', 'some text').then(something else...
         [...]
@@ -151,7 +151,9 @@ JSON-RPC 2.0 supports a "batch" technique. For this, use BatchServerProxy
 
 `proxy.send();` will batch the calls into a single http request. This may be handy
 if the server supports, and you are doing a lot of little calls, and bandwidth 
-is at a premium. Yes, you can include notifications in a batch, too.
+is at a premium. Yes, you can include notifications in a batch, too. You probably cannot
+use async/await with this formulation. There's nothing forbidding it. It just doesn't
+make sense.
 
 **NOTE:** Unicode text in methods and data can get wonky if you allow the net to make assumptions about
 character sets. A `<meta charset="UTF-8">` tag in the `<head>` of the page can prevent headaches.   
@@ -201,7 +203,11 @@ any other Exception, but they are transmitted, when thrown, to inform the client
 Tests
 ---------
 
-Tests are in the "test" folder. Particularly, the client and server tests provide usage examples. 
+Tests are in the "test" folder. Particularly, the client and server tests provide usage examples. They are standard test.dart tests. The client tests need a server, so one is provided. To run all the tests, 
+
+        $ dart servers_for_testing/server2_for_client_test.dart &
+        $ pub run test
+        00:01 +15: All tests passed! 
 
 **test_dispatcher.dart** 
 
@@ -227,5 +233,5 @@ specification are specifically included.
 
 **server2\_for\_client_test.dart**
 
-- provides a server for the client test. uses package:http_server as framework.
+- provides a server for the client tests. uses package:http_server as framework.
 
