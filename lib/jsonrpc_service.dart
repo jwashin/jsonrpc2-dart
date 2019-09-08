@@ -221,7 +221,8 @@ jsonRpcExec(request, Object instance) {
 }
 
 /// Parse the JSON in a separate method so we might have a distinguishable error
-Map<String, dynamic> parseJson(aString) {
+/// It's sometimes (batch) a List of Maps, or sometimes a Map.
+dynamic parseJson(aString) {
   try {
     var data = json.decode(aString);
     return data;
