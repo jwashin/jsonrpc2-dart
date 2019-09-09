@@ -3,7 +3,7 @@
 /// the instance and directions (method name and parameters) about invoking the method, and
 /// the Dispatcher gets the instance to perform the method and gives you the returned value.
 /// With a dispatcher, you might put together a fancy client-server API using a database. The API would be the
-/// public methods of a class that interrogates and updates the database. 
+/// public methods of a class that interrogates and updates the database.
 library dispatcher;
 
 import 'dart:async';

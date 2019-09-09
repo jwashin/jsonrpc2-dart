@@ -120,7 +120,7 @@ class BatchServerProxyBase {
 
   /// send a batch of requests
   send() {
-    if (_requests.length > 0) {
+    if (_requests.isNotEmpty) {
       Future<dynamic> future = proxy.executeRequest(_requests);
       _requests = [];
       return future.then((resp) => Future.sync(() => handleResponses(resp)));
@@ -168,7 +168,7 @@ class JsonRpcMethod {
 
   /// constructor
   JsonRpcMethod(this.method, this.args,
-      {this.notify: false, this.serverVersion: '2.0'});
+      {this.notify = false, this.serverVersion = '2.0'});
 
   /// create id from hashcode when first requested
   get id {
@@ -189,8 +189,9 @@ class JsonRpcMethod {
         if (!notify) map['id'] = id;
         break;
       case '1.0':
-        if (args is Map)
+        if (args is Map) {
           throw FormatException("Cannot use named params in JSON-RPC 1.0");
+        }
         map = {
           'method': method,
           'params': (args is List) ? args : [args],

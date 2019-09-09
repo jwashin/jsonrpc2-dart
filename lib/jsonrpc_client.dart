@@ -25,9 +25,9 @@ class ServerProxy extends ServerProxyBase {
   ServerProxy(String url) : super(url);
 
   /// As a descendant class of ServerProxyBase, we override executeRequest.
-  /// 
-  /// 
-  Future<Map<String,dynamic>> executeRequest(JsonRpcMethod package) async {
+  ///
+  ///
+  Future<Map<String, dynamic>> executeRequest(JsonRpcMethod package) async {
     //return a future with the JSON-RPC response
     HttpRequest request = HttpRequest();
     String p;
@@ -53,16 +53,17 @@ class ServerProxy extends ServerProxyBase {
       }
     });
   }
+
   /// I really don't know what to do here. I'll accept suggestions
   handleError(e) {
     print('$e');
   }
 }
 
-
 /// see the documentation in [BatchServerProxyBase]
 class BatchServerProxy extends BatchServerProxyBase {
   dynamic proxy;
+
   /// constructor
   BatchServerProxy(String url) {
     proxy = ServerProxy(url);
