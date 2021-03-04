@@ -1,9 +1,10 @@
 library jsonrpc_io_client;
 
-import "dart:convert";
-import "dart:async";
-import "dart:io";
-import "client_base.dart";
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+import 'client_base.dart';
 
 /// basic usage:
 ///    import "package:jsonrpc2/jsonrpc_io_client.dart"
@@ -26,37 +27,36 @@ class ServerProxy extends ServerProxyBase {
   bool persistentConnection;
 
   /// constructor. superize properly
-  ServerProxy(String url, [this.persistentConnection = true]) : super(url);
+  ServerProxy(String url, {this.persistentConnection = true}) : super(url);
 
   /// [executeRequest], overriding the abstract method
   ///
   /// return a future with the JSON-RPC response
+  @override
   Future<dynamic> executeRequest(dynamic package) async {
     /// init a client connection
-    HttpClient conn = HttpClient();
+    var conn = HttpClient();
 
     /// make a String payload from the request package
-    String payload;
-    try {
-      payload = json.encode(package);
-    } catch (e) {
-      throw UnsupportedError('Item ($package) could not be serialized to JSON');
-    }
+
+    var payload = json.encode(package);
 
     /// make a Http request, POSTing the payload and setting an appropriate
     /// content-type
-    HttpClientRequest request = await conn.postUrl(Uri.parse(url));
+    var request = await conn.postUrl(Uri.parse(url));
     request.headers.add('Content-Type', 'application/json; charset=UTF-8');
 
-    /// Implementation detail: persistentConnection (default) leads to 15-second delay returning at end of script
-    /// Set it to false if you are impatient. Makes little difference unless you are waiting for a testing script.
+    /// Implementation detail: persistentConnection (default)
+    /// leads to 15-second delay returning at end of script
+    /// Set it to false if you are impatient. Makes little
+    /// difference unless you are waiting for a testing script.
     request.persistentConnection = persistentConnection;
 
     request.write(payload);
-    HttpClientResponse response = await request.close();
+    var response = await request.close();
 
-    String jsonContent = '';
-    Completer c = Completer();
+    var jsonContent = '';
+    var c = Completer();
 
     utf8.decoder.bind(response).listen((dynamic contents) {
       jsonContent += contents.toString();
@@ -77,10 +77,10 @@ class ServerProxy extends ServerProxyBase {
 
 /// Please see [BatchServerProxyBase] for documentation and usage
 class BatchServerProxy extends BatchServerProxyBase {
-  dynamic proxy;
+  ServerProxy proxy;
 
   /// constructor
-  BatchServerProxy(String url, [bool persistentConnection = true]) {
-    proxy = ServerProxy(url, persistentConnection);
+  BatchServerProxy(String url, {bool persistentConnection = true}) {
+    proxy = ServerProxy(url, persistentConnection: persistentConnection);
   }
 }
