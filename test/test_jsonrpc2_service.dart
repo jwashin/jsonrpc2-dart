@@ -1,4 +1,4 @@
-@TestOn("vm")
+@TestOn('vm')
 library jsonrpc2_server_tests;
 
 import 'package:test/test.dart';
@@ -9,33 +9,33 @@ import 'dart:async';
 
 class Foo {
   String greet_name;
-  Foo([this.greet_name = "Stranger"]);
+  Foo([this.greet_name = 'Stranger']);
 
-  hi() => 'Hi!';
-  hello() => "Hello, $greet_name!";
-  greet([name]) => (name == null) ? "Hello, ${greet_name}!" : "Hi, $name!";
-  sum(a, b, d) => a + b + d;
-  add(num a, num b) => _private_add(a, b);
-  runtimeException(obj) {
+  String hi() => 'Hi!';
+  String hello() => 'Hello, $greet_name!';
+  String greet([name]) => (name == null) ? 'Hello, $greet_name!' : 'Hi, $name!';
+  num sum(a, b, d) => a + b + d;
+  num add(num a, num b) => _private_add(a, b);
+  void runtimeException(obj) {
     if (obj != 'frob') {
-      throw RuntimeException(
-          "Custom error. Expected 'frob', got '$obj'", 105);
+      throw RuntimeException("Custom error. Expected 'frob', got '$obj'", 105);
     }
   }
 
-  _private_add(num a, num b) => a + b;
-  subtract(num a, num b) => a - b;
-  notify_hello(aNum) => aNum;
-  subtract_named({num minuend, num subtrahend}) => minuend - subtrahend;
-  get_data() => ['hello', 5];
-  throwerr(a, num b) {
+  num _private_add(num a, num b) => a + b;
+  num subtract(num a, num b) => a - b;
+  num notify_hello(aNum) => aNum;
+  num subtract_named({required num minuend, required num subtrahend}) =>
+      minuend - subtrahend;
+  dynamic get_data() => ['hello', 5];
+  void throwerr(a, num b) {
     throw Zerr('you expected this!');
   }
 
-  update(a, b, c, d, e) {}
-  echo(something) => something;
-  oops(a) => 3 + a;
-  oops1(a) {
+  void update(a, b, c, d, e) {}
+  dynamic echo(something) => something;
+  num oops(a) => 3 + a;
+  num oops1(a) {
     try {
       return 3 + a;
     } on TypeError {
@@ -44,11 +44,11 @@ class Foo {
     }
   }
 
-  divzero(p) => p / 0;
+  dynamic divzero(p) => p / 0;
 
-  my_object() => MyObject();
+  Object my_object() => MyObject();
 
-  future3() => Future(() {
+  Future<int> future3() => Future(() {
         return 3;
       });
 }
@@ -60,16 +60,16 @@ class Zerr implements Exception {
 
 class MyObject {}
 
-main() {
+void main() {
   group('jsonrpc_2.0', () {
-    test("basic call", () {
+    test('basic call', () {
       jsonRpcExec({'jsonrpc': '2.0', 'method': 'hi', 'id': 1}, Foo())
           .then((result) {
         expect(result, equals({'jsonrpc': '2.0', 'result': 'Hi!', 'id': 1}));
       });
     });
 
-    test("notification", () {
+    test('notification', () {
       jsonRpcExec({
         'jsonrpc': '2.0',
         'method': 'hi',
@@ -79,7 +79,7 @@ main() {
       });
     });
 
-    test("positional params", () {
+    test('positional params', () {
       jsonRpcExec({
         'jsonrpc': '2.0',
         'method': 'add',
@@ -91,7 +91,7 @@ main() {
       });
     });
 
-    test("named params", () {
+    test('named params', () {
       jsonRpcExec({
         'jsonrpc': '2.0',
         'method': 'subtract_named',
@@ -103,7 +103,7 @@ main() {
       });
     });
 
-    test("named params, other order", () {
+    test('named params, other order', () {
       jsonRpcExec({
         'jsonrpc': '2.0',
         'method': 'subtract_named',
@@ -115,7 +115,7 @@ main() {
       });
     });
 
-    test("unicode", () {
+    test('unicode', () {
       jsonRpcExec({
         'jsonrpc': '2.0',
         'method': 'echo',
@@ -128,9 +128,9 @@ main() {
       });
     });
 
-    test("method not found", () {
-      jsonRpcExec({'jsonrpc': '2.0', 'method': 'bip', 'id': 1, 'params': []},
-              Foo())
+    test('method not found', () {
+      jsonRpcExec(
+              {'jsonrpc': '2.0', 'method': 'bip', 'id': 1, 'params': []}, Foo())
           .then((result) {
         expect(
             result,
@@ -142,12 +142,12 @@ main() {
       });
     });
 
-    test("runtime error1", () {
+    test('runtime error1', () {
       jsonRpcExec({
         'jsonrpc': '2.0',
         'method': 'throwerr',
         'id': 1,
-        'params': ["a", 4]
+        'params': ['a', 4]
       }, Foo())
           .then((result) {
         expect(
@@ -160,46 +160,46 @@ main() {
       });
     });
 
-    test("custom exception", () {
+    test('custom exception', () {
       jsonRpcExec({
-        "jsonrpc": "2.0",
-        "method": "runtimeException",
-        "params": ["bar"],
-        "id": 3
+        'jsonrpc': '2.0',
+        'method': 'runtimeException',
+        'params': ['bar'],
+        'id': 3
       }, Foo())
           .then((result) {
         expect(
             result,
             equals({
-              "jsonrpc": "2.0",
-              "error": {
-                "code": 105,
-                "message": "Custom error. Expected 'frob', got 'bar'"
+              'jsonrpc': '2.0',
+              'error': {
+                'code': 105,
+                'message': "Custom error. Expected 'frob', got 'bar'"
               },
-              "id": 3
+              'id': 3
             }));
       });
     });
 
-    test("TypeError in application code, unhandled", () {
+    test('TypeError in application code, unhandled', () {
       jsonRpcExec({
-        "jsonrpc": "2.0",
-        "method": "oops",
-        "params": ['43'],
-        "id": 3
+        'jsonrpc': '2.0',
+        'method': 'oops',
+        'params': ['43'],
+        'id': 3
       }, Foo())
           .then((result) {
         expect(result['error']['code'], equals(-32602));
       });
     });
 
-    test("TypeError in application code, handled (dart -c checked mode only)",
+    test('TypeError in application code, handled (dart -c checked mode only)',
         () {
       jsonRpcExec({
-        "jsonrpc": "2.0",
-        "method": "oops1",
-        "params": ['43'],
-        "id": 3
+        'jsonrpc': '2.0',
+        'method': 'oops1',
+        'params': ['43'],
+        'id': 3
       }, Foo())
           .then((result) {
         expect(result['error']['code'], equals(-22));
@@ -209,53 +209,53 @@ main() {
       });
     });
 
-    test("not JSON serializable", () {
+    test('not JSON serializable', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "my_object",
-        "params": [],
-        "id": 34
+        'jsonrpc': '2.0',
+        'method': 'my_object',
+        'params': [],
+        'id': 34
       }''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
-              "jsonrpc": "2.0",
-              "error": {
-                "code": -32601,
-                "message":
-                    "Result was not JSON-serializable (Instance of \'MyObject\')."
+              'jsonrpc': '2.0',
+              'error': {
+                'code': -32601,
+                'message':
+                    'Result was not JSON-serializable (Instance of \'MyObject\').'
               },
-              "id": null
+              'id': null
             }));
       });
     });
 
-    test("divzero", () {
+    test('divzero', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "divzero",
-        "params": [3],
-        "id":34
+        'jsonrpc': '2.0',
+        'method': 'divzero',
+        'params': [3],
+        'id':34
       }''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
-              "jsonrpc": "2.0",
-              "error": {
-                "code": -32601,
-                "message": "Result was not JSON-serializable (Infinity)."
+              'jsonrpc': '2.0',
+              'error': {
+                'code': -32601,
+                'message': 'Result was not JSON-serializable (Infinity).'
               },
-              "id": null
+              'id': null
             }));
       });
     });
 
-    test("future returned from method", () {
+    test('future returned from method', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "future3",
-        "params": [],
-        "id":19
+        'jsonrpc': '2.0',
+        'method': 'future3',
+        'params': [],
+        'id':19
       }''', Foo()).then((result) {
         expect(json.decode(result),
             equals({'result': 3, 'id': 19, 'jsonrpc': '2.0'}));
@@ -264,7 +264,7 @@ main() {
   });
 
   group('jsonrpc_1.0', () {
-    test("basic call", () {
+    test('basic call', () {
       jsonRpcExec({
         'method': 'subtract',
         'id': 1,
@@ -275,14 +275,14 @@ main() {
       });
     });
 
-    test("notification", () {
+    test('notification', () {
       jsonRpcExec({'method': 'hi', 'params': [], 'id': null}, Foo())
           .then((result) {
         expect(result, const TypeMatcher<Notification>());
       });
     });
 
-    test("method not found", () {
+    test('method not found', () {
       jsonRpcExec({
         'method': 'bip',
         'id': 1,
@@ -301,236 +301,236 @@ main() {
   });
 
   group('jsonrpc2_spec', () {
-    test("positional 1", () {
+    test('positional 1', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "subtract",
-        "params": [42, 23],
-        "id": 1
+        'jsonrpc': '2.0',
+        'method': 'subtract',
+        'params': [42, 23],
+        'id': 1
       }''', Foo()).then((result) {
         expect(json.decode(result),
-            equals({"jsonrpc": "2.0", "result": 19, "id": 1}));
+            equals({'jsonrpc': '2.0', 'result': 19, 'id': 1}));
       });
     });
 
-    test("positional 2", () {
+    test('positional 2', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "subtract",
-        "params": [23, 42],
-        "id": 2
+        'jsonrpc': '2.0',
+        'method': 'subtract',
+        'params': [23, 42],
+        'id': 2
       }''', Foo()).then((result) {
         expect(json.decode(result),
-            equals({"jsonrpc": "2.0", "result": -19, "id": 2}));
+            equals({'jsonrpc': '2.0', 'result': -19, 'id': 2}));
       });
     });
 
-    test("named 1", () {
+    test('named 1', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "subtract_named",
-        "params": {
-          "subtrahend": 23,
-          "minuend": 42
+        'jsonrpc': '2.0',
+        'method': 'subtract_named',
+        'params': {
+          'subtrahend': 23,
+          'minuend': 42
         },
-        "id": 3
+        'id': 3
       }''', Foo()).then((result) {
         expect(json.decode(result),
-            equals({"jsonrpc": "2.0", "result": 19, "id": 3}));
+            equals({'jsonrpc': '2.0', 'result': 19, 'id': 3}));
       });
     });
 
-    test("named 2", () {
+    test('named 2', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "subtract_named",
-        "params": {
-          "minuend": 42,
-          "subtrahend": 23
+        'jsonrpc': '2.0',
+        'method': 'subtract_named',
+        'params': {
+          'minuend': 42,
+          'subtrahend': 23
         },
-        "id": 4
+        'id': 4
       }''', Foo()).then((result) {
         expect(json.decode(result),
-            equals({"jsonrpc": "2.0", "result": 19, "id": 4}));
+            equals({'jsonrpc': '2.0', 'result': 19, 'id': 4}));
       });
     });
 
-    test("notification", () {
+    test('notification', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "update",
-        "params": [1, 2, 3, 4, 5]
+        'jsonrpc': '2.0',
+        'method': 'update',
+        'params': [1, 2, 3, 4, 5]
       }''', Foo()).then((result) {
         expect(result, equals(null));
       });
     });
 
-    test("nonexistent method", () {
+    test('nonexistent method', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": "foobar",
-        "id": "1"
+        'jsonrpc': '2.0',
+        'method': 'foobar',
+        'id': '1'
       }''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
-              "jsonrpc": "2.0",
-              "error": {"code": -32601, "message": "Method not found: foobar"},
-              "id": "1"
+              'jsonrpc': '2.0',
+              'error': {'code': -32601, 'message': 'Method not found: foobar'},
+              'id': '1'
             }));
       });
     });
 
-    test("invalid JSON", () {
-      jsonRpc('''{"jsonrpc": "2.0",
-                  "method": "foobar,
-                  "params": "bar",
-                  "baz''', Foo()).then((result) {
+    test('invalid JSON', () {
+      jsonRpc('''{'jsonrpc': '2.0',
+                  'method': 'foobar,
+                  'params': 'bar',
+                  'baz''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
-              "jsonrpc": "2.0",
-              "error": {"code": -32700, "message": "Parse error"},
-              "id": null
+              'jsonrpc': '2.0',
+              'error': {'code': -32700, 'message': 'Parse error'},
+              'id': null
             }));
       });
     });
 
-    test("invalid request object", () {
+    test('invalid request object', () {
       jsonRpc('''{
-        "jsonrpc": "2.0",
-        "method": 1,
-        "params": "bar"
+        'jsonrpc': '2.0',
+        'method': 1,
+        'params': 'bar'
       }''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
-              "jsonrpc": "2.0",
-              "error": {"code": -32600, "message": "Invalid request"},
-              "id": null
+              'jsonrpc': '2.0',
+              'error': {'code': -32600, 'message': 'Invalid request'},
+              'id': null
             }));
       });
     });
 
-    test("batch invalid JSON", () {
-      jsonRpc('''[{"jsonrpc": "2.0",
-              "method": "sum",
-              "params": [1,2,4],
-              "id": "1"},
-              {"jsonrpc": "2.0", "method"]''', Foo()).then((result) {
+    test('batch invalid JSON', () {
+      jsonRpc('''[{'jsonrpc': '2.0',
+              'method': 'sum',
+              'params': [1,2,4],
+              'id': '1'},
+              {'jsonrpc': '2.0', 'method']''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
-              "jsonrpc": "2.0",
-              "error": {"code": -32700, "message": "Parse error"},
-              "id": null
+              'jsonrpc': '2.0',
+              'error': {'code': -32700, 'message': 'Parse error'},
+              'id': null
             }));
       });
     });
 
-    test("batch empty array", () {
+    test('batch empty array', () {
       jsonRpc('[]', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
-              "jsonrpc": "2.0",
-              "error": {"code": -32600, "message": "Invalid request"},
-              "id": null
+              'jsonrpc': '2.0',
+              'error': {'code': -32600, 'message': 'Invalid request'},
+              'id': null
             }));
       });
     });
 
-    test("batch invalid but not empty", () {
+    test('batch invalid but not empty', () {
       jsonRpc('[1]', Foo()).then((result) {
         expect(
             json.decode(result),
             equals([
               {
-                "jsonrpc": "2.0",
-                "error": {"code": -32600, "message": "Invalid request"},
-                "id": null
+                'jsonrpc': '2.0',
+                'error': {'code': -32600, 'message': 'Invalid request'},
+                'id': null
               }
             ]));
       });
     });
 
-    test("invalid batch", () {
+    test('invalid batch', () {
       jsonRpc('[1,2,3]', Foo()).then((result) {
         expect(
             json.decode(result),
             equals([
               {
-                "jsonrpc": "2.0",
-                "error": {"code": -32600, "message": "Invalid request"},
-                "id": null
+                'jsonrpc': '2.0',
+                'error': {'code': -32600, 'message': 'Invalid request'},
+                'id': null
               },
               {
-                "jsonrpc": "2.0",
-                "error": {"code": -32600, "message": "Invalid request"},
-                "id": null
+                'jsonrpc': '2.0',
+                'error': {'code': -32600, 'message': 'Invalid request'},
+                'id': null
               },
               {
-                "jsonrpc": "2.0",
-                "error": {"code": -32600, "message": "Invalid request"},
-                "id": null
+                'jsonrpc': '2.0',
+                'error': {'code': -32600, 'message': 'Invalid request'},
+                'id': null
               }
             ]));
       });
     });
 
-    test("batch", () {
-      jsonRpc('''[ {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},
-        {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
-        {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},
-        {"foo": "boo"},
-        {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"}, "id": "5"},
-        {"jsonrpc": "2.0", "method": "get_data", "id": "9"} ]''', Foo())
+    test('batch', () {
+      jsonRpc('''[ {'jsonrpc': '2.0', 'method': 'sum', 'params': [1,2,4], 'id': '1'},
+        {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]},
+        {'jsonrpc': '2.0', 'method': 'subtract', 'params': [42,23], 'id': '2'},
+        {'foo': 'boo'},
+        {'jsonrpc': '2.0', 'method': 'foo.get', 'params': {'name': 'myself'}, 'id': '5'},
+        {'jsonrpc': '2.0', 'method': 'get_data', 'id': '9'} ]''', Foo())
           .then((result) {
         expect(
             json.decode(result),
             equals([
-              {"jsonrpc": "2.0", "result": 7, "id": "1"},
-              {"jsonrpc": "2.0", "result": 19, "id": "2"},
+              {'jsonrpc': '2.0', 'result': 7, 'id': '1'},
+              {'jsonrpc': '2.0', 'result': 19, 'id': '2'},
               {
-                "jsonrpc": "2.0",
-                "error": {"code": -32600, "message": "Invalid request"},
-                "id": null
+                'jsonrpc': '2.0',
+                'error': {'code': -32600, 'message': 'Invalid request'},
+                'id': null
               },
               {
-                "jsonrpc": "2.0",
-                "error": {
-                  "code": -32601,
-                  "message": "Method not found: foo.get"
+                'jsonrpc': '2.0',
+                'error': {
+                  'code': -32601,
+                  'message': 'Method not found: foo.get'
                 },
-                "id": "5"
+                'id': '5'
               },
               {
-                "jsonrpc": "2.0",
-                "result": ["hello", 5],
-                "id": "9"
+                'jsonrpc': '2.0',
+                'result': ['hello', 5],
+                'id': '9'
               }
             ]));
       });
     });
 
-    test("batch with only notifications", () {
+    test('batch with only notifications', () {
       jsonRpc('''[
-      {"jsonrpc": "2.0", "method": "notify_sum",   "params": [1,2,4]},
-      {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}
+      {'jsonrpc': '2.0', 'method': 'notify_sum',   'params': [1,2,4]},
+      {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]}
       ]''', Foo()).then((result) {
         expect(result, equals(null));
       });
     });
     //
-    test("unicode", () {
+    test('unicode', () {
       jsonRpc('''{
-            "jsonrpc": "2.0",
-            "method": "echo",
-            "id": 1,
-            "params": ["México: Hello, 世界"]
+            'jsonrpc': '2.0',
+            'method': 'echo',
+            'id': 1,
+            'params': ['México: Hello, 世界']
           }''', Foo()).then((result) {
         expect(json.decode(result),
-            equals({'jsonrpc': '2.0', "result": "México: Hello, 世界", "id": 1}));
+            equals({'jsonrpc': '2.0', 'result': 'México: Hello, 世界', 'id': 1}));
       });
     });
   });

@@ -62,12 +62,12 @@ class ServerProxy extends ServerProxyBase {
       jsonContent += contents.toString();
     }, onDone: () {
       if (response.statusCode == 204 || jsonContent.isEmpty) {
-        c.complete(null);
+        c.complete('');
       } else if (response.statusCode == 200) {
         c.complete(json.decode(jsonContent));
       } else {
         c.completeError(
-            TransportStatusError(response.statusCode, response, package));
+            TransportStatusError('Transport Error ${response.statusCode}', response, package));
       }
     });
 
@@ -77,10 +77,14 @@ class ServerProxy extends ServerProxyBase {
 
 /// Please see [BatchServerProxyBase] for documentation and usage
 class BatchServerProxy extends BatchServerProxyBase {
-  ServerProxy proxy;
+  // ServerProxy proxy;
+  bool persistentConnection = false;
+  String url = '';
 
   /// constructor
-  BatchServerProxy(String url, {bool persistentConnection = true}) {
-    proxy = ServerProxy(url, persistentConnection: persistentConnection);
-  }
+  BatchServerProxy(this.url, {bool persistentConnection = true});
+
+  @override
+  ServerProxy get proxy =>
+      ServerProxy(url, persistentConnection: persistentConnection);
 }

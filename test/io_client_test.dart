@@ -4,6 +4,7 @@ library io_client_test;
 import 'package:test/test.dart';
 import 'package:jsonrpc2/jsonrpc_io_client.dart';
 import 'package:jsonrpc2/src/classb.dart';
+import 'package:jsonrpc2/rpc_exceptions.dart';
 
 class MyClass {
   MyClass();
@@ -84,7 +85,7 @@ void main() {
       dynamic result = await proxy.call('baloo', ['frotz']);
       try {
         proxy.checkError(result);
-      } catch (e) {
+      } on RpcException catch (e) {
         expect(e.code, equals(34));
       }
     });
@@ -93,7 +94,7 @@ void main() {
       dynamic result = await proxy.call('raiseMe', '[Hello]');
       try {
         proxy.checkError(result);
-      } catch (e) {
+      } on RpcException catch (e) {
         expect(e.code, equals(-32000));
       }
       // FYI

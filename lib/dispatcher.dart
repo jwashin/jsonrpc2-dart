@@ -36,15 +36,15 @@ class Dispatcher {
   ///  positionalParams should be a List or null.
   ///  namedParams should be a Map of String:value or null.
   Future<dynamic> dispatch(String methodName,
-      [List<dynamic> positionalParams, Map<String, dynamic> namedParams]) {
-    namedParams = namedParams == null ? {} : namedParams;
-    positionalParams = positionalParams == null ? [] : positionalParams;
+      [List<dynamic>? positionalParams, Map<String, dynamic>? namedParams]) {
+    namedParams = namedParams ?? {};
+    positionalParams = positionalParams ?? [];
 
     if (positionalParams is! List) {
       positionalParams = [positionalParams];
     }
 
-    Map<Symbol, dynamic> symbolMap;
+    var symbolMap = <Symbol, dynamic>{};
     if (namedParams.isNotEmpty) {
       symbolMap = symbolizeKeys(namedParams);
     }
@@ -53,13 +53,13 @@ class Dispatcher {
     var methodMirror = getMethodMirror(instanceMirror, methodName);
     if (methodMirror == null) {
       return Future.sync(() {
-        return MethodNotFound("Method not found: $methodName");
+        return MethodNotFound('Method not found: $methodName');
       });
     }
     return Future.sync(() {
       InstanceMirror t;
       try {
-        t = instanceMirror.invoke(methodMirror, positionalParams, symbolMap);
+        t = instanceMirror.invoke(methodMirror, positionalParams!, symbolMap);
       } on TypeError catch (e) {
         return InvalidParameters('$e');
       } on NoSuchMethodError catch (e) {
@@ -79,7 +79,7 @@ class Dispatcher {
 /// a Map of String:value. We want to do this to the Map of namedParams
 /// for use in the 'invoke' method of InstanceMirror.
 Map<Symbol, dynamic> symbolizeKeys(Map<String, dynamic> namedParams) {
-  var symbolMap = {};
+  var symbolMap = <Symbol, dynamic>{};
   for (var key in namedParams.keys) {
     symbolMap[Symbol(key)] = namedParams[key];
   }
@@ -89,7 +89,7 @@ Map<Symbol, dynamic> symbolizeKeys(Map<String, dynamic> namedParams) {
 /// Find and return the method in the class of the mirror of the instance.
 /// Caution! Turning the mirror sideways may implode the universe.
 /// Return null if the methodName is private or an attribute or not found,
-Symbol getMethodMirror(dynamic instanceMirror, String methodName) {
+Symbol? getMethodMirror(dynamic instanceMirror, String methodName) {
   ClassMirror classMirror = instanceMirror.type;
   for (var classMember in classMirror.declarations.keys) {
     var instanceMethod = MirrorSystem.getName(classMember);
