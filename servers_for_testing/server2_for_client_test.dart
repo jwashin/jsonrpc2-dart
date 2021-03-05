@@ -17,10 +17,9 @@ Future main() async {
 
   var server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
   print('Test Server running at '
-      'http://${InternetAddress.loopbackIPv4.address}:${port}\n');
+      'http://${InternetAddress.loopbackIPv4.address}:$port\n');
   await for (var request in server) {
     var content = await utf8.decoder.bind(request).join();
-
     switch (request.method) {
       case 'OPTIONS':
         setCrossOriginHeaders(request);
@@ -39,20 +38,18 @@ Future main() async {
         }
 
         /// import this function from [jsonrpc2/jsonrpc_service.dart]
-        jsonRpcExec(content, instance).then((result) {
-          //_logger.fine(result);
-          setCrossOriginHeaders(request);
-          var response = request.response;
-          response.headers
-              .set('Content-Type', 'application/json; charset=UTF-8');
-          response.statusCode = 200;
-          if (result is Notification) {
-            response.write('');
-          } else {
-            response.write(json.encode(result));
-          }
-          response.close();
-        });
+        var result = await jsonRpcExec(content, instance);
+        //_logger.fine(result);
+        setCrossOriginHeaders(request);
+        var response = request.response;
+        response.headers.set('Content-Type', 'application/json; charset=UTF-8');
+        response.statusCode = 200;
+        if (result is Notification) {
+          response.write('');
+        } else {
+          response.write(json.encode(result));
+        }
+        await response.close();
         break;
       default:
         print(request.method);

@@ -1,27 +1,27 @@
-@TestOn("vm")
+@TestOn('vm')
 library io_client_test;
 
+import 'package:jsonrpc2/rpc_exceptions.dart';
 import 'package:test/test.dart';
 import 'package:jsonrpc2/jsonrpc_io_client.dart';
 
-import 'dart:async';
-import "package:jsonrpc2/src/classb.dart";
+import 'package:jsonrpc2/src/classb.dart';
 
 class MyClass {
   MyClass();
 }
 
 void main() {
-  ServerProxy proxy = ServerProxy('http://127.0.0.1:8394/sum');
+  var proxy = ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
-    test("positional arguments", () async {
+    test('positional arguments', () async {
       num result = await proxy.call('subtract', [23, 42]);
       expect(result, equals(-19));
       result = await proxy.call('subtract', [42, 23]);
       expect(result, equals(19));
     });
 
-    test("named arguments", () async {
+    test('named arguments', () async {
       num result;
       result = await proxy.call('nsubtract', {'subtrahend': 23, 'minuend': 42});
       expect(result, equals(19));
@@ -40,25 +40,25 @@ void main() {
       expect(result, equals(0));
     });
 
-    test("notification", () async {
+    test('notification', () async {
       dynamic result = await proxy.notify('update', [
         [1, 2, 3, 4, 5]
       ]);
       expect(result, equals(null));
     });
 
-    test("unicode", () async {
+    test('unicode', () async {
       String result = await proxy.call('echo', ['Îñţérñåţîöñåļîžåţîờñ']);
       expect(result, equals('Îñţérñåţîöñåļîžåţîờñ'));
     });
 
-    test("unicode2", () async {
+    test('unicode2', () async {
       var result = await proxy.call('echo2', ['Îñţérñåţîöñåļîžåţîờñ']);
       expect(
           result, equals('Îñţérñåţîöñåļîžåţîờñ Τη γλώσσα μου έδωσαν ελληνική'));
     });
 
-    test("not JSON-serializable", () async {
+    test('not JSON-serializable', () async {
       try {
         await proxy.call('subtract', [3, 0 / 0]);
       } catch (e) {
@@ -66,7 +66,7 @@ void main() {
       }
     });
 
-    test("class instance not JSON-serializable", () async {
+    test('class instance not JSON-serializable', () async {
       try {
         await proxy.call('subtract', [3, MyClass()]);
       } catch (e) {
@@ -74,12 +74,12 @@ void main() {
       }
     });
 
-    test("serializable class - see classb.dart", () async {
-      var result = await proxy.call('s1', [ClassB("hello", "goodbye")]);
+    test('serializable class - see classb.dart', () async {
+      var result = await proxy.call('s1', [ClassB('hello', 'goodbye')]);
       expect(result, equals('hello'));
     });
 
-    test("custom error", () async {
+    test('custom error', () async {
       dynamic result = await proxy.call('baloo', ['sam']);
       expect(result, equals('Balooing sam, as requested.'));
 
@@ -88,70 +88,66 @@ void main() {
         proxy.checkError(result);
         // should not get here
 //        throw new Exception(result);
-      } catch (e) {
+      } on RpcException catch (e) {
         expect(e.code, equals(34));
       }
     });
 
-    test("no such method", () async {
+    test('no such method', () async {
       var result = await proxy.call('foobar');
       expect(result.code, equals(-32601));
     });
 
-    test("private method", () async {
+    test('private method', () async {
       dynamic result = await proxy.call('_private');
       expect(result.code, equals(-32601));
     });
 
-//    test("notification had effect", () async {
+//    test('notification had effect', () async {
 //      List<num> result = await proxy.call('fetchGlobal');
 //      expect(result, equals([1, 2, 3, 4, 5]));
 //    });
 
-    test("basic batch", () async {
-      BatchServerProxy proxy =
-          BatchServerProxy('http://127.0.0.1:8394/sum');
-      Future<dynamic> result1 = proxy.call('subtract', [23, 42]);
-      Future<dynamic> result2 = proxy.call('subtract', [42, 23]);
-      Future<dynamic> result3 = proxy.call('get_data');
+    test('basic batch', () async {
+      var proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
+      var result1 = proxy.call('subtract', [23, 42]);
+      var result2 = proxy.call('subtract', [42, 23]);
+      var result3 = proxy.call('get_data');
       proxy.notify('update', ['happy Tuesday']);
-      Future<dynamic> result4 =
-          proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
-      proxy.send();
+      var result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
+      await proxy.send();
       expect(await result1, equals(-19));
       expect(await result2, equals(19));
       expect(await result3, equals(['hello', 5]));
       expect(await result4, equals(-19));
     });
 
-    test("batch with error on a notification", () async {
-      BatchServerProxy proxy =
-          BatchServerProxy('http://127.0.0.1:8394/sum');
-      Future<dynamic> result1 = proxy.call('summation', [
+    test('batch with error on a notification', () async {
+      var proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
+      var result1 = proxy.call('summation', [
         [1, 2, 3, 4, 5]
       ]);
-      Future<dynamic> result2 = proxy.call('subtract', [42, 23]);
-      Future<dynamic> result3 = proxy.call('get_data');
+      var result2 = proxy.call('subtract', [42, 23]);
+      var result3 = proxy.call('get_data');
       proxy.notify('update', [
         [1, 2, 3, 4, 5]
       ]);
       proxy.notify('oopsie');
-      Future<dynamic> result4 =
-          proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
-      proxy.send();
+      var result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
+      await proxy.send();
       expect(await result4, equals(-19));
       expect(await result3, equals(['hello', 5]));
       expect(await result2, equals(19));
       expect(await result1, equals(15));
     });
 
-    test("variable url", () async {
-      ServerProxy proxy = ServerProxy('http://127.0.0.1:8394/friend/Bob');
+    test('variable url', () async {
+      var proxy = ServerProxy('http://127.0.0.1:8394/friend/Bob');
       String result1 = await proxy.call('hello');
-      expect(result1, equals("Hello from Bob!"));
+      expect(result1, equals('Hello from Bob!'));
       proxy = ServerProxy('http://127.0.0.1:8394/friend/Mika');
-      Future<dynamic> result2 = proxy.call('hello');
-      expect(await result2, equals("Hello from Mika!"));
+      var result2 = proxy.call('hello');
+      expect(await result2, equals('Hello from Mika!'));
     });
   });
 }

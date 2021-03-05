@@ -1,7 +1,7 @@
 library jsonrpc_client_base;
 
-import "dart:async";
-import "rpc_exceptions.dart";
+import 'dart:async';
+import 'rpc_exceptions.dart';
 
 /// [ServerProxyBase] is a base class for a JSON-RPC v2 client.
 ///
@@ -14,10 +14,10 @@ import "rpc_exceptions.dart";
 ///
 /// basic usage (ServerProxy here is a descendant class of ServerProxyBase):
 /// ```
-/// import "package:jsonrpc2/jsonrpc_client.dart"
-/// var url = "http://some/location";
+/// import 'package:jsonrpc2/jsonrpc_client.dart'
+/// var url = 'http://some/location';
 /// var proxy = new ServerProxy(url);
-/// Future request = proxy.call("someServerMethod", [arg1, arg2 ]);
+/// Future request = proxy.call('someServerMethod', [arg1, arg2 ]);
 ///     request.then((returned)=>proxy.checkError(returned))
 ///     .then((value){doSomethingWithValue(value);});
 /// ```
@@ -56,7 +56,7 @@ abstract class ServerProxyBase {
   Future<dynamic> executeRequest(JsonRpcMethod package);
 
   /// Return the result of calling the method, but first, check for error.
-  dynamic handleResponse(Map<String, dynamic> response) {
+  Object? handleResponse(dynamic response) {
     if (response.containsKey('error')) {
       return (RemoteException(response['error']['message'],
           response['error']['code'], response['error']['data']));
@@ -137,14 +137,11 @@ class BatchServerProxyBase {
     for (var response in responses) {
       var value = proxy.handleResponse(response);
       var id = response['id'];
-      if (id != null) {
-        _responses[id].complete(value);
-        _responses.remove(id);
-      } else {
-// not really sure what to do with errors here
-//        var error = resp['error'];
-//        _logger.warning(RemoteException(error['message'],
-// error['code'], error['data']).toString());
+      if (_responses.containsKey(id)) {
+        {
+          _responses[id]!.complete(value);
+          _responses.remove(id);
+        }
       }
     }
   }
@@ -153,21 +150,21 @@ class BatchServerProxyBase {
 /// JsonRpcMethod class holds name and args of a method request for JSON-RPC v2
 ///
 /// Initialize with a string methodname and list or map of params
-/// if [notify] is true, output format will be as "notification"
+/// if [notify] is true, output format will be as 'notification'
 /// [id] is an int automatically generated from hashCode
 class JsonRpcMethod {
   /// [method] is the name of the method at the server
   String method;
 
   /// [args] is arguments to the method at the server. May be Map or List or nil
-  dynamic args;
+  Object? args;
 
   /// Do we care about the response value?
   bool notify = false;
 
   /// private. It's auto-generated, but we hold on to it in case we need it
-  /// more than once
-  int _id;
+  /// more than once. id is null for notifications.
+  int? _id;
 
   /// It's '2.0' until further notice, or if a client is in the dark ages.
   String serverVersion;
@@ -178,13 +175,13 @@ class JsonRpcMethod {
 
   /// create id from hashcode when first requested
   dynamic get id {
-    if (_id == null) _id = hashCode;
+    _id ??= hashCode;
     return notify ? null : _id;
   }
 
   /// output the map representation of this instance for processing into JSON
   Map<String, dynamic> toJson() {
-    Map<String, dynamic> map;
+    var map = <String, dynamic>{};
     switch (serverVersion) {
       case '2.0':
         map = {
@@ -200,7 +197,7 @@ class JsonRpcMethod {
         break;
       case '1.0':
         if (args is Map) {
-          throw FormatException("Cannot use named params in JSON-RPC 1.0");
+          throw FormatException('Cannot use named params in JSON-RPC 1.0');
         }
         map = {
           'method': method,
@@ -213,29 +210,31 @@ class JsonRpcMethod {
   }
 
   /// A useful string representation for debugging, etc.
-  String toString() => "JsonRpcMethod: ${toJson()}";
+  @override
+  String toString() => 'JsonRpcMethod: ${toJson()}';
 }
 
 /// [RemoteException] may be used in user client-server code for exceptions
 /// not related to the actual transport.
 ///
-/// It's for telling the user, "this is not quite right", not "this is broken".
+/// It's for telling the user, 'this is not quite right', not 'this is broken'.
 class RemoteException implements Exception {
   /// code for the exception. This is not for the JSON-RPC error codes.
-  int code;
+  int? code;
 
   /// maybe a helpful message
-  String message;
+  String? message;
 
   /// maybe some helpful data
-  dynamic data;
+  dynamic? data;
 
   /// constructor
   RemoteException([this.message, this.code, this.data]);
 
+  @override
   String toString() => data != null
-      ? "RemoteException $code: '$message' Data:($data))"
-      : "RemoteException $code: '$message'";
+      ? 'RemoteException $code: \'$message\' Data:($data))'
+      : 'RemoteException $code: \'$message\'';
 }
 
 /// [TransportStatusError] is an error related to the chosen transport.
@@ -244,7 +243,7 @@ class RemoteException implements Exception {
 /// for example, this provides a hook for that purpose.
 class TransportStatusError implements Exception {
   /// maybe a helpful message
-  dynamic message;
+  String message;
 
   /// maybe some helpful data
   dynamic data;
@@ -253,7 +252,8 @@ class TransportStatusError implements Exception {
   dynamic request;
 
   /// constructor
-  TransportStatusError([this.message, this.request, this.data]);
+  TransportStatusError([this.message = '', this.request, this.data]);
 
-  String toString() => "$message";
+  @override
+  String toString() => '$message';
 }

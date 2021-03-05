@@ -1,7 +1,7 @@
 library rpc_methods;
 
-import "package:jsonrpc2/rpc_exceptions.dart";
-import "package:jsonrpc2/src/classb.dart";
+import 'package:jsonrpc2/rpc_exceptions.dart';
+import 'package:jsonrpc2/src/classb.dart';
 
 /// cheap persistence. It's just a thing.
 dynamic cheapPersistence;
@@ -11,31 +11,31 @@ dynamic cheapPersistence;
 /// But it does demo some of the kinds of things an API might do
 class ExampleMethodsClass {
   /// subtraction.
-  subtract(minuend, subtrahend) => minuend - subtrahend;
+  num subtract(minuend, subtrahend) => minuend - subtrahend;
 
   /// subtraction using named parameters for minuend and subtrahend
-  nsubtract({minuend = 0, subtrahend = 0}) => minuend - subtrahend;
+  num nsubtract({minuend = 0, subtrahend = 0}) => minuend - subtrahend;
 
   /// addition
-  add(x, y) => x + y;
+  Object add(x, y) => x + y;
 
   /// update the thing to be whatever gets sent
-  update(args) {
+  void update(args) {
     cheapPersistence = args;
   }
 
   /// just send it back
-  echo(b) => b;
+  String echo(b) => b;
 
   /// just send it back, after appending some unicode
-  echo2(b) => b + ' Τη γλώσσα μου έδωσαν ελληνική';
+  String echo2(b) => b + ' Τη γλώσσα μου έδωσαν ελληνική';
 
   /// return whatever the stored thing is
-  fetchGlobal() => cheapPersistence;
+  dynamic fetchGlobal() => cheapPersistence;
 
   /// add them together
-  summation(args) {
-    var sum = 0;
+  num summation(List<num> args) {
+    var sum = 0.0;
     for (var value in args) {
       sum += value;
     }
@@ -43,48 +43,48 @@ class ExampleMethodsClass {
   }
 
   /// throw an exception
-  raiseMe(var something) {
+  void raiseMe(var something) {
     throw something;
   }
 
   /// you can balloo anything but a 'frotz'
-  baloo(var arg) {
+  String baloo(String arg) {
     if (arg == 'frotz') {
-      throw RuntimeException('Cannot baloo with ${arg}!', 34);
+      throw RuntimeException('Cannot baloo with $arg!', 34);
     }
-    return 'Balooing ${arg}, as requested.';
+    return 'Balooing $arg, as requested.';
   }
 
   /// tempt fate by doing the undefined
-  divzero(p) {
+  num divzero(p) {
     return p / 0;
   }
 
   /// make a silly thing and return its JSON representation
-  s1(amap) => ClassB.fromMap(amap).s1;
+  ClassB s1(amap) => ClassB.fromMap(amap).s1;
 
   /// shh. private...
-  _private() => "hello";
+  String _private() => 'hello';
 
   /// I think we might call this but not care about the return value
-  notify_hello(args) {
+  Object notify_hello(args) {
     return args;
   }
 
   /// a method that employs the private method.
-  get_data() {
+  List get_data() {
     // just to remove a nagging Analysis
-    String hello = _private();
+    var hello = _private();
     return [hello, 5];
   }
 
   /// Wow. don't do this. I warn you.
-  oopsie() {
+  void oopsie() {
     throw RandomException('Whoops!');
   }
 
   /// pong!!!
-  ping() => true;
+  bool ping() => true;
 }
 
 /// It's a class, initialized with a name and it has a hello() method.
@@ -96,17 +96,18 @@ class Friend {
   Friend(this.name);
 
   /// Greets! Maybe someday, we will also wave.
-  hello() => "Hello from $name!";
+  String hello() => 'Hello from $name!';
 }
 
 /// This is a kind of exception outside of what is specifically handled
 /// in this jsonrpc2 library
 class RandomException implements Exception {
   /// a useful outburst
-  var message = 'Random Exception. Boo!';
+  String message;
 
   /// constructor. initialize with an optional message
-  RandomException([this.message]);
+  RandomException([this.message = 'Random Exception. Boo!']);
 
-  toString() => "RandomException: $message";
+  @override
+  String toString() => 'RandomException: $message';
 }

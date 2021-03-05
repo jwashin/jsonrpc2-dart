@@ -3,7 +3,7 @@ library rpc_exceptions;
 /// base RPC exception class, the one to rule them all
 class RpcException implements Exception {
   /// maybe an identifying code
-  int code = 0;
+  int code;
 
   /// maybe a helpful message
   String message;
@@ -12,9 +12,10 @@ class RpcException implements Exception {
   dynamic data;
 
   /// Constructor. All params are optional.
-  RpcException([this.message, this.code]);
+  RpcException([this.message = '', this.code = 0]);
+  @override
   String toString() {
-    return message;
+    return 'CODE:$code $message';
   }
 }
 
@@ -59,7 +60,7 @@ class RuntimeException extends RpcException {
       message = error.message;
     } else if (newMessage is Error) {
       error = message;
-      message = "$newMessage";
+      message = '$newMessage';
     } else {
       message = newMessage;
     }
