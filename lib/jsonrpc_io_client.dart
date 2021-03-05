@@ -39,7 +39,12 @@ class ServerProxy extends ServerProxyBase {
 
     /// make a String payload from the request package
 
-    var payload = json.encode(package);
+    String payload;
+    try {
+      payload = json.encode(package);
+    } on JsonUnsupportedObjectError catch (e) {
+      throw UnsupportedError('${e.unsupportedObject}');
+    }
 
     /// make a Http request, POSTing the payload and setting an appropriate
     /// content-type
@@ -66,8 +71,8 @@ class ServerProxy extends ServerProxyBase {
       } else if (response.statusCode == 200) {
         c.complete(json.decode(jsonContent));
       } else {
-        c.completeError(
-            TransportStatusError('Transport Error ${response.statusCode}', response, package));
+        c.completeError(TransportStatusError(
+            'Transport Error ${response.statusCode}', response, package));
       }
     });
 
