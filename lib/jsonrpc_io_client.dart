@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'client_base.dart';
+// import 'package:logging/logging.dart';
 
 /// basic usage:
 ///    import "package:jsonrpc2/jsonrpc_io_client.dart"

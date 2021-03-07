@@ -1,10 +1,9 @@
 @TestOn('vm')
-library io_client_test;
+library io_client_x_test;
 
-import 'package:jsonrpc2/rpc_exceptions.dart';
 import 'package:test/test.dart';
+import 'package:jsonrpc2/rpc_exceptions.dart';
 import 'package:jsonrpc2/jsonrpc_io_client.dart';
-
 import 'package:jsonrpc2/src/classb.dart';
 
 class MyClass {
@@ -12,17 +11,18 @@ class MyClass {
 }
 
 void main() {
-  var proxy = ServerProxy('http://127.0.0.1:8394/sum');
+  var proxy =
+      ServerProxy('http://127.0.0.1:8394/sum', persistentConnection: false);
   group('JSON-RPC', () {
     test('positional arguments', () async {
-      num result = await proxy.call('subtract', [23, 42]);
+      var result = await proxy.call('subtract', [23, 42]);
       expect(result, equals(-19));
-      result = await proxy.call('subtract', [42, 23]);
-      expect(result, equals(19));
+      var result2 = await proxy.call('subtract', [42, 23]);
+      expect(result2, equals(19));
     });
 
     test('named arguments', () async {
-      num result;
+      var result;
       result = await proxy.call('nsubtract', {'subtrahend': 23, 'minuend': 42});
       expect(result, equals(19));
 

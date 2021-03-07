@@ -17,7 +17,7 @@ class ExampleMethodsClass {
   num nsubtract({minuend = 0, subtrahend = 0}) => minuend - subtrahend;
 
   /// addition
-  Object add(x, y) => x + y;
+  num add(x, y) => x + y;
 
   /// update the thing to be whatever gets sent
   void update(args) {

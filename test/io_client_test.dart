@@ -13,13 +13,15 @@ class MyClass {
 bool persistentConnection = false;
 
 void main() {
-  dynamic proxy = ServerProxy('http://127.0.0.1:8394/sum',
+  var proxy = ServerProxy('http://127.0.0.1:8394/sum',
       persistentConnection: persistentConnection);
   group('JSON-RPC', () {
     test('positional arguments', () {
       proxy.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
       });
+    });
+    test('positional arguments 2', () {
       proxy.call('subtract', [42, 23]).then((result) {
         expect(result, equals(19));
       });
@@ -126,58 +128,60 @@ void main() {
 //    });
 
     test('basic batch', () {
-      proxy = BatchServerProxy('http://127.0.0.1:8394/sum',
+      var proxy2 = BatchServerProxy('http://127.0.0.1:8394/sum',
           persistentConnection: persistentConnection);
-      proxy.call('subtract', [23, 42]).then((result) {
+      proxy2.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
       });
-      proxy.call('subtract', [42, 23]).then((result) {
+      proxy2.call('subtract', [42, 23]).then((result) {
         expect(result, equals(19));
       });
-      proxy.call('get_data').then((result) {
+      proxy2.call('get_data').then((result) {
         expect(result, equals(['hello', 5]));
       });
-      proxy.notify('update', ['happy Tuesday']);
+      proxy2.notify('update', ['happy Tuesday']);
 
-      proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
+      proxy2
+          .call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
         expect(result, equals(-19));
       });
-      proxy.send();
+      proxy2.send();
     });
 
     test('batch with error on a notification', () {
-      proxy = BatchServerProxy('http://127.0.0.1:8394/sum',
+      var proxy3 = BatchServerProxy('http://127.0.0.1:8394/sum',
           persistentConnection: persistentConnection);
-      proxy.call('summation', [
+      proxy3.call('summation', [
         [1, 2, 3, 4, 5]
       ]).then((result) {
         expect(result, equals(15));
       });
-      proxy.call('subtract', [42, 23]).then((result) {
+      proxy3.call('subtract', [42, 23]).then((result) {
         expect(result, equals(19));
       });
-      proxy.call('get_data').then((result) {
+      proxy3.call('get_data').then((result) {
         expect(result, equals(['hello', 5]));
       });
-      proxy.notify('update', [
+      proxy3.notify('update', [
         [1, 2, 3, 4, 5]
       ]);
-      proxy.notify('oopsie');
-      proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
+      proxy3.notify('oopsie');
+      proxy3
+          .call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
         expect(result, equals(-19));
       });
-      proxy.send();
+      proxy3.send();
     });
 
     test('variable url', () {
-      var proxy = ServerProxy('http://127.0.0.1:8394/friend/Bob',
+      var proxy4 = ServerProxy('http://127.0.0.1:8394/friend/Bob',
           persistentConnection: persistentConnection);
-      proxy.call('hello').then((result) {
+      proxy4.call('hello').then((result) {
         expect(result, equals('Hello from Bob!'));
       });
-      proxy = ServerProxy('http://127.0.0.1:8394/friend/Mika',
+      var proxy5 = ServerProxy('http://127.0.0.1:8394/friend/Mika',
           persistentConnection: persistentConnection);
-      proxy.call('hello').then((result) {
+      proxy5.call('hello').then((result) {
         expect(result, equals('Hello from Mika!'));
       });
     });

@@ -1,7 +1,11 @@
 library jsonrpc_client_base;
 
 import 'dart:async';
+import 'package:logging/logging.dart';
+
 import 'rpc_exceptions.dart';
+
+final log = Logger('MyClassName');
 
 /// [ServerProxyBase] is a base class for a JSON-RPC v2 client.
 ///
@@ -48,6 +52,7 @@ abstract class ServerProxyBase {
   /// Return the response when it returns.
   Future<dynamic> call(String method, [dynamic params]) {
     var package = JsonRpcMethod(method, params, serverVersion: serverVersion);
+    log.finest(package);
     return executeRequest(package).then(handleResponse);
   }
 

@@ -3,10 +3,10 @@ library rpc_exceptions;
 /// base RPC exception class, the one to rule them all
 class RpcException implements Exception {
   /// maybe an identifying code
-  int code;
+  int code = 0;
 
   /// maybe a helpful message
-  String message;
+  String message = '';
 
   /// maybe some useful data
   dynamic data;

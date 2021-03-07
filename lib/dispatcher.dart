@@ -37,11 +37,11 @@ class Dispatcher {
   ///  namedParams should be a Map of String:value or null.
   Future<dynamic> dispatch(String methodName,
       [List<dynamic>? positionalParams, Map<String, dynamic>? namedParams]) {
-    namedParams = namedParams ?? {};
-    positionalParams = positionalParams ?? [];
+    namedParams = namedParams ?? <String, dynamic>{};
+    var posParams = positionalParams ?? [];
 
-    if (positionalParams is! List) {
-      positionalParams = [positionalParams];
+    if (posParams is! List) {
+      posParams = [posParams];
     }
 
     var symbolMap = <Symbol, dynamic>{};
@@ -59,7 +59,7 @@ class Dispatcher {
     return Future.sync(() {
       InstanceMirror t;
       try {
-        t = instanceMirror.invoke(methodMirror, positionalParams!, symbolMap);
+        t = instanceMirror.invoke(methodMirror, posParams, symbolMap);
       } on TypeError catch (e) {
         return InvalidParameters('$e');
       } on NoSuchMethodError catch (e) {
