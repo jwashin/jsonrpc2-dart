@@ -14,7 +14,7 @@ class Foo {
   String hi() => 'Hi!';
   String hello() => 'Hello, $greet_name!';
   String greet([name]) => (name == null) ? 'Hello, $greet_name!' : 'Hi, $name!';
-  num sum(a, b, d) => a + b + d;
+  num sum(num a, num b, num d) => a + b + d;
   num add(num a, num b) => _private_add(a, b);
   void runtimeException(obj) {
     if (obj != 'frob') {
@@ -211,51 +211,51 @@ void main() {
 
     test('not JSON serializable', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'my_object',
-        'params': [],
-        'id': 34
+        "jsonrpc": "2.0",
+        "method": "my_object",
+        "params": [],
+        "id": 34
       }''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
+              'id': null,
               'jsonrpc': '2.0',
               'error': {
                 'code': -32601,
                 'message':
                     'Result was not JSON-serializable (Instance of \'MyObject\').'
-              },
-              'id': null
+              }
             }));
       });
     });
 
     test('divzero', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'divzero',
-        'params': [3],
-        'id':34
+        "jsonrpc": "2.0",
+        "method": "divzero",
+        "params": [3],
+        "id":34
       }''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
+              'id': null,
               'jsonrpc': '2.0',
               'error': {
                 'code': -32601,
                 'message': 'Result was not JSON-serializable (Infinity).'
-              },
-              'id': null
+              }
             }));
       });
     });
 
     test('future returned from method', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'future3',
-        'params': [],
-        'id':19
+        "jsonrpc": "2.0",
+        "method": "future3",
+        "params": [],
+        "id":19
       }''', Foo()).then((result) {
         expect(json.decode(result),
             equals({'result': 3, 'id': 19, 'jsonrpc': '2.0'}));
@@ -303,10 +303,10 @@ void main() {
   group('jsonrpc2_spec', () {
     test('positional 1', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'subtract',
-        'params': [42, 23],
-        'id': 1
+        "jsonrpc": "2.0",
+        "method": "subtract",
+        "params": [42, 23],
+        "id": 1
       }''', Foo()).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': 19, 'id': 1}));
@@ -315,10 +315,10 @@ void main() {
 
     test('positional 2', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'subtract',
-        'params': [23, 42],
-        'id': 2
+        "jsonrpc": "2.0",
+        "method": "subtract",
+        "params": [23, 42],
+        "id": 2
       }''', Foo()).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': -19, 'id': 2}));
@@ -327,13 +327,13 @@ void main() {
 
     test('named 1', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'subtract_named',
-        'params': {
-          'subtrahend': 23,
-          'minuend': 42
+        "jsonrpc": "2.0",
+        "method": "subtract_named",
+        "params": {
+          "subtrahend": 23,
+          "minuend": 42
         },
-        'id': 3
+        "id": 3
       }''', Foo()).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': 19, 'id': 3}));
@@ -342,13 +342,13 @@ void main() {
 
     test('named 2', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'subtract_named',
-        'params': {
-          'minuend': 42,
-          'subtrahend': 23
+        "jsonrpc": "2.0",
+        "method": "subtract_named",
+        "params": {
+          "minuend": 42,
+          "subtrahend": 23
         },
-        'id': 4
+        "id": 4
       }''', Foo()).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': 19, 'id': 4}));
@@ -357,19 +357,19 @@ void main() {
 
     test('notification', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'update',
-        'params': [1, 2, 3, 4, 5]
+        "jsonrpc": "2.0",
+        "method": "update",
+        "params": [1, 2, 3, 4, 5]
       }''', Foo()).then((result) {
-        expect(result, equals(null));
+        expect(result, equals(''));
       });
     });
 
     test('nonexistent method', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 'foobar',
-        'id': '1'
+        "jsonrpc": "2.0",
+        "method": "foobar",
+        "id": "1"
       }''', Foo()).then((result) {
         expect(
             json.decode(result),
@@ -382,10 +382,10 @@ void main() {
     });
 
     test('invalid JSON', () {
-      jsonRpc('''{'jsonrpc': '2.0',
-                  'method': 'foobar,
-                  'params': 'bar',
-                  'baz''', Foo()).then((result) {
+      jsonRpc('''{"jsonrpc": "2.0",
+                  "method": "foobar,
+                  "params": "bar",
+                  "baz''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -398,9 +398,9 @@ void main() {
 
     test('invalid request object', () {
       jsonRpc('''{
-        'jsonrpc': '2.0',
-        'method': 1,
-        'params': 'bar'
+        "jsonrpc": "2.0",
+        "method": 1,
+        "params": "bar"
       }''', Foo()).then((result) {
         expect(
             json.decode(result),
@@ -413,11 +413,11 @@ void main() {
     });
 
     test('batch invalid JSON', () {
-      jsonRpc('''[{'jsonrpc': '2.0',
-              'method': 'sum',
-              'params': [1,2,4],
-              'id': '1'},
-              {'jsonrpc': '2.0', 'method']''', Foo()).then((result) {
+      jsonRpc('''[{"jsonrpc": "2.0",
+              "method": "sum",
+              "params": [1,2,4],
+              "id": "1"},
+              {"jsonrpc": "2.0", "method"]''', Foo()).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -479,12 +479,12 @@ void main() {
     });
 
     test('batch', () {
-      jsonRpc('''[ {'jsonrpc': '2.0', 'method': 'sum', 'params': [1,2,4], 'id': '1'},
-        {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]},
-        {'jsonrpc': '2.0', 'method': 'subtract', 'params': [42,23], 'id': '2'},
-        {'foo': 'boo'},
-        {'jsonrpc': '2.0', 'method': 'foo.get', 'params': {'name': 'myself'}, 'id': '5'},
-        {'jsonrpc': '2.0', 'method': 'get_data', 'id': '9'} ]''', Foo())
+      jsonRpc('''[ {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},
+        {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
+        {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},
+        {"foo": "boo"},
+        {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"}, "id": "5"},
+        {"jsonrpc": "2.0", "method": "get_data", "id": "9"} ]''', Foo())
           .then((result) {
         expect(
             json.decode(result),
@@ -515,19 +515,19 @@ void main() {
 
     test('batch with only notifications', () {
       jsonRpc('''[
-      {'jsonrpc': '2.0', 'method': 'notify_sum',   'params': [1,2,4]},
-      {'jsonrpc': '2.0', 'method': 'notify_hello', 'params': [7]}
+      {"jsonrpc": "2.0", "method": "notify_sum",   "params": [1,2,4]},
+      {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}
       ]''', Foo()).then((result) {
-        expect(result, equals(null));
+        expect(result, equals(''));
       });
     });
     //
     test('unicode', () {
       jsonRpc('''{
-            'jsonrpc': '2.0',
-            'method': 'echo',
-            'id': 1,
-            'params': ['México: Hello, 世界']
+            "jsonrpc": "2.0",
+            "method": "echo",
+            "id": 1,
+            "params": ["México: Hello, 世界"]
           }''', Foo()).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': 'México: Hello, 世界', 'id': 1}));

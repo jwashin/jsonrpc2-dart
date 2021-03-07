@@ -22,6 +22,8 @@ const String JSONRPC1 = '1.0';
 /// Empty class. We just need to say a response "is" a Notification
 class Notification {}
 
+enum paramsTypes { list, map, single, empty }
+
 /// [MethodRequest] holds a specially formed JSON object
 /// requesting to perform a method on the server.
 ///
@@ -32,10 +34,46 @@ class Notification {}
 /// * jsonrpc is version for the JSON-RPC specification currently 2.0
 class MethodRequest {
   /// [request] is the Map decoded from the incoming chunk of JSON
-  Map<String, dynamic> request;
+  late Map<String, dynamic> request;
+  late paramsTypes ptype;
 
   /// constructor
-  MethodRequest(this.request);
+  MethodRequest(Map<String, dynamic> req) {
+    request = req;
+    getParamsType();
+  }
+
+  /// It's easier to decide how to make the method request if we decide
+  /// what kind of thing the "params" object is. These things must be handled
+  /// "very delicately."
+  void getParamsType() {
+    var parms = request['params'];
+    // literal null as a parameter. Does this happen?
+    if (request.containsKey('params') && parms == null) {
+      ptype = paramsTypes.single;
+      return;
+    }
+    ptype = paramsTypes.empty;
+    if (parms == null) {
+      return;
+    } else if (parms is Map) {
+      if (parms.isEmpty) {
+        ptype = paramsTypes.empty;
+        return;
+      }
+      ptype = paramsTypes.map;
+      return;
+    } else if (parms is List) {
+      if (parms.isEmpty) {
+        ptype = paramsTypes.empty;
+        return;
+      }
+      ptype = paramsTypes.list;
+      return;
+    } else {
+      ptype = paramsTypes.single;
+    }
+  }
 
   /// [version] is new in JSON-RPC v2, so handle appropriately
   dynamic get version {
@@ -63,15 +101,26 @@ class MethodRequest {
   }
 
   /// If we have a Map of named arguments, return the map. Else return null.
-  Map<String, dynamic> get namedParams {
-    var params = request['params'] ?? <String, dynamic>{};
-    return params;
+  Map<String, dynamic>? get namedParams {
+    if (ptype == paramsTypes.map) {
+      return request['params'];
+    }
+    return null;
   }
 
   /// If we have a List of arguments, return the list. Else return null.
   List<dynamic>? get positionalParams {
-    var params = request['params'] ?? [];
-    return params;
+    if (ptype == paramsTypes.list) {
+      return request['params'];
+    } else if (ptype != paramsTypes.map) {
+      if (ptype == paramsTypes.empty) {
+        return [];
+      } else {
+        // params is plural, so put single things in a list
+        return [request['params']];
+      }
+    }
+    return null;
   }
 
   /// id has to be a number or a string, or missing.
@@ -132,16 +181,23 @@ Future<dynamic> jsonRpcDispatch(request, instance) {
 }
 
 /// Instead of crashing the server, we send the exception back to the client.
-Map makeExceptionMap(anException, version, [id]) {
+Map makeExceptionMap(Object anException, String version, [dynamic id]) {
   var resp = {'id': id};
   if (version == JSONRPC1) {
     resp['result'] = null;
   } else {
     resp['jsonrpc'] = version;
   }
-  resp['error'] = {'code': anException.code, 'message': anException.message};
+  if (anException is Error) {
+    _logger.fine('$anException');
+    resp['error'] = {'code': -32000, 'message': '$anException'};
+    return resp;
+  }
+  var exception = anException as RpcException;
 
-  var data = anException.data;
+  resp['error'] = {'code': exception.code, 'message': exception.message};
+
+  var data = exception.data;
   if (data != null) {
     resp['error']['data'] = anException.data;
   }

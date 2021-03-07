@@ -20,6 +20,7 @@ Future main() async {
       'http://${InternetAddress.loopbackIPv4.address}:$port\n');
   await for (var request in server) {
     var content = await utf8.decoder.bind(request).join();
+    print(content);
     switch (request.method) {
       case 'OPTIONS':
         setCrossOriginHeaders(request);
@@ -47,6 +48,8 @@ Future main() async {
         if (result is Notification) {
           response.write('');
         } else {
+          var out = json.encode(result);
+          print(out);
           response.write(json.encode(result));
         }
         await response.close();
