@@ -1,5 +1,8 @@
+// @Skip('receiving nulls from responses' )
 @TestOn('vm')
 library io_client_x_test;
+
+import 'dart:async';
 
 import 'package:test/test.dart';
 import 'package:jsonrpc2/rpc_exceptions.dart';
@@ -11,20 +14,30 @@ class MyClass {
 }
 
 void main() {
-  var proxy =
-      ServerProxy('http://127.0.0.1:8394/sum', persistentConnection: false);
   group('JSON-RPC', () {
+    // var proxy =
+    //     ServerProxy('http://127.0.0.1:8394/sum', persistentConnection: false);
+    var proxy = ServerProxy('http://127.0.0.1:8394/sum');
     test('positional arguments', () async {
-      var result = await proxy.call('subtract', [23, 42]);
-      expect(result, equals(-19));
-      var result2 = await proxy.call('subtract', [42, 23]);
-      expect(result2, equals(19));
-    });
+      // var result = await proxy.call('subtract', [23, 42]);
+      // print('at test, result is $result');
+      // expect(result, equals(-19));
+      var result1 = await proxy.call('subtract', [23, 42]);
+      expect(await result1, equals(-19));
 
+      // await proxy.call('subtract', [23, 42]).then((result) {
+      //   expect(result, equals(-19));
+
+      var result2 = await proxy.call('subtract', [42, 23]);
+      Timer.run(() {
+        expect(result2, equals(19));
+      });
+    });
+    // });
     test('named arguments', () async {
       var result;
       result = await proxy.call('nsubtract', {'subtrahend': 23, 'minuend': 42});
-      expect(result, equals(19));
+      expect(await result, equals(19));
 
       result = await proxy.call('nsubtract', {'minuend': 42, 'subtrahend': 23});
       expect(result, equals(19));

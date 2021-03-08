@@ -25,7 +25,7 @@ import 'client_base.dart';
 ///  Exceptions on the remote end will throw RpcException.
 class ServerProxy extends ServerProxyBase {
   /// Do we want this connection to be persistent?
-  bool persistentConnection;
+  bool persistentConnection=true;
 
   /// constructor. superize properly
   ServerProxy(String url, {this.persistentConnection = true}) : super(url);
@@ -34,18 +34,11 @@ class ServerProxy extends ServerProxyBase {
   ///
   /// return a future with the JSON-RPC response
   @override
-  Future<dynamic> executeRequest(dynamic package) async {
+  Future<String> executeRequest(String package) async {
     /// init a client connection
     var conn = HttpClient();
 
     /// make a String payload from the request package
-
-    String payload;
-    try {
-      payload = json.encode(package);
-    } on JsonUnsupportedObjectError catch (e) {
-      throw UnsupportedError('${e.unsupportedObject}');
-    }
 
     /// make a Http request, POSTing the payload and setting an appropriate
     /// content-type
@@ -58,11 +51,11 @@ class ServerProxy extends ServerProxyBase {
     /// difference unless you are waiting for a testing script.
     request.persistentConnection = persistentConnection;
 
-    request.write(payload);
+    request.write(package);
     var response = await request.close();
 
     var jsonContent = '';
-    var c = Completer();
+    var c = Completer<String>();
 
     utf8.decoder.bind(response).listen((dynamic contents) {
       jsonContent += contents.toString();
@@ -70,13 +63,12 @@ class ServerProxy extends ServerProxyBase {
       if (response.statusCode == 204 || jsonContent.isEmpty) {
         c.complete('');
       } else if (response.statusCode == 200) {
-        c.complete(json.decode(jsonContent));
+        c.complete(jsonContent);
       } else {
         c.completeError(TransportStatusError(
             'Transport Error ${response.statusCode}', response, package));
       }
     });
-
     return c.future;
   }
 }

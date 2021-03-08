@@ -1,6 +1,8 @@
 library jsonrpc_client_base;
 
 import 'dart:async';
+import 'dart:convert';
+// import 'package:jsonrpc2/jsonrpc_service.dart';
 import 'package:logging/logging.dart';
 
 import 'rpc_exceptions.dart';
@@ -39,9 +41,10 @@ abstract class ServerProxyBase {
   ServerProxyBase(this.url);
 
   /// Call the method on the server. Returns Future<dynamic>
-  Future<dynamic> notify(String method, [dynamic params]) {
-    var package = JsonRpcMethod(method, params,
+  Future notify(String method, [dynamic params]) {
+    var meth = JsonRpcMethod(method, params,
         notify: true, serverVersion: serverVersion);
+    var package = json.encode(meth);
     executeRequest(package);
     return Future(() => null);
 
@@ -50,24 +53,36 @@ abstract class ServerProxyBase {
 
   /// Package and send the method request to the server.
   /// Return the response when it returns.
-  Future<dynamic> call(String method, [dynamic params]) {
-    var package = JsonRpcMethod(method, params, serverVersion: serverVersion);
-    log.finest(package);
-    return executeRequest(package).then(handleResponse);
+  Future<dynamic> call(String method, [dynamic params]) async {
+    var meth = JsonRpcMethod(method, params, serverVersion: serverVersion);
+    var package;
+    try {
+      package = json.encode(meth);
+    } on JsonUnsupportedObjectError catch (e) {
+      throw UnsupportedError('$e');
+    }
+    var resp = await executeRequest(package);
+    return handleResponse(resp);
   }
 
   /// We are transport independent. Abstract method [executeRequest] must
   /// be implemented in a subclass
-  Future<dynamic> executeRequest(JsonRpcMethod package);
+  Future<String> executeRequest(String package);
 
   /// Return the result of calling the method, but first, check for error.
-  Object? handleResponse(dynamic response) {
-    if (response.containsKey('error')) {
-      return (RemoteException(response['error']['message'],
-          response['error']['code'], response['error']['data']));
-    } else {
-      return response['result'];
+  dynamic handleResponse(String returned) {
+    // print('returned is $returned, ${returned.runtimeType}');
+    var resp = Map<String, dynamic>.from(json.decode(returned));
+    // print('response is $resp, ${resp.runtimeType}');
+    return handleDecoded(resp);
+  }
+
+  dynamic handleDecoded(Map resp) {
+    if (resp.containsKey('error')) {
+      return RemoteException(resp['error']['message'], resp['error']['code'],
+          resp['error']['data']);
     }
+    return resp['result'];
   }
 
   /// if error is a [RuntimeException], throw it, else return it.
@@ -93,7 +108,7 @@ class BatchServerProxyBase {
   BatchServerProxyBase();
 
   /// since this is batch mode, there is a list of method requests
-  List<JsonRpcMethod> _requests = <JsonRpcMethod>[];
+  final _requests = <JsonRpcMethod>[];
 
   /// since this is batch mode, we have a map of responses
   /// {individual method request id: Completer for the request Future, ...}
@@ -125,22 +140,32 @@ class BatchServerProxyBase {
   }
 
   /// send a batch of requests
-  Future<dynamic> send() {
+  Future<dynamic> send() async {
     if (_requests.isEmpty) {
       throw ArgumentError('Nothing to send');
     } else {
-      Future<dynamic> future = proxy.executeRequest(_requests);
-      _requests = [];
-      return future.then((resp) => Future.sync(() => handleResponses(resp)));
+      var batchRequests = '';
+      try {
+        batchRequests = json.encode(_requests);
+      } on JsonUnsupportedObjectError catch (e) {
+        throw UnsupportedError('$e');
+      }
+      var responses = await proxy.executeRequest(batchRequests);
+      // reset the requests holder
+      _requests.clear();
+      return handleResponses(responses);
+      // return future.then((resp) => Future.sync(() => handleResponses(resp)));
     }
   }
 
   /// In Batch mode, responses also return in a batch. The individual responses
   /// have ids, so plug them into the Map of responses
   /// to complete those Futures.
-  void handleResponses(List<Map<String, dynamic>> responses) {
+  void handleResponses(String responseString) {
+    var responses = json.decode(responseString);
     for (var response in responses) {
-      var value = proxy.handleResponse(response);
+      var value = proxy.handleDecoded(response);
+      // var value = proxy.handleResponse(response);
       var id = response['id'];
       if (_responses.containsKey(id)) {
         {

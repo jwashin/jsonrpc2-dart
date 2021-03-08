@@ -39,7 +39,7 @@ Future main() async {
         }
 
         /// import this function from [jsonrpc2/jsonrpc_service.dart]
-        var result = await jsonRpcExec(content, instance);
+        var result = await jsonRpc(content, instance);
         //_logger.fine(result);
         setCrossOriginHeaders(request);
         var response = request.response;
@@ -48,9 +48,9 @@ Future main() async {
         if (result is Notification) {
           response.write('');
         } else {
-          var out = json.encode(result);
-          print(out);
-          response.write(json.encode(result));
+          var out = result;
+          print('${request.method}: $out');
+          response.write(out);
         }
         await response.close();
         break;

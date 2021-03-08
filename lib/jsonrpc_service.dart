@@ -14,10 +14,10 @@ import 'dispatcher.dart';
 final _logger = Logger('json-rpc');
 
 /// Version string for JSON-RPC v2
-const String JSONRPC2 = '2.0';
+const JsonRpcV2 = '2.0';
 
 /// version string for v1
-const String JSONRPC1 = '1.0';
+const JsonRpcV1 = '1.0';
 
 /// Empty class. We just need to say a response "is" a Notification
 class Notification {}
@@ -79,15 +79,15 @@ class MethodRequest {
   dynamic get version {
     try {
       var version = request['jsonrpc'];
-      if (version == null) return JSONRPC1;
-      if (version != JSONRPC2) {
+      if (version == null) return JsonRpcV1;
+      if (version != JsonRpcV2) {
         throwError(RpcException('Invalid request', -32600));
       }
       return version;
     } catch (e) {
       // we always get version first, so if request is not proper, fail here
       throw makeExceptionMap(
-          RpcException('Invalid request', -32600), JSONRPC2, null);
+          RpcException('Invalid request', -32600), JsonRpcV2, null);
     }
   }
 
@@ -95,6 +95,7 @@ class MethodRequest {
   dynamic get method {
     dynamic method = request['method'];
     if (method is! String) {
+      // print("method is not a string")
       throwError(RpcException('Invalid request', -32600));
     }
     return method;
@@ -160,10 +161,10 @@ Future<dynamic> jsonRpcDispatch(request, instance) {
       }
 
       var resp = {'result': value, 'id': id};
-      if (version == JSONRPC2) {
+      if (version == JsonRpcV2) {
         resp['jsonrpc'] = version;
       }
-      if (version == JSONRPC1) {
+      if (version == JsonRpcV1) {
         resp['error'] = null;
       }
       return resp;
@@ -183,7 +184,7 @@ Future<dynamic> jsonRpcDispatch(request, instance) {
 /// Instead of crashing the server, we send the exception back to the client.
 Map makeExceptionMap(Object anException, String version, [dynamic id]) {
   var resp = {'id': id};
-  if (version == JSONRPC1) {
+  if (version == JsonRpcV1) {
     resp['result'] = null;
   } else {
     resp['jsonrpc'] = version;
@@ -221,13 +222,27 @@ bool _shouldBatch(obj) {
 /// Given a JSON-RPC-formatted request string and an instance,
 /// return a Future containing a JSON-RPC-formatted response string or null.
 ///  Null means that nothing should be returned, though some transports must return something.
-Future<String> jsonRpc(String request, Object instance) {
-  //_logger.fine(request);
-  try {
-    var parsed = parseJson(request);
-    return jsonRpcExec(parsed, instance).then((resp) => encodeResponse(resp));
-  } on RpcException catch (e) {
-    return Future.sync(() => encodeResponse(makeExceptionMap(e, JSONRPC2)));
+Future<String> jsonRpc(Object request, Object instance) {
+  if (request is String) {
+    //_logger.fine(request);
+    try {
+      var parsed = parseJson(request);
+      return jsonRpcExec(parsed, instance).then((resp) => encodeResponse(resp));
+    } on RpcException catch (e) {
+      return Future.sync(() => encodeResponse(makeExceptionMap(e, JsonRpcV2)));
+    }
+  } else if (request is Map) {
+    try {
+      return jsonRpcDispatch(request, instance)
+          .then((resp) => encodeResponse(resp));
+    } on RpcException catch (e) {
+      return Future.sync(() => encodeResponse(makeExceptionMap(e, JsonRpcV2)));
+    }
+  } else {
+    return Future.sync(() => encodeResponse(makeExceptionMap(
+        RpcException(
+            'Invalid Parameters. Must be JSON-RPC string or Map. got {request.type}.'),
+        JsonRpcV2)));
   }
 }
 
@@ -235,9 +250,9 @@ Future<String> jsonRpc(String request, Object instance) {
 /// or a Notification object. The transport will decide how to encode into JSON and UTF-8 for delivery.
 /// Depending on transport, Notification objects may not need
 ///  to be delivered.
-Future jsonRpcExec(request, Object instance) {
+Future jsonRpcExec(Object request, Object instance) {
   if (request is Map &&
-      (request['jsonrpc'] == JSONRPC2 || request['jsonrpc'] == null)) {
+      (request['jsonrpc'] == JsonRpcV2 || request['jsonrpc'] == null)) {
 //    _logger.fine('$request');
     return jsonRpcDispatch(request, instance);
   } else {
@@ -246,7 +261,7 @@ Future jsonRpcExec(request, Object instance) {
 
       for (var rpc in request) {
         if (rpc is Map) {
-          rpc['jsonrpc'] = JSONRPC2;
+          rpc['jsonrpc'] = JsonRpcV2;
           dynamic value = jsonRpcDispatch(rpc, instance);
           responses.add(Future(() => value));
         } else {

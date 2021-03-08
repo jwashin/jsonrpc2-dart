@@ -2,7 +2,8 @@ library jsonrpc_client;
 
 import 'dart:convert';
 import 'dart:async';
-import 'dart:html';
+import 'dart:html' show HttpRequest;
+// import 'dart:io' show HttpRequest;
 import 'client_base.dart';
 
 /// basic usage:
@@ -28,7 +29,7 @@ class ServerProxy extends ServerProxyBase {
   ///
   ///
   @override
-  Future<Map<String, dynamic>> executeRequest(JsonRpcMethod package) async {
+  Future<String> executeRequest(String package) async {
     //return a future with the JSON-RPC response
     var request = HttpRequest();
     String p;
@@ -47,9 +48,9 @@ class ServerProxy extends ServerProxyBase {
     var body = request.responseText ?? '';
     return Future(() {
       if (request.status == 204 || body.isEmpty) {
-        return <String, dynamic>{};
+        return '';
       } else {
-        return json.decode(body);
+        return body;
       }
     });
   }

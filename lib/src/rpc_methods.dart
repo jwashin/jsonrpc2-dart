@@ -34,7 +34,7 @@ class ExampleMethodsClass {
   dynamic fetchGlobal() => cheapPersistence;
 
   /// add them together
-  num summation(List<num> args) {
+  num summation(List args) {
     var sum = 0.0;
     for (var value in args) {
       sum += value;
@@ -61,7 +61,7 @@ class ExampleMethodsClass {
   }
 
   /// make a silly thing and return its JSON representation
-  ClassB s1(amap) => ClassB.fromMap(amap).s1;
+  dynamic s1(amap) => ClassB.fromMap(amap).s1;
 
   /// shh. private...
   String _private() => 'hello';
