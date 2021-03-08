@@ -51,7 +51,7 @@ void main() {
     });
 
     test('unicode', () {
-      proxy.call('echo', ['Îñţérñåţîöñåļîžåţîờñ']).then((result) {
+      proxy.call('echo', 'Îñţérñåţîöñåļîžåţîờñ').then((result) {
         expect(result, equals('Îñţérñåţîöñåļîžåţîờñ'));
       });
     });
@@ -71,10 +71,9 @@ void main() {
       expect(proxy.call('subtract', [3, MyClass()]), throwsUnsupportedError);
     });
 
-    test('serializable class - see classb.dart', () {
-      proxy.call('s1', [ClassB('hello', 'goodbye')]).then((result) {
-        expect(result, equals('hello'));
-      });
+    test('serializable class - see classb.dart', () async {
+      var result = proxy.call('s1', [ClassB('hello', 'goodbye')]);
+      expect(result, equals('hello'));
     });
 
     test('custom error', () async {

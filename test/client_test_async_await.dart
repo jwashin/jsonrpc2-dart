@@ -45,7 +45,7 @@ void main() {
       var result = await proxy.notify('update', [
         [1, 2, 3, 4, 5]
       ]);
-      expect(result, equals(null));
+      expect(result, equals(''));
     });
 
     test('unicode', () async {
