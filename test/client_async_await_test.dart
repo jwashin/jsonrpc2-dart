@@ -2,7 +2,7 @@
 library client_test;
 
 import 'package:test/test.dart';
-import 'package:jsonrpc2/jsonrpc_client_old.dart';
+import 'package:jsonrpc2/jsonrpc_client.dart';
 import 'package:jsonrpc2/rpc_exceptions.dart';
 //import 'package:unittest/html_enhanced_config.dart';
 //import 'dart:async';

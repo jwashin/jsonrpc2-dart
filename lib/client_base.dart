@@ -41,12 +41,12 @@ abstract class ServerProxyBase {
   ServerProxyBase(this.url);
 
   /// Call the method on the server. Returns Future<dynamic>
-  Future notify(String method, [dynamic params]) {
+  Future<String> notify(String method, [dynamic params]) async {
     var meth = JsonRpcMethod(method, params,
         notify: true, serverVersion: serverVersion);
     var package = json.encode(meth);
-    executeRequest(package);
-    return Future(() => null);
+    await executeRequest(package);
+    return '';
   }
 
   /// Package and send the method request to the server.
@@ -127,9 +127,9 @@ class BatchServerProxyBase {
     /// and we add it to our list
     _requests.add(package);
 
-    /// We care about the response, so we register a Completer and
-    /// put that in our Map of responses.
-
+    /// We care about this response, so we register a Completer and
+    /// put that in a Map to await response. When it comes back,
+    /// we match it by id.
     var c = Completer();
     _responses[package.id] = c;
     return c.future;
@@ -139,6 +139,7 @@ class BatchServerProxyBase {
   void notify(String method, [dynamic params]) {
     var package = JsonRpcMethod(method, params,
         notify: true, serverVersion: proxy.serverVersion);
+      // add this for requesting, but not for the completion queue
     _requests.add(package);
   }
 
@@ -166,7 +167,7 @@ class BatchServerProxyBase {
   /// to complete those Futures.
   void handleResponses(String responseString) {
     var responses = json.decode(responseString);
-    print('responseString is $responseString');
+    // print('responseString is $responseString');
     for (var response in responses) {
       var value = proxy.handleDecoded(response);
       var id = response['id'];

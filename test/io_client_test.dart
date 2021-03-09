@@ -49,7 +49,7 @@ void main() {
       proxy.notify('update', [
         [1, 2, 3, 4, 5]
       ]).then((result) {
-        expect(result, equals(null));
+        expect(result, equals(''));
       });
     });
 

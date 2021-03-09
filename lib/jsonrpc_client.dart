@@ -39,7 +39,8 @@ class ServerProxy extends ServerProxyBase {
     for (var key in headers.keys) {
       request.setRequestHeader(key, headers[key]!);
     }
-    print(package);
+    // useful for debugging!
+    // print(package);
     request.send(package);
 
     await request.onLoadEnd.first;
@@ -59,12 +60,11 @@ class ServerProxy extends ServerProxyBase {
 
 /// see the documentation in [BatchServerProxyBase]
 class BatchServerProxy extends BatchServerProxyBase {
-  
-   @override
+  @override
   dynamic proxy;
 
   /// constructor
-  BatchServerProxy(String url,[customHeaders= const <String,String>{}]) {
+  BatchServerProxy(String url, [customHeaders = const <String, String>{}]) {
     proxy = ServerProxy(url, customHeaders);
   }
 }
