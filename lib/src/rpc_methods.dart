@@ -61,7 +61,7 @@ class ExampleMethodsClass {
   }
 
   /// make a silly thing and return its JSON representation
-  dynamic s1(amap) => ClassB.fromMap(amap).s1;
+  String s1(amap) => ClassB.fromMap(amap).s1;
 
   /// shh. private...
   String _private() => 'hello';

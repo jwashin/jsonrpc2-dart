@@ -5,10 +5,10 @@ import 'dart:convert';
 /// Stupid example class. Does almost nothing. But simply :)
 class ClassB {
   /// arbitrary member s1
-  var s1;
+  String s1;
 
   /// arbitrary member s2
-  var s2;
+  String s2;
 
   /// constructor. No surprise!
   ClassB(this.s1, this.s2);
