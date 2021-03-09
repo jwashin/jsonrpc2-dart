@@ -221,7 +221,8 @@ bool _shouldBatch(obj) {
 
 /// Given a JSON-RPC-formatted request string and an instance,
 /// return a Future containing a JSON-RPC-formatted response string or null.
-///  Null means that nothing should be returned, though some transports must return something.
+/// Null means that nothing should be returned, though some transports
+/// (e.g., HTTP) must return something.
 Future<String> jsonRpc(Object request, Object instance) {
   if (request is String) {
     //_logger.fine(request);
@@ -250,7 +251,7 @@ Future<String> jsonRpc(Object request, Object instance) {
 /// or a Notification object. The transport will decide how to encode into JSON and UTF-8 for delivery.
 /// Depending on transport, Notification objects may not need
 ///  to be delivered.
-Future jsonRpcExec(Object request, Object instance) {
+Future jsonRpcExec(Object request, Object instance) async {
   if (request is Map &&
       (request['jsonrpc'] == JsonRpcV2 || request['jsonrpc'] == null)) {
 //    _logger.fine('$request');
@@ -271,21 +272,21 @@ Future jsonRpcExec(Object request, Object instance) {
 //        _logger.fine('in batch: $rpc');
 
       }
-      return Future.wait(responses).then((theList) {
-        var output = [];
-        for (dynamic item in theList) {
-          if (item is! Notification) {
-            output.add(item);
-          }
+      var theList = await Future.wait(responses);
+
+      var output = [];
+      for (dynamic item in theList) {
+        if (item is! Notification) {
+          output.add(item);
         }
-        if (output.isNotEmpty) {
-          return output;
-        }
-        return Notification();
-      });
+      }
+      if (output.isNotEmpty) {
+        return output;
+      }
+      return Notification();
+      // return output;
     }
-    return Future.sync(() =>
-        makeExceptionMap(RpcException('Invalid request', -32600), '2.0', null));
+    return makeExceptionMap(RpcException('Invalid request', -32600), '2.0', null);
   }
 }
 
@@ -307,7 +308,7 @@ String encodeResponse(response) {
   }
   try {
     return json.encode(response);
-  } catch (e) {
+  } on JsonUnsupportedObjectError {
     return json.encode(makeExceptionMap(
         RpcException(
             'Result was not JSON-serializable (${response['result']}).',

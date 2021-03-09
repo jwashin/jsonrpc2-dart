@@ -47,8 +47,6 @@ abstract class ServerProxyBase {
     var package = json.encode(meth);
     executeRequest(package);
     return Future(() => null);
-
-    // return call(method, params, true);
   }
 
   /// Package and send the method request to the server.
@@ -65,8 +63,13 @@ abstract class ServerProxyBase {
     return handleResponse(resp);
   }
 
-  /// We are transport independent. Abstract method [executeRequest] must
-  /// be implemented in a subclass
+  /// This is the transport interface. Abstract method [executeRequest] must
+  /// be implemented in a subclass. [package] is a String JSON-RPC Request
+  /// created through the [call] method of this class. Override the
+  /// [executeRequest] method to send the package to a server recipient, and
+  /// return the String body that comes back. You probably want to do error
+  /// handling on the transport.
+  ///
   Future<String> executeRequest(String package);
 
   /// Return the result of calling the method, but first, check for error.
@@ -163,9 +166,9 @@ class BatchServerProxyBase {
   /// to complete those Futures.
   void handleResponses(String responseString) {
     var responses = json.decode(responseString);
+    print('responseString is $responseString');
     for (var response in responses) {
       var value = proxy.handleDecoded(response);
-      // var value = proxy.handleResponse(response);
       var id = response['id'];
       if (_responses.containsKey(id)) {
         {

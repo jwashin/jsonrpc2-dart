@@ -72,7 +72,7 @@ void main() {
     });
 
     test('serializable class - see classb.dart', () async {
-      var result = proxy.call('s1', [ClassB('hello', 'goodbye')]);
+      var result = await proxy.call('s1', [ClassB('hello', 'goodbye')]);
       expect(result, equals('hello'));
     });
 
