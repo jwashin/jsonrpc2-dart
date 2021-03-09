@@ -20,7 +20,8 @@ Future main() async {
       'http://${InternetAddress.loopbackIPv4.address}:$port\n');
   await for (var request in server) {
     var content = await utf8.decoder.bind(request).join();
-    print(content);
+    // useful for debugging!
+    // print(content);
     switch (request.method) {
       case 'OPTIONS':
         setCrossOriginHeaders(request);
@@ -45,17 +46,14 @@ Future main() async {
         var response = request.response;
         response.headers.set('Content-Type', 'application/json; charset=UTF-8');
         response.statusCode = 200;
-        if (result is Notification) {
-          response.write('');
-        } else {
-          var out = result;
-          print('${request.method}: $out');
-          response.write(out);
-        }
+        var out = result;
+        // useful debugger!
+        // print('${request.method}: $out'); 
+        response.write(out);
         await response.close();
         break;
       default:
-        print(request.method);
+        // print(request.method);
     }
   }
   ;

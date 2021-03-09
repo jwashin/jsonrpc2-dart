@@ -20,7 +20,13 @@ const JsonRpcV2 = '2.0';
 const JsonRpcV1 = '1.0';
 
 /// Empty class. We just need to say a response "is" a Notification
-class Notification {}
+class Notification {
+  @override
+  String toString() {
+    return '';
+  }
+}
+
 
 enum paramsTypes { list, map, single, empty }
 
