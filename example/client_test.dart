@@ -1,11 +1,10 @@
 @TestOn('browser')
 library client_test;
 
-import 'package:jsonrpc2/rpc_exceptions.dart';
+import 'package:jsonrpc2/jsonrpc2.dart';
 import 'package:test/test.dart';
-import 'package:jsonrpc2/jsonrpc_client.dart';
-//import 'package:test/html_enhanced_config.dart';
-import 'package:jsonrpc2/src/classb.dart';
+import 'jsonrpc_client.dart';
+import 'classb.dart';
 
 class MyClass {
   MyClass();

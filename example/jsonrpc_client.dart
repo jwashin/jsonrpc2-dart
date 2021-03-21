@@ -1,6 +1,5 @@
 import 'dart:html' show HttpRequest;
-
-import 'client_base.dart';
+import 'package:jsonrpc2/src/client_base.dart';
 
 /// basic usage:
 ///
@@ -9,12 +8,14 @@ import 'client_base.dart';
 ///    response = await proxy.call("someServerMethod", [arg1, arg2]);
 ///    try{
 ///         proxy.checkError(response);
-///     }catch(e){
-///         // do error handling with error e...
+///     }on RpcException catch(e){
+///         // do error handling with exception e...
 ///         }
+///
 ///     // do something with response...
 ///
-///  Each arg must be representable in json.
+///  Each arg in the call must be representable in json
+///  or have a toJson() method.
 ///
 ///  Exceptions on the remote end will throw RpcException.
 
@@ -29,7 +30,9 @@ class ServerProxy extends ServerProxyBase {
   /// Return a Future with the JSON-RPC response
   @override
   Future<String> executeRequest(String package) async {
+    /// This is HttpRequest from dart:html
     var request = HttpRequest();
+    
     request.open('POST', url);
 
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};
@@ -52,10 +55,6 @@ class ServerProxy extends ServerProxyBase {
       return body;
     }
   }
-  // /// I really don't know what to do here. I'll accept suggestions
-  // void handleError(e) {
-  //   print('$e');
-  // }
 }
 
 /// see the documentation in [BatchServerProxyBase]

@@ -1,11 +1,14 @@
 @TestOn('vm')
 library jsonrpc2_server_tests;
 
+import 'package:jsonrpc2/src/jsonrpc_service.dart';
+import 'package:jsonrpc2/src/mirror_dispatcher.dart';
+import 'package:jsonrpc2/src/rpc_exceptions.dart';
 import 'package:test/test.dart';
-import 'package:jsonrpc2/jsonrpc_service.dart';
-import 'package:jsonrpc2/rpc_exceptions.dart';
 import 'dart:convert';
 import 'dart:async';
+
+var dispatcher = MirrorDispatcher(Foo());
 
 class Foo {
   String greet_name;
@@ -63,7 +66,7 @@ class MyObject {}
 void main() {
   group('jsonrpc_2.0', () {
     test('basic call', () {
-      jsonRpcExec({'jsonrpc': '2.0', 'method': 'hi', 'id': 1}, Foo())
+      jsonRpcExec({'jsonrpc': '2.0', 'method': 'hi', 'id': 1}, dispatcher)
           .then((result) {
         expect(result, equals({'jsonrpc': '2.0', 'result': 'Hi!', 'id': 1}));
       });
@@ -73,7 +76,7 @@ void main() {
       jsonRpcExec({
         'jsonrpc': '2.0',
         'method': 'hi',
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(result, const TypeMatcher<Notification>());
       });
@@ -85,7 +88,7 @@ void main() {
         'method': 'add',
         'id': 1,
         'params': [1, 2]
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(result, equals({'jsonrpc': '2.0', 'result': 3, 'id': 1}));
       });
@@ -97,7 +100,7 @@ void main() {
         'method': 'subtract_named',
         'id': 1,
         'params': {'minuend': 4, 'subtrahend': 2}
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(result, equals({'jsonrpc': '2.0', 'result': 2, 'id': 1}));
       });
@@ -109,7 +112,7 @@ void main() {
         'method': 'subtract_named',
         'id': 1,
         'params': {'subtrahend': 2, 'minuend': 4}
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(result, equals({'jsonrpc': '2.0', 'result': 2, 'id': 1}));
       });
@@ -121,7 +124,7 @@ void main() {
         'method': 'echo',
         'id': 1,
         'params': ['México: Hello, 世界']
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(result,
             equals({'jsonrpc': '2.0', 'result': 'México: Hello, 世界', 'id': 1}));
@@ -129,8 +132,8 @@ void main() {
     });
 
     test('method not found', () {
-      jsonRpcExec(
-              {'jsonrpc': '2.0', 'method': 'bip', 'id': 1, 'params': []}, Foo())
+      jsonRpcExec({'jsonrpc': '2.0', 'method': 'bip', 'id': 1, 'params': []},
+              dispatcher)
           .then((result) {
         expect(
             result,
@@ -148,7 +151,7 @@ void main() {
         'method': 'throwerr',
         'id': 1,
         'params': ['a', 4]
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(
             result,
@@ -166,7 +169,7 @@ void main() {
         'method': 'runtimeException',
         'params': ['bar'],
         'id': 3
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(
             result,
@@ -187,7 +190,7 @@ void main() {
         'method': 'oops',
         'params': ['43'],
         'id': 3
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(result['error']['code'], equals(-32602));
       });
@@ -200,7 +203,7 @@ void main() {
         'method': 'oops1',
         'params': ['43'],
         'id': 3
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(result['error']['code'], equals(-22));
         expect(result['error']['message'],
@@ -215,7 +218,7 @@ void main() {
         "method": "my_object",
         "params": [],
         "id": 34
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -236,7 +239,7 @@ void main() {
         "method": "divzero",
         "params": [3],
         "id":34
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -256,7 +259,7 @@ void main() {
         "method": "future3",
         "params": [],
         "id":19
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(json.decode(result),
             equals({'result': 3, 'id': 19, 'jsonrpc': '2.0'}));
       });
@@ -269,14 +272,14 @@ void main() {
         'method': 'subtract',
         'id': 1,
         'params': [6, 2]
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(result, equals({'result': 4, 'error': null, 'id': 1}));
       });
     });
 
     test('notification', () {
-      jsonRpcExec({'method': 'hi', 'params': [], 'id': null}, Foo())
+      jsonRpcExec({'method': 'hi', 'params': [], 'id': null}, dispatcher)
           .then((result) {
         expect(result, const TypeMatcher<Notification>());
       });
@@ -287,7 +290,7 @@ void main() {
         'method': 'bip',
         'id': 1,
         'params': [6, 2]
-      }, Foo())
+      }, dispatcher)
           .then((result) {
         expect(
             result,
@@ -307,7 +310,7 @@ void main() {
         "method": "subtract",
         "params": [42, 23],
         "id": 1
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': 19, 'id': 1}));
       });
@@ -319,7 +322,7 @@ void main() {
         "method": "subtract",
         "params": [23, 42],
         "id": 2
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': -19, 'id': 2}));
       });
@@ -334,7 +337,7 @@ void main() {
           "minuend": 42
         },
         "id": 3
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': 19, 'id': 3}));
       });
@@ -349,7 +352,7 @@ void main() {
           "subtrahend": 23
         },
         "id": 4
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': 19, 'id': 4}));
       });
@@ -360,7 +363,7 @@ void main() {
         "jsonrpc": "2.0",
         "method": "update",
         "params": [1, 2, 3, 4, 5]
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(result, equals(''));
       });
     });
@@ -370,7 +373,7 @@ void main() {
         "jsonrpc": "2.0",
         "method": "foobar",
         "id": "1"
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -385,7 +388,7 @@ void main() {
       jsonRpc('''{"jsonrpc": "2.0",
                   "method": "foobar,
                   "params": "bar",
-                  "baz''', Foo()).then((result) {
+                  "baz''', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -401,7 +404,7 @@ void main() {
         "jsonrpc": "2.0",
         "method": 1,
         "params": "bar"
-      }''', Foo()).then((result) {
+      }''', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -417,7 +420,7 @@ void main() {
               "method": "sum",
               "params": [1,2,4],
               "id": "1"},
-              {"jsonrpc": "2.0", "method"]''', Foo()).then((result) {
+              {"jsonrpc": "2.0", "method"]''', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -429,7 +432,7 @@ void main() {
     });
 
     test('batch empty array', () {
-      jsonRpc('[]', Foo()).then((result) {
+      jsonRpc('[]', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals({
@@ -441,7 +444,7 @@ void main() {
     });
 
     test('batch invalid but not empty', () {
-      jsonRpc('[1]', Foo()).then((result) {
+      jsonRpc('[1]', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals([
@@ -455,7 +458,7 @@ void main() {
     });
 
     test('invalid batch', () {
-      jsonRpc('[1,2,3]', Foo()).then((result) {
+      jsonRpc('[1,2,3]', dispatcher).then((result) {
         expect(
             json.decode(result),
             equals([
@@ -479,12 +482,14 @@ void main() {
     });
 
     test('batch', () {
-      jsonRpc('''[ {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], "id": "1"},
+      jsonRpc('''[ {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], 
+            "id": "1"},
         {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
         {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},
-        {"foo": "boo"},
-        {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"}, "id": "5"},
-        {"jsonrpc": "2.0", "method": "get_data", "id": "9"} ]''', Foo())
+            {"foo": "boo"},
+        {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"},
+         "id": "5"},
+        {"jsonrpc": "2.0", "method": "get_data", "id": "9"} ]''', dispatcher)
           .then((result) {
         expect(
             json.decode(result),
@@ -517,7 +522,7 @@ void main() {
       jsonRpc('''[
       {"jsonrpc": "2.0", "method": "notify_sum",   "params": [1,2,4]},
       {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}
-      ]''', Foo()).then((result) {
+      ]''', dispatcher).then((result) {
         expect(result, equals(''));
       });
     });
@@ -528,7 +533,7 @@ void main() {
             "method": "echo",
             "id": 1,
             "params": ["México: Hello, 世界"]
-          }''', Foo()).then((result) {
+          }''', dispatcher).then((result) {
         expect(json.decode(result),
             equals({'jsonrpc': '2.0', 'result': 'México: Hello, 世界', 'id': 1}));
       });

@@ -1,7 +1,14 @@
 library rpc_methods;
 
-import 'package:jsonrpc2/rpc_exceptions.dart';
-import 'package:jsonrpc2/src/classb.dart';
+import 'package:jsonrpc2/src/rpc_exceptions.dart';
+import 'package:reflectable/reflectable.dart';
+import 'reflected_rpc_methods.reflectable.dart';
+import 'classb.dart';
+
+void main() {
+  initializeReflectable();
+  ExampleMethodsClass();
+}
 
 /// cheap persistence. It's just a thing.
 dynamic cheapPersistence;
@@ -9,6 +16,14 @@ dynamic cheapPersistence;
 /// One of the stupidest APIs ever. Do not model this
 ///
 /// But it does demo some of the kinds of things an API might do
+///
+class MyReflectable extends Reflectable {
+  const MyReflectable() : super(invokingCapability);
+}
+
+const myReflectable = MyReflectable();
+
+@myReflectable
 class ExampleMethodsClass {
   /// subtraction.
   num subtract(minuend, subtrahend) => minuend - subtrahend;
@@ -87,7 +102,14 @@ class ExampleMethodsClass {
   bool ping() => true;
 }
 
+class FriendReflectable extends Reflectable {
+  const FriendReflectable() : super(invokingCapability);
+}
+
+const friendReflectable = FriendReflectable();
+
 /// It's a class, initialized with a name and it has a hello() method.
+@friendReflectable
 class Friend {
   /// guess who???
   String name;

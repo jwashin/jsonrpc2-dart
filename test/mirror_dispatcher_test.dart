@@ -1,9 +1,9 @@
 @TestOn('vm')
-library dispatcher_unit_tests;
 
 import 'package:test/test.dart';
-import 'package:jsonrpc2/dispatcher.dart';
-import 'package:jsonrpc2/rpc_exceptions.dart';
+import 'package:jsonrpc2/src/dispatcher.dart';
+import 'package:jsonrpc2/src/mirror_dispatcher.dart';
+import 'package:jsonrpc2/src/rpc_exceptions.dart';
 
 class Foo {
   String greetName;
@@ -55,71 +55,71 @@ void main() {
   });
 
   test('simple object', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('hi').then((dynamic value) => expect(value, equals('Hi!')));
   });
 
   test('simple object with param', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('greet', ['Mary']).then(
         (dynamic value) => expect(value, equals('Hi, Mary!')));
   });
 
   test('simple object initialized with param unused', () {
-    var z = Dispatcher(Foo('Bar'));
+    var z = MirrorDispatcher(Foo('Bar'));
     z.dispatch('greet', ['Mary']).then(
         (dynamic value) => expect(value, equals('Hi, Mary!')));
   });
 
   test('simple object initialized with param used', () {
-    var z = Dispatcher(Foo('Bob'));
+    var z = MirrorDispatcher(Foo('Bob'));
     z
         .dispatch('hello')
         .then((dynamic value) => expect(value, equals('Hello, Bob!')));
   });
 
   test('simple object without optional param', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z
         .dispatch('greet')
         .then((dynamic value) => expect(value, equals('Hello, Stranger!')));
   });
 
   test('simple addition', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('add', [3, 4]).then((dynamic value) => expect(value, equals(7)));
   });
 
   test('simple subtraction a b', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('subtract', [42, 23]).then(
         (dynamic value) => expect(value, equals(19)));
   });
   test('simple subtraction b a', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch(
         'subtract', [23, 42]).then((var value) => expect(value, equals(-19)));
   });
 
   test('named subtraction in order', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('subtractNamed', [], {'minuend': 23, 'subtrahend': 42}).then(
         (var value) => expect(value, equals(-19)));
   });
 
   test('named subtraction out of order', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('subtractNamed', [], {'subtrahend': 42, 'minuend': 23}).then(
         (var value) => expect(value, equals(-19)));
   });
 
   test('mixed nums', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('add', [3, 4.3]).then((var value) => expect(value, equals(7.3)));
   });
 
   test('method not found', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('zadd', [3, 4.3]).then(
         (dynamic value) => expect(value, TypeMatcher<MethodNotFound>()));
 
@@ -127,62 +127,62 @@ void main() {
   });
 
   test('private method call', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('_privateAdd', [3, 4.3]).then(
         (dynamic value) => expect(value, TypeMatcher<MethodNotFound>()));
   });
 
   test('invalid parameters too many', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('add', [3, 5, 8]).then(
         (dynamic value) => expect(value, TypeMatcher<InvalidParameters>()));
   });
 
   test('invalid parameters bad value', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('add', [3, 'hello']).then(
         (dynamic value) => expect(value, TypeMatcher<InvalidParameters>()));
   });
 
   test('invalid parameters too few', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('add', [3]).then(
         (dynamic value) => expect(value, TypeMatcher<InvalidParameters>()));
   });
 
   test('internal error', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('throwError', [3, 0]).then(
         (dynamic value) => expect(value, TypeMatcher<RuntimeException>()));
   });
 
   test('private method invocation', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('_private_add', [3, 4.3]).then(
         (dynamic value) => expect(value, TypeMatcher<MethodNotFound>()));
   });
 
   test('attempt property invocation', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z
         .dispatch('greet_name')
         .then((dynamic value) => expect(value, TypeMatcher<MethodNotFound>()));
   });
 
   test('catch TypeError in application code', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('typeerror', ['a']).then(
         (dynamic value) => expect(value, TypeMatcher<RuntimeException>()));
   });
 
   test('divide by zero', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch('divzerotest', [3]).then(
         (dynamic value) => expect(value, double.infinity));
   });
 
   test('zero over zero', () {
-    var z = Dispatcher(Foo());
+    var z = MirrorDispatcher(Foo());
     z.dispatch(
         'divzerotest', [0]).then((var value) => expect(value.isNaN, true));
   });

@@ -9,7 +9,7 @@ class RpcException implements Exception {
   String message = '';
 
   /// maybe some useful data
-  dynamic data;
+  dynamic? data;
 
   /// Constructor. All params are optional.
   RpcException([this.message = '', this.code = 0]);

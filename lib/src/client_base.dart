@@ -2,12 +2,8 @@ library jsonrpc_client_base;
 
 import 'dart:async';
 import 'dart:convert';
-// import 'package:jsonrpc2/jsonrpc_service.dart';
-import 'package:logging/logging.dart';
 
 import 'rpc_exceptions.dart';
-
-final log = Logger('MyClassName');
 
 /// [ServerProxyBase] is a base class for a JSON-RPC v2 client.
 ///
@@ -23,9 +19,9 @@ final log = Logger('MyClassName');
 /// import 'package:jsonrpc2/jsonrpc_client.dart'
 /// var url = 'http://some/location';
 /// var proxy = new ServerProxy(url);
-/// Future request = proxy.call('someServerMethod', [arg1, arg2 ]);
-///     request.then((returned)=>proxy.checkError(returned))
-///     .then((value){doSomethingWithValue(value);});
+/// var response = await proxy.call('someServerMethod', [arg1, arg2 ]);
+///     proxy.checkError(response))
+///     doSomethingWithValue(response);
 /// ```
 /// Each arg must be representable in json.
 ///
@@ -139,7 +135,7 @@ class BatchServerProxyBase {
   void notify(String method, [dynamic params]) {
     var package = JsonRpcMethod(method, params,
         notify: true, serverVersion: proxy.serverVersion);
-      // add this for requesting, but not for the completion queue
+    // add this for requesting, but not for the completion queue
     _requests.add(package);
   }
 
@@ -158,7 +154,6 @@ class BatchServerProxyBase {
       // reset the requests holder
       _requests.clear();
       return handleResponses(responses);
-      // return future.then((resp) => Future.sync(() => handleResponses(resp)));
     }
   }
 
