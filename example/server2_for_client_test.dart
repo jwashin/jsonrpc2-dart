@@ -1,20 +1,17 @@
 import 'dart:io';
 import 'dart:convert';
-import 'package:jsonrpc2/jsonrpc_service.dart';
-import 'package:jsonrpc2/src/rpc_methods.dart';
 
-final int port = 8394;
+import 'package:jsonrpc2/src/dispatcher.dart';
+import 'package:jsonrpc2/src/jsonrpc_service.dart';
+import 'package:jsonrpc2/src/mirror_dispatcher.dart';
 
-/*
- * Test server for test_client.dart. Uses HttpServer from dart:io package.
- */
+import 'rpc_methods.dart';
 
-//final _logger = new Logger('test_server');
-
-Future main() async {
-//  Logger.root.level = Level.ALL;
-//  Logger.root.onRecord.listen(new LogPrintHandler());
-
+final port = 8394;
+///
+/// Test server for test_client.dart. Uses HttpServer from dart:io package.
+///
+void main() async {
   var server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
   print('Test Server running at '
       'http://${InternetAddress.loopbackIPv4.address}:$port\n');
@@ -29,18 +26,19 @@ Future main() async {
         await request.response.close();
         break;
       case 'POST':
+
         //_logger.fine(body.body);
         var pathCheck = request.uri.pathSegments[0];
-        dynamic instance;
+        Dispatcher dispatcher;
         if (pathCheck == 'friend') {
           var friendName = request.uri.pathSegments[1];
-          instance = Friend(friendName);
+          dispatcher = MirrorDispatcher(Friend(friendName));
         } else {
-          instance = ExampleMethodsClass();
+          dispatcher = MirrorDispatcher(ExampleMethodsClass());
         }
 
         /// import this function from [jsonrpc2/jsonrpc_service.dart]
-        var result = await jsonRpc(content, instance);
+        var result = await jsonRpc(content, dispatcher);
         //_logger.fine(result);
         setCrossOriginHeaders(request);
         var response = request.response;
@@ -48,12 +46,12 @@ Future main() async {
         response.statusCode = 200;
         var out = result;
         // useful debugger!
-        // print('${request.method}: $out'); 
+        // print('${request.method}: $out');
         response.write(out);
         await response.close();
         break;
       default:
-        // print(request.method);
+      // print(request.method);
     }
   }
   ;

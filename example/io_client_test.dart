@@ -1,10 +1,10 @@
 @TestOn('vm')
 library io_client_test;
 
+import 'package:jsonrpc2/jsonrpc2.dart';
 import 'package:test/test.dart';
-import 'package:jsonrpc2/jsonrpc_io_client.dart';
-import 'package:jsonrpc2/src/classb.dart';
-import 'package:jsonrpc2/rpc_exceptions.dart';
+import 'jsonrpc_io_client.dart';
+import 'classb.dart';
 
 class MyClass {
   MyClass();
@@ -13,8 +13,8 @@ class MyClass {
 bool persistentConnection = false;
 
 void main() {
-  var proxy = ServerProxy('http://127.0.0.1:8394/sum',
-      persistentConnection: persistentConnection);
+  var proxy = ServerProxy('http://127.0.0.1:8394/sum');
+  proxy.persistentConnection = persistentConnection;
   group('JSON-RPC', () {
     test('positional arguments', () {
       proxy.call('subtract', [23, 42]).then((result) {
@@ -128,8 +128,8 @@ void main() {
 //    });
 
     test('basic batch', () {
-      var proxy2 = BatchServerProxy('http://127.0.0.1:8394/sum',
-          persistentConnection: persistentConnection);
+      var proxy2 = BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy2.persistentConnection = persistentConnection;
       proxy2.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
       });
@@ -149,8 +149,8 @@ void main() {
     });
 
     test('batch with error on a notification', () {
-      var proxy3 = BatchServerProxy('http://127.0.0.1:8394/sum',
-          persistentConnection: persistentConnection);
+      var proxy3 = BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy3.persistentConnection = persistentConnection;
       proxy3.call('summation', [
         [1, 2, 3, 4, 5]
       ]).then((result) {
@@ -174,13 +174,13 @@ void main() {
     });
 
     test('variable url', () {
-      var proxy4 = ServerProxy('http://127.0.0.1:8394/friend/Bob',
-          persistentConnection: persistentConnection);
+      var proxy4 = ServerProxy('http://127.0.0.1:8394/friend/Bob');
+      proxy4.persistentConnection = persistentConnection;
       proxy4.call('hello').then((result) {
         expect(result, equals('Hello from Bob!'));
       });
-      var proxy5 = ServerProxy('http://127.0.0.1:8394/friend/Mika',
-          persistentConnection: persistentConnection);
+      var proxy5 = ServerProxy('http://127.0.0.1:8394/friend/Mika');
+      proxy5.persistentConnection = persistentConnection;
       proxy5.call('hello').then((result) {
         expect(result, equals('Hello from Mika!'));
       });

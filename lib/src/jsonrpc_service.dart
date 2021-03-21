@@ -5,13 +5,17 @@ library jsonrpc_service;
 
 import 'dart:convert';
 import 'dart:async';
-
-import 'package:logging/logging.dart';
+import 'dart:developer';
 
 import 'rpc_exceptions.dart';
 import 'dispatcher.dart';
 
-final _logger = Logger('json-rpc');
+// using log from dart:developer, so using logging constants from
+// https://github.com/dart-lang/logging/blob/master/lib/src/level.dart
+
+const info = 800;
+const fine = 500;
+const finer = 400;
 
 /// Version string for JSON-RPC v2
 const JsonRpcV2 = '2.0';
@@ -27,7 +31,6 @@ class Notification {
   }
 }
 
-
 enum paramsTypes { list, map, single, empty }
 
 /// [MethodRequest] holds a specially formed JSON object
@@ -41,6 +44,8 @@ enum paramsTypes { list, map, single, empty }
 class MethodRequest {
   /// [request] is the Map decoded from the incoming chunk of JSON
   late Map<String, dynamic> request;
+
+  /// [ptype] informs us how to handle the object.
   late paramsTypes ptype;
 
   /// constructor
@@ -49,7 +54,7 @@ class MethodRequest {
     getParamsType();
   }
 
-  /// It's easier to decide how to make the method request if we decide
+  /// It's easier to decide how to make the method request if we know
   /// what kind of thing the "params" object is. These things must be handled
   /// "very delicately."
   void getParamsType() {
@@ -87,10 +92,10 @@ class MethodRequest {
       var version = request['jsonrpc'];
       if (version == null) return JsonRpcV1;
       if (version != JsonRpcV2) {
-        throwError(RpcException('Invalid request', -32600));
+        throwException(RpcException('Invalid request', -32600));
       }
       return version;
-    } catch (e) {
+    } on Exception catch (_) {
       // we always get version first, so if request is not proper, fail here
       throw makeExceptionMap(
           RpcException('Invalid request', -32600), JsonRpcV2, null);
@@ -102,7 +107,7 @@ class MethodRequest {
     dynamic method = request['method'];
     if (method is! String) {
       // print("method is not a string")
-      throwError(RpcException('Invalid request', -32600));
+      throw RpcException('Invalid request', -32600);
     }
     return method;
   }
@@ -136,11 +141,11 @@ class MethodRequest {
     if (id is String || id is num || id == null) {
       return id;
     }
-    throwError(RpcException('Invalid Request', -32600));
+    throwException(RpcException('Invalid Request', -32600));
   }
 
   /// This is shorthand to make a map of the exception, not actually throwing.
-  void throwError(exception) {
+  void throwException(exception) {
     throw makeExceptionMap(exception, version, request['id']);
   }
 }
@@ -148,120 +153,96 @@ class MethodRequest {
 /// Given a parsed JSON-RPC request and an instance with methods,
 /// return a Future with a Map of the result of the instance's method or a
 /// Notification object
-Future<dynamic> jsonRpcDispatch(request, instance) {
+dynamic jsonRpcDispatch(dynamic request, Dispatcher dispatcher) async {
+  var rq;
+  var id;
+  var version;
+  var method;
   try {
-    var rq = MethodRequest(request);
-    var version = rq.version;
-    var id = rq.id;
-    var method = rq.method;
-
-    return Future.sync(() => Dispatcher(instance)
-        .dispatch(method, rq.positionalParams, rq.namedParams)).then((value) {
-      if (id == null) {
-        return Notification();
-      }
-
-      if (value is RpcException) {
-//        _logger.fine('$value');
-        return makeExceptionMap(value, version, id);
-      }
-
-      var resp = {'result': value, 'id': id};
-      if (version == JsonRpcV2) {
-        resp['jsonrpc'] = version;
-      }
-      if (version == JsonRpcV1) {
-        resp['error'] = null;
-      }
-      return resp;
-    }).catchError((e) {
-//      _logger.fine('$e');
-      return makeExceptionMap(e, version, id);
-    });
+    rq = MethodRequest(request);
+    version = rq.version;
+    id = rq.id;
+    method = rq.method;
+  } on Exception catch (e) {
+    return makeExceptionMap(e, JsonRpcV2);
   }
+  try {
+    var value =
+        await dispatcher.dispatch(method, rq.positionalParams, rq.namedParams);
+    if (id == null) {
+      return Notification();
+    }
+    if (value is RpcException) {
+      log('$value', level: fine);
+      return makeExceptionMap(value, version, id);
+    }
+    var resp = <String, dynamic>{'result': value, 'id': id};
+    if (version == JsonRpcV2) {
+      resp['jsonrpc'] = version;
+    }
+    if (version == JsonRpcV1) {
+      resp['error'] = null;
+    }
+    return resp;
+  } on Exception catch (e) {
+    log('$e', level: info);
 
-  /// it's ugly, but we really intend to catch every error here
-  catch (e) {
-    _logger.fine('$e');
-    return Future.sync(() => e);
+    return makeExceptionMap(e, version, id);
   }
 }
 
 /// Instead of crashing the server, we send the exception back to the client.
 Map makeExceptionMap(Object anException, String version, [dynamic id]) {
-  var resp = {'id': id};
+  var resp = <String, dynamic>{'id': id};
   if (version == JsonRpcV1) {
     resp['result'] = null;
   } else {
     resp['jsonrpc'] = version;
   }
-  if (anException is Error) {
-    _logger.fine('$anException');
+  if (anException is RpcException) {
+    resp['error'] = {'code': anException.code, 'message': anException.message};
+    if (anException.data != null) {
+      resp['error']['data'] = anException.data;
+    }
+  } else {
+    log('$anException', level: info);
     resp['error'] = {'code': -32000, 'message': '$anException'};
-    return resp;
-  }
-  var exception = anException as RpcException;
-
-  resp['error'] = {'code': exception.code, 'message': exception.message};
-
-  var data = exception.data;
-  if (data != null) {
-    resp['error']['data'] = anException.data;
   }
   return resp;
 }
 
 /// is this a batch request?
-bool _shouldBatch(obj) {
-//  _logger.fine('checking batch');
-
+bool _shouldBatch(Object obj) {
+  log('checking batch', level: finer);
   if (obj is! List) return false;
   if (obj.isEmpty) return false;
-//  for (dynamic item in obj) {
-//    if (item is! Map) {
-//      return false;
-//    } else if (item is Map && !item.containsKey('method')) return false;
-//  }
   return true;
 }
 
 /// Given a JSON-RPC-formatted request string and an instance,
-/// return a Future containing a JSON-RPC-formatted response string or null.
-/// Null means that nothing should be returned, though some transports
+/// return a Future containing a JSON-RPC-formatted response string.
+/// Returning null means that nothing should be returned, though some transports
 /// (e.g., HTTP) must return something.
-Future<String> jsonRpc(Object request, Object instance) {
-  if (request is String) {
-    //_logger.fine(request);
-    try {
-      var parsed = parseJson(request);
-      return jsonRpcExec(parsed, instance).then((resp) => encodeResponse(resp));
-    } on RpcException catch (e) {
-      return Future.sync(() => encodeResponse(makeExceptionMap(e, JsonRpcV2)));
-    }
-  } else if (request is Map) {
-    try {
-      return jsonRpcDispatch(request, instance)
-          .then((resp) => encodeResponse(resp));
-    } on RpcException catch (e) {
-      return Future.sync(() => encodeResponse(makeExceptionMap(e, JsonRpcV2)));
-    }
-  } else {
-    return Future.sync(() => encodeResponse(makeExceptionMap(
-        RpcException(
-            'Invalid Parameters. Must be JSON-RPC string or Map. got {request.type}.'),
-        JsonRpcV2)));
+Future<String> jsonRpc(String request, Dispatcher dispatcher) async {
+  log('$request', level: info);
+  try {
+    var parsed = parseJson(request);
+    var resp = await jsonRpcExec(parsed, dispatcher);
+    return encodeResponse(resp);
+  } on Exception catch (e) {
+    return encodeResponse(makeExceptionMap(e, JsonRpcV2));
   }
 }
 
-///  Given a proper parsed JSON-RPC Map or a List, return the proper JSON-RPC Map or List of responses,
+/// Given a proper parsed JSON-RPC Map or a List, return the proper JSON-RPC Map or List of responses,
 /// or a Notification object. The transport will decide how to encode into JSON and UTF-8 for delivery.
 /// Depending on transport, Notification objects may not need
-///  to be delivered.
-Future jsonRpcExec(Object request, Object instance) async {
+/// to be delivered.
+Future jsonRpcExec(Object request, Dispatcher dispatcher) async {
   if (request is Map &&
       (request['jsonrpc'] == JsonRpcV2 || request['jsonrpc'] == null)) {
-//    _logger.fine('$request');
-    return jsonRpcDispatch(request, instance);
+    log('$request', level: info);
+    return jsonRpcDispatch(request, dispatcher);
   } else {
     if (request is List && _shouldBatch(request)) {
       var responses = <Future>[];
@@ -269,14 +250,13 @@ Future jsonRpcExec(Object request, Object instance) async {
       for (var rpc in request) {
         if (rpc is Map) {
           rpc['jsonrpc'] = JsonRpcV2;
-          dynamic value = jsonRpcDispatch(rpc, instance);
+          dynamic value = jsonRpcDispatch(rpc, dispatcher);
           responses.add(Future(() => value));
         } else {
           responses.add(Future(() => makeExceptionMap(
               RpcException('Invalid request', -32600), '2.0', null)));
         }
-//        _logger.fine('in batch: $rpc');
-
+        log('in batch: $rpc', level: finer);
       }
       var theList = await Future.wait(responses);
 
@@ -292,7 +272,8 @@ Future jsonRpcExec(Object request, Object instance) async {
       return Notification();
       // return output;
     }
-    return makeExceptionMap(RpcException('Invalid request', -32600), '2.0', null);
+    return makeExceptionMap(
+        RpcException('Invalid request', -32600), '2.0', null);
   }
 }
 
@@ -302,7 +283,9 @@ dynamic parseJson(aString) {
   try {
     var data = json.decode(aString);
     return data;
-  } catch (e) {
+  } on JsonUnsupportedObjectError catch (_) {
+    throw RpcException('Parse error', -32700);
+  } on FormatException catch (_) {
     throw RpcException('Parse error', -32700);
   }
 }

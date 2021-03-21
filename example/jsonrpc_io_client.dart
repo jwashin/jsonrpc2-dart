@@ -4,18 +4,18 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'client_base.dart';
-// import 'package:logging/logging.dart';
+import 'package:jsonrpc2/src/client_base.dart';
 
+/// This is an example JSON-RPC2 client for dart:io.
+/// 
 /// basic usage:
-///    import "package:jsonrpc2/jsonrpc_io_client.dart"
 ///
 ///    String url = "http://somelocation";
 ///    ServerProxy proxy = ServerProxy(url);
 ///    response = await proxy.call("someServerMethod", [arg1, arg2]);
 ///    try{
 ///         proxy.checkError(response);
-///     }catch(e){
+///     }on RpcException catch(e){
 ///         // do error handling with error e...
 ///         }
 ///     // do something with response...
@@ -23,12 +23,20 @@ import 'client_base.dart';
 ///  Each arg must be representable in json.
 ///
 ///  Exceptions on the remote end will throw RpcException.
+
+/// A ServerProxy stands in for the server end of the conversation.
+/// ServerProxyBase takes care of the JSON-RPC specific stuff. Referring to the
+/// above instructions, when you call a server method with args, that 
+/// invocation is converted into a JSON-RPC package, a specially-formatted
+/// chunk of JSON. The overridden [executeRequest] method here sends that string
+/// to the server and receives a string in response. The response is parsed, and
+/// the result, or an error, is returned as the result of the call.
 class ServerProxy extends ServerProxyBase {
-  /// Do we want this connection to be persistent?
-  bool persistentConnection=true;
+  /// Do we want this connection to be persistent? true is default.
+  bool persistentConnection = true;
 
   /// constructor. superize properly
-  ServerProxy(String url, {this.persistentConnection = true}) : super(url);
+  ServerProxy(String url) : super(url);
 
   /// [executeRequest], overriding the abstract method
   ///
@@ -76,13 +84,12 @@ class ServerProxy extends ServerProxyBase {
 /// Please see [BatchServerProxyBase] for documentation and usage
 class BatchServerProxy extends BatchServerProxyBase {
   // ServerProxy proxy;
-  bool persistentConnection = false;
+  bool persistentConnection = true;
   String url = '';
 
   /// constructor
-  BatchServerProxy(this.url, {bool persistentConnection = true});
+  BatchServerProxy(this.url);
 
   @override
-  ServerProxy get proxy =>
-      ServerProxy(url, persistentConnection: persistentConnection);
+  ServerProxy get proxy => ServerProxy(url);
 }
