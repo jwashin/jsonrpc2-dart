@@ -380,7 +380,7 @@ packages:
     source: hosted
     version: "1.10.0"
   stream_channel:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: stream_channel
       url: "https://pub.dartlang.org"

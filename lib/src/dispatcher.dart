@@ -1,4 +1,5 @@
-///Dispatcher has a dispatch method for invoking methods on an instance.
+/// Dispatcher has a dispatch method for invoking methods on an instance.
+/// This is the interface between invokers and a JsonRpc2 service.
 
 abstract class Dispatcher {
   ///  Invoke named method with parameters on the instance and
@@ -12,7 +13,7 @@ abstract class Dispatcher {
 
 /// Convenience method for making a Map of Symbol:value out of
 /// a Map of String:value. We want to do this to the Map of namedParams
-/// for use in an 'invoke' method.
+/// for use in an 'invoke' method of mirror or reflected instance.
 Map<Symbol, dynamic> symbolizeKeys(Map<String, dynamic> namedParams) {
   var symbolMap = <Symbol, dynamic>{};
   for (var key in namedParams.keys) {
