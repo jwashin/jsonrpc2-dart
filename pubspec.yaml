@@ -8,6 +8,7 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dev_dependencies:
+  stream_channel: any
   build_runner: any
   build_test: any
   reflectable: ^3.0.0
