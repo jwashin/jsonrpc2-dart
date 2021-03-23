@@ -66,19 +66,6 @@ void main() {
       });
     });
 
-    // test('not JSON-serializable', () async {
-    //   var result = await proxy.call('subtract', [3, 0 / 0]);
-    //   expect(result, equals(3));
-    // });
-
-    test('not JSON-serializable', () {
-      expect(proxy.call('subtract', [3, 0 / 0]), throwsUnsupportedError);
-    });
-
-    test('class instance not JSON-serializable', () {
-      expect(proxy.call('subtract', [3, MyClass()]), throwsUnsupportedError);
-    });
-
     test('serializable class - see classb.dart', () {
       proxy.call('s1', [ClassB('hello', 'goodbye')]).then((result) {
         expect(result, equals('hello'));

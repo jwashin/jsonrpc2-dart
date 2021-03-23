@@ -36,7 +36,7 @@ class InvalidParameters extends RpcException {
       : super(msg, newCode);
 }
 
-/// [RuntimeException] is a facility for communicating application-level exceptions.
+/// A facility for communicating application-level exceptions.
 ///
 /// If an application-level server-side exception should be handled on the
 /// client side, we can send this info back to the client with an error code,

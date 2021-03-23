@@ -1,10 +1,13 @@
 @TestOn('browser')
 library client_test;
 
+import 'dart:convert';
+
 import 'package:jsonrpc2/jsonrpc2.dart';
 import 'package:test/test.dart';
-import 'jsonrpc_client.dart';
+
 import 'classb.dart';
+import 'jsonrpc_client.dart';
 
 class MyClass {
   MyClass();
@@ -58,19 +61,13 @@ void main() {
     });
 
     test('not JSON-serializable', () async {
-      try {
-        await proxy.call('subtract', [3, 0 / 0]);
-      } on Error catch (e) {
-        expect(e, isUnsupportedError);
-      }
+      expect(proxy.call('subtract', [3, 0 / 0]),
+          throwsA(JsonUnsupportedObjectError));
     });
 
     test('class instance not JSON-serializable', () async {
-      try {
-        await proxy.call('subtract', [3, MyClass()]);
-      } on Error catch (e) {
-        expect(e, isUnsupportedError);
-      }
+      expect(proxy.call('subtract', [3, MyClass()]),
+          throwsA(JsonUnsupportedObjectError));
     });
 
     test('serializable class - see classb.dart', () async {

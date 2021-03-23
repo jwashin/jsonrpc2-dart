@@ -1,5 +1,5 @@
 
 # Lint rules and documentation, see http://dart-lang.github.io/linter/lints
 include: 
+  #package:pedantic/analysis_options.yaml
   package:pedantic/analysis_options.yaml
-  #package:effective_dart/analysis_options.yaml
