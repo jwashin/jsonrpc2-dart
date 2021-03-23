@@ -1,25 +1,29 @@
 @TestOn('vm')
 library jsonrpc2_server_tests;
 
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:jsonrpc2/src/jsonrpc_service.dart';
 import 'package:jsonrpc2/src/mirror_dispatcher.dart';
 import 'package:jsonrpc2/src/rpc_exceptions.dart';
 import 'package:test/test.dart';
-import 'dart:convert';
-import 'dart:async';
 
-var dispatcher = MirrorDispatcher(Foo());
+/// dispatcher knows how to invoke methods.
+MirrorDispatcher dispatcher = MirrorDispatcher(Foo());
 
 class Foo {
-  String greet_name;
-  Foo([this.greet_name = 'Stranger']);
+  /// greeting name
+  String greetName;
+  Foo([this.greetName = 'Stranger']);
 
   String hi() => 'Hi!';
-  String hello() => 'Hello, $greet_name!';
-  String greet([name]) => (name == null) ? 'Hello, $greet_name!' : 'Hi, $name!';
+  String hello() => 'Hello, $greetName!';
+  String greet([String name='']) =>
+      (name == '') ? 'Hello, $greetName!' : 'Hi, $name!';
   num sum(num a, num b, num d) => a + b + d;
   num add(num a, num b) => _private_add(a, b);
-  void runtimeException(obj) {
+  void runtimeException(String obj) {
     if (obj != 'frob') {
       throw RuntimeException("Custom error. Expected 'frob', got '$obj'", 105);
     }

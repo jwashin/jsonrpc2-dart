@@ -8,7 +8,7 @@
 
 import 'dart:async';
 import 'dart:mirrors';
-import 'package:jsonrpc2/src/dispatcher.dart';
+import 'dispatcher.dart';
 import 'rpc_exceptions.dart';
 
 /// MirrorDispatcher implements Dispatcher by introspecting a class instance 

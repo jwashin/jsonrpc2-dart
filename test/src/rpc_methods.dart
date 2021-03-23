@@ -11,24 +11,24 @@ dynamic cheapPersistence;
 /// But it does demo some of the kinds of things an API might do
 class ExampleMethodsClass {
   /// subtraction.
-  num subtract(minuend, subtrahend) => minuend - subtrahend;
+  num subtract(num minuend, num subtrahend) => minuend - subtrahend;
 
   /// subtraction using named parameters for minuend and subtrahend
-  num nsubtract({minuend = 0, subtrahend = 0}) => minuend - subtrahend;
+  num nsubtract({num minuend = 0, num subtrahend = 0}) => minuend - subtrahend;
 
   /// addition
-  num add(x, y) => x + y;
+  num add(num x, num y) => x + y;
 
   /// update the thing to be whatever gets sent
-  void update(args) {
+  void update(dynamic args) {
     cheapPersistence = args;
   }
 
   /// just send it back
-  String echo(b) => b;
+  String echo(String b) => b;
 
   /// just send it back, after appending some unicode
-  String echo2(b) => b + ' Τη γλώσσα μου έδωσαν ελληνική';
+  String echo2(String b) => '$b Τη γλώσσα μου έδωσαν ελληνική';
 
   /// return whatever the stored thing is
   dynamic fetchGlobal() => cheapPersistence;
@@ -43,7 +43,7 @@ class ExampleMethodsClass {
   }
 
   /// throw an exception
-  void raiseMe(var something) {
+  void raiseMe(dynamic something) {
     throw something;
   }
 
@@ -56,18 +56,18 @@ class ExampleMethodsClass {
   }
 
   /// tempt fate by doing the undefined
-  num divzero(p) {
+  num divzero(num p) {
     return p / 0;
   }
 
   /// make a silly thing and return its JSON representation
-  String s1(amap) => ClassB.fromMap(amap).s1;
+  String s1(Map<String,dynamic> amap) => ClassB.fromMap(amap).s1;
 
   /// shh. private...
   String _private() => 'hello';
 
   /// I think we might call this but not care about the return value
-  Object notify_hello(args) {
+  Object notify_hello(dynamic args) {
     return args;
   }
 

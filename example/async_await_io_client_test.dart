@@ -1,12 +1,12 @@
 // @Skip('receiving nulls from responses' )
 @TestOn('vm')
-
 import 'dart:async';
 
-import 'package:test/test.dart';
 import 'package:jsonrpc2/src/rpc_exceptions.dart';
-import 'jsonrpc_io_client.dart';
+import 'package:test/test.dart';
+
 import 'classb.dart';
+import 'jsonrpc_io_client.dart';
 
 class MyClass {
   MyClass();
@@ -59,22 +59,6 @@ void main() {
       var result = await proxy.call('echo2', ['Îñţérñåţîöñåļîžåţîờñ']);
       expect(
           result, equals('Îñţérñåţîöñåļîžåţîờñ Τη γλώσσα μου έδωσαν ελληνική'));
-    });
-
-    test('not JSON-serializable', () async {
-      try {
-        await proxy.call('subtract', [3, 0 / 0]);
-      } on Error catch (e) {
-        expect(e, isUnsupportedError);
-      }
-    });
-
-    test('class instance not JSON-serializable', () async {
-      try {
-        await proxy.call('subtract', [3, MyClass()]);
-      } on Error catch (e) {
-        expect(e, isUnsupportedError);
-      }
     });
 
     test('serializable class - see classb.dart', () async {

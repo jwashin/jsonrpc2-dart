@@ -3,8 +3,9 @@ library client_test;
 
 import 'package:jsonrpc2/jsonrpc2.dart';
 import 'package:test/test.dart';
-import 'jsonrpc_client.dart';
+
 import 'classb.dart';
+import 'jsonrpc_client.dart';
 
 class MyClass {
   MyClass();

@@ -14,7 +14,7 @@ class ClassB {
   ClassB(this.s1, this.s2);
 
   /// create a ClassB instance from a map
-  ClassB.fromMap(aMap)
+  ClassB.fromMap(Map<String,dynamic>aMap)
       : s1 = aMap['s1'],
         s2 = aMap['s2'];
 

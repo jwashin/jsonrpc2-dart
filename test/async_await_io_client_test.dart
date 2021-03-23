@@ -23,7 +23,7 @@ void main() {
         expect(result2, equals(19));
       });
     });
-    // });
+
     test('named arguments', () async {
       var result;
       result = await proxy.call('nsubtract', {'subtrahend': 23, 'minuend': 42});
@@ -59,22 +59,6 @@ void main() {
       var result = await proxy.call('echo2', ['Îñţérñåţîöñåļîžåţîờñ']);
       expect(
           result, equals('Îñţérñåţîöñåļîžåţîờñ Τη γλώσσα μου έδωσαν ελληνική'));
-    });
-
-    test('not JSON-serializable', () async {
-      try {
-        await proxy.call('subtract', [3, 0 / 0]);
-      } on Error catch (e) {
-        expect(e, isUnsupportedError);
-      }
-    });
-
-    test('class instance not JSON-serializable', () async {
-      try {
-        await proxy.call('subtract', [3, MyClass()]);
-      } on Error catch (e) {
-        expect(e, isUnsupportedError);
-      }
     });
 
     test('serializable class - see classb.dart', () async {

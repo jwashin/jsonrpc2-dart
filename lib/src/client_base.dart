@@ -49,12 +49,10 @@ abstract class ServerProxyBase {
   /// Return the response when it returns.
   Future<dynamic> call(String method, [dynamic params]) async {
     var meth = JsonRpcMethod(method, params, serverVersion: serverVersion);
-    var package;
-    try {
-      package = json.encode(meth);
-    } on JsonUnsupportedObjectError catch (e) {
-      throw UnsupportedError('$e');
-    }
+    
+    /// will throw error if unencodable
+    var package = json.encode(meth);
+
     var resp = await executeRequest(package);
     return handleResponse(resp);
   }
