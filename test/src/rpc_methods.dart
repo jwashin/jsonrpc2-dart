@@ -1,6 +1,7 @@
 library rpc_methods;
 
-import 'package:jsonrpc2/jsonrpc2.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
+
 import 'classb.dart';
 
 /// cheap persistence. It's just a thing.

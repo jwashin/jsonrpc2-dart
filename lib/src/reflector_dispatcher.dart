@@ -4,8 +4,8 @@
 /// about invoking the method, and the Dispatcher gets the instance to perform
 /// the method and gives you the returned value.
 
-import 'package:jsonrpc2/src/dispatcher.dart';
-import 'rpc_exceptions.dart';
+import 'package:jsonrpc2/src/dispatcher_base.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 
 /// Dispatcher introspects a class instance so you can invoke its methods by
 /// their string names,
@@ -17,7 +17,7 @@ import 'rpc_exceptions.dart';
 /// class, a mirror of the class's schematics is created.
 /// A ReflectorDiapatcher is inititalized with that and an actual instance.
 ///
-class ReflectorDispatcher implements Dispatcher{
+class ReflectorDispatcher implements Dispatcher {
   /// the initialized class instance we will be invoking methods on.
   dynamic instance;
 
@@ -36,8 +36,7 @@ class ReflectorDispatcher implements Dispatcher{
   ///  namedParams should be a Map of String:value or null.
   @override
   Future dispatch(String methodName,
-      [List<dynamic>? positionalParams,
-      Map<String, dynamic>? namedParams]) async {
+      [dynamic positionalParams, Map<String, dynamic>? namedParams]) async {
     namedParams = namedParams ?? <String, dynamic>{};
     var posParams = positionalParams ?? [];
 
@@ -69,20 +68,20 @@ class ReflectorDispatcher implements Dispatcher{
       var actualCount = posParams.length;
       var requiredCount = params.length - namedCount - optionals;
       if (actualCount < requiredCount) {
-        return InvalidParameters('too few params');
+        return InvalidParametersException('too few params');
       }
       if (actualCount > requiredCount + optionals) {
-        return InvalidParameters('too many params');
+        return InvalidParametersException('too many params');
       }
     } else {
-      return MethodNotFound('Not found: $methodName');
+      return MethodNotFoundException('Not found: $methodName');
     }
 
     var resp;
     try {
       resp = await instanceMirror.invoke(methodName, posParams, symbolMap);
     } on TypeError catch (e) {
-      return InvalidParameters('$e');
+      return InvalidParametersException('$e');
     } catch (e) {
       // passthrough for custom user-correctable errors
       if (e is RuntimeException) {
@@ -93,4 +92,3 @@ class ReflectorDispatcher implements Dispatcher{
     return resp;
   }
 }
-

@@ -2,7 +2,7 @@
 @TestOn('vm')
 import 'dart:async';
 
-import 'package:jsonrpc2/src/rpc_exceptions.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
 
 import 'classb.dart';

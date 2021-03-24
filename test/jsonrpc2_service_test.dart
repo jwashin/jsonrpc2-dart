@@ -6,7 +6,7 @@ import 'dart:convert';
 
 import 'package:jsonrpc2/src/jsonrpc_service.dart';
 import 'package:jsonrpc2/src/mirror_dispatcher.dart';
-import 'package:jsonrpc2/src/rpc_exceptions.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
 
 /// dispatcher knows how to invoke methods.
@@ -19,7 +19,7 @@ class Foo {
 
   String hi() => 'Hi!';
   String hello() => 'Hello, $greetName!';
-  String greet([String name='']) =>
+  String greet([String name = '']) =>
       (name == '') ? 'Hello, $greetName!' : 'Hi, $name!';
   num sum(num a, num b, num d) => a + b + d;
   num add(num a, num b) => _private_add(a, b);
@@ -63,6 +63,8 @@ class Foo {
 class Zerr implements Exception {
   String message;
   Zerr(this.message);
+  @override
+  String toString() => message;
 }
 
 class MyObject {}

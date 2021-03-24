@@ -3,7 +3,7 @@ library jsonrpc_client_base;
 import 'dart:async';
 import 'dart:convert';
 
-import 'rpc_exceptions.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 
 /// [ServerProxyBase] is a base class for a JSON-RPC v2 client.
 ///
@@ -49,7 +49,7 @@ abstract class ServerProxyBase {
   /// Return the response when it returns.
   Future<dynamic> call(String method, [dynamic params]) async {
     var meth = JsonRpcMethod(method, params, serverVersion: serverVersion);
-    
+
     /// will throw error if unencodable
     var package = json.encode(meth);
 
@@ -76,8 +76,7 @@ abstract class ServerProxyBase {
 
   dynamic handleDecoded(Map resp) {
     if (resp.containsKey('error')) {
-      return RemoteException(resp['error']['message'], resp['error']['code'],
-          resp['error']['data']);
+      return RuntimeException.fromJson(resp['error']);
     }
     return resp['result'];
   }
@@ -86,9 +85,8 @@ abstract class ServerProxyBase {
   ///
   /// This method is used for custom exceptions, when the client and
   /// server have agreed on those.
-  dynamic checkError(dynamic response) {
+  void checkError(dynamic response) {
     if (response is RuntimeException) throw response;
-    return response;
   }
 }
 
@@ -239,48 +237,4 @@ class JsonRpcMethod {
   /// A useful string representation for debugging, etc.
   @override
   String toString() => 'JsonRpcMethod: ${toJson()}';
-}
-
-/// [RemoteException] may be used in user client-server code for exceptions
-/// not related to the actual transport.
-///
-/// It's for telling the user, 'this is not quite right', not 'this is broken'.
-class RemoteException implements Exception {
-  /// code for the exception. This is not for the JSON-RPC error codes.
-  int? code;
-
-  /// maybe a helpful message
-  String? message;
-
-  /// maybe some helpful data
-  dynamic? data;
-
-  /// constructor
-  RemoteException([this.message, this.code, this.data]);
-
-  @override
-  String toString() => data != null
-      ? 'RemoteException $code: \'$message\' Data:($data))'
-      : 'RemoteException $code: \'$message\'';
-}
-
-/// [TransportStatusError] is an error related to the chosen transport.
-///
-/// If you want to identifiy errors in your HTTP or WebSockets transport,
-/// for example, this provides a hook for that purpose.
-class TransportStatusError implements Exception {
-  /// maybe a helpful message
-  String message;
-
-  /// maybe some helpful data
-  dynamic data;
-
-  /// maybe the request itself
-  dynamic request;
-
-  /// constructor
-  TransportStatusError([this.message = '', this.request, this.data]);
-
-  @override
-  String toString() => '$message';
 }

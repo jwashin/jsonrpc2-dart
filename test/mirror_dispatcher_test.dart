@@ -1,9 +1,10 @@
 @TestOn('vm')
 
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
-import 'package:jsonrpc2/src/dispatcher.dart';
+import 'package:jsonrpc2/src/dispatcher_base.dart';
 import 'package:jsonrpc2/src/mirror_dispatcher.dart';
-import 'package:jsonrpc2/src/rpc_exceptions.dart';
+
 
 class Foo {
   String greetName;
@@ -121,7 +122,7 @@ void main() {
   test('method not found', () {
     var z = MirrorDispatcher(Foo());
     z.dispatch('zadd', [3, 4.3]).then(
-        (dynamic value) => expect(value, TypeMatcher<MethodNotFound>()));
+        (dynamic value) => expect(value, TypeMatcher<MethodNotFoundException>()));
 
     ///#new isInstanceOf<MethodNotFound>()));
   });
@@ -129,25 +130,25 @@ void main() {
   test('private method call', () {
     var z = MirrorDispatcher(Foo());
     z.dispatch('_privateAdd', [3, 4.3]).then(
-        (dynamic value) => expect(value, TypeMatcher<MethodNotFound>()));
+        (dynamic value) => expect(value, TypeMatcher<MethodNotFoundException>()));
   });
 
   test('invalid parameters too many', () {
     var z = MirrorDispatcher(Foo());
     z.dispatch('add', [3, 5, 8]).then(
-        (dynamic value) => expect(value, TypeMatcher<InvalidParameters>()));
+        (dynamic value) => expect(value, TypeMatcher<InvalidParametersException>()));
   });
 
   test('invalid parameters bad value', () {
     var z = MirrorDispatcher(Foo());
     z.dispatch('add', [3, 'hello']).then(
-        (dynamic value) => expect(value, TypeMatcher<InvalidParameters>()));
+        (dynamic value) => expect(value, TypeMatcher<InvalidParametersException>()));
   });
 
   test('invalid parameters too few', () {
     var z = MirrorDispatcher(Foo());
     z.dispatch('add', [3]).then(
-        (dynamic value) => expect(value, TypeMatcher<InvalidParameters>()));
+        (dynamic value) => expect(value, TypeMatcher<InvalidParametersException>()));
   });
 
   test('internal error', () {
@@ -159,14 +160,14 @@ void main() {
   test('private method invocation', () {
     var z = MirrorDispatcher(Foo());
     z.dispatch('_private_add', [3, 4.3]).then(
-        (dynamic value) => expect(value, TypeMatcher<MethodNotFound>()));
+        (dynamic value) => expect(value, TypeMatcher<MethodNotFoundException>()));
   });
 
   test('attempt property invocation', () {
     var z = MirrorDispatcher(Foo());
     z
         .dispatch('greet_name')
-        .then((dynamic value) => expect(value, TypeMatcher<MethodNotFound>()));
+        .then((dynamic value) => expect(value, TypeMatcher<MethodNotFoundException>()));
   });
 
   test('catch TypeError in application code', () {

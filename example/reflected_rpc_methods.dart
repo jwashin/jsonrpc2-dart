@@ -1,7 +1,7 @@
 library rpc_methods;
 
-import 'package:jsonrpc2/src/rpc_exceptions.dart';
 import 'package:reflectable/reflectable.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 
 import 'classb.dart';
 import 'reflected_rpc_methods.reflectable.dart';

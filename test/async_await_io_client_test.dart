@@ -3,8 +3,8 @@
 
 import 'dart:async';
 
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
-import 'package:jsonrpc2/src/rpc_exceptions.dart';
 import 'jsonrpc_io_client.dart';
 import 'src/classb.dart';
 

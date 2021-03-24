@@ -1,6 +1,6 @@
 library rpc_methods;
 
-import 'package:jsonrpc2/src/rpc_exceptions.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 
 import 'classb.dart';
 
