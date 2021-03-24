@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:jsonrpc2/src/client_base.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 
 /// This is an example JSON-RPC2 client for dart:io.
 /// 

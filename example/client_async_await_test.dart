@@ -3,7 +3,7 @@ library client_test;
 
 import 'dart:convert';
 
-import 'package:jsonrpc2/jsonrpc2.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
 
 import 'classb.dart';

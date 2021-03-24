@@ -7,8 +7,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
-import 'dispatcher.dart';
-import 'rpc_exceptions.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
+
+import 'dispatcher_base.dart';
 
 // using log from dart:developer, so using logging constants from
 // https://github.com/dart-lang/logging/blob/master/lib/src/level.dart
@@ -60,7 +61,7 @@ class MethodRequest {
   Map<String, dynamic> request;
 
   /// [ptype] informs us how to handle the object.
-  paramsTypes ptype= paramsTypes.single;
+  paramsTypes ptype = paramsTypes.single;
 
   /// constructor
   MethodRequest(this.request) {
@@ -217,10 +218,7 @@ Map makeExceptionMap(Object anException, String version, [dynamic id]) {
     resp['jsonrpc'] = version;
   }
   if (anException is RpcException) {
-    resp['error'] = {'code': anException.code, 'message': anException.message};
-    if (anException.data != null) {
-      resp['error']['data'] = anException.data;
-    }
+    resp['error'] = anException.toJson();
   } else {
     log('$anException', level: _info);
     resp['error'] = {'code': -32000, 'message': '$anException'};
