@@ -7,9 +7,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 
-import 'dispatcher_base.dart';
+
 
 // using log from dart:developer, so using logging constants from
 // https://github.com/dart-lang/logging/blob/master/lib/src/level.dart
@@ -129,15 +130,15 @@ class MethodRequest {
   }
 
   /// If we have a Map of named arguments, return the map. Else return null.
-  Map<String, dynamic>? get namedParams {
+  Map<String, dynamic> get namedParams {
     if (ptype == paramsTypes.map) {
       return request['params'];
     }
-    return null;
+    return <String,dynamic>{};
   }
 
   /// If we have a List of arguments, return the list. Else return null.
-  List<dynamic>? get positionalParams {
+  List<dynamic> get positionalParams {
     if (ptype == paramsTypes.list) {
       return request['params'];
     } else if (ptype != paramsTypes.map) {
@@ -148,7 +149,7 @@ class MethodRequest {
         return [request['params']];
       }
     }
-    return null;
+    return [];
   }
 
   /// id has to be a number or a string, or missing.
@@ -298,6 +299,7 @@ Future jsonRpcExec(Object request, Dispatcher dispatcher) async {
 /// Parse the JSON string
 ///
 /// We do this in a separate method for a distinguishable parse error
+/// Rethrow errors back to the client as ParseError, per specification.
 dynamic parseJson(String aString) {
   try {
     return json.decode(aString);

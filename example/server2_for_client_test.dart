@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:jsonrpc2/src/dispatcher_base.dart';
-import 'package:jsonrpc2/src/jsonrpc_service.dart';
+import 'package:jsonrpc2/src/server_base.dart';
 import 'package:jsonrpc2/src/mirror_dispatcher.dart';
+import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 
 import 'rpc_methods.dart';
 

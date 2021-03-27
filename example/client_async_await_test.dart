@@ -108,7 +108,7 @@ void main() {
       proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       var result1 = proxy.call('subtract', [23, 42]);
       var result2 = proxy.call('subtract', [42, 23]);
-      var result3 = proxy.call('get_data');
+      var result3 = proxy.call('getData');
       proxy.notify('update', ['happy Tuesday']);
       var result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
       proxy.send();
@@ -124,7 +124,7 @@ void main() {
         [1, 2, 3, 4, 5]
       ]);
       var result2 = proxy.call('subtract', [42, 23]);
-      var result3 = proxy.call('get_data');
+      var result3 = proxy.call('getData');
       proxy.notify('update', [
         [1, 2, 3, 4, 5]
       ]);

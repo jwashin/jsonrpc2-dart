@@ -137,7 +137,7 @@ void main() {
       proxy2.call('subtract', [42, 23]).then((result) {
         expect(result, equals(19));
       });
-      proxy2.call('get_data').then((result) {
+      proxy2.call('getData').then((result) {
         expect(result, equals(['hello', 5]));
       });
       proxy2.notify('update', ['happy Tuesday']);
@@ -160,7 +160,7 @@ void main() {
       proxy3.call('subtract', [42, 23]).then((result) {
         expect(result, equals(19));
       });
-      proxy3.call('get_data').then((result) {
+      proxy3.call('getData').then((result) {
         expect(result, equals(['hello', 5]));
       });
       proxy3.notify('update', [

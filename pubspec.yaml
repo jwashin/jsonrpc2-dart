@@ -6,6 +6,7 @@ homepage: https://github.com/jwashin/jsonrpc2-dart
 
 dependencies:
   rpc_exceptions: any
+  rpc_dispatcher: any
 
 environment:
   sdk: '>=2.12.0 <3.0.0'

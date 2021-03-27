@@ -1,17 +1,16 @@
 import 'dart:async';
 import 'dart:mirrors';
+
+import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 
-import 'dispatcher_base.dart';
-
-
-/// MirrorDispatcher implements Dispatcher by introspecting a class instance
-/// using dart:mirrors. dart:mirrors allows you to invoke an instance's methods
+/// MirrorDispatcher implements [Dispatcher] by introspecting a class instance
+/// using [dart:mirrors]. dart:mirrors allows you to invoke an instance's methods
 /// by their string names.
 ///
 /// Construct a [MirrorDispatcher] with a class instance.
-/// Dispatcher.dispatch("someMethod") will return a Future of whatever value it
-/// returns.
+/// MirrorDispatcher.dispatch("someMethod") will return a Future of whatever
+/// value it returns.
 /// It's mainly a wrapper around reflect.
 /// For any method dispatched, Dispatcher returns either the return value of
 /// the method or instances of one of three "Exception" classes. Most errors
@@ -27,13 +26,15 @@ class MirrorDispatcher implements Dispatcher {
   @override
   Future<dynamic> dispatch(String methodName,
       [dynamic positionalParams, Map<String, dynamic>? namedParams]) async {
-    namedParams = namedParams ?? <String, dynamic>{};
     var posParams = positionalParams ?? [];
-
+    if (posParams is Map<String, dynamic>) {
+      namedParams = positionalParams;
+      posParams = [];
+    }
     if (posParams is! List) {
       posParams = [posParams];
     }
-
+    namedParams = namedParams ?? <String, dynamic>{};
     var symbolMap = <Symbol, dynamic>{};
     if (namedParams.isNotEmpty) {
       symbolMap = symbolizeKeys(namedParams);
@@ -57,7 +58,8 @@ class MirrorDispatcher implements Dispatcher {
       return InvalidParametersException('$e');
     } on RuntimeException catch (e) {
       return e;
-    } catch (e) {
+    } catch (e) // Errors might crash the server
+    {
       return RuntimeException('$e');
     }
     var resp = await t.reflectee;
@@ -66,7 +68,6 @@ class MirrorDispatcher implements Dispatcher {
 }
 
 /// Find and return the method in the class of the mirror of the instance.
-/// Caution! Turning this mirror sideways may implode the universe.
 /// Throw MethowNorFound if the methodName is private or an attribute
 /// or not found,
 Symbol getMethodMirror(dynamic instanceMirror, String methodName) {
