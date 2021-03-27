@@ -4,7 +4,7 @@ library jsonrpc2_server_tests;
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:jsonrpc2/src/jsonrpc_service.dart';
+import 'package:jsonrpc2/src/server_base.dart';
 import 'package:jsonrpc2/src/mirror_dispatcher.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
@@ -31,10 +31,10 @@ class Foo {
 
   num _private_add(num a, num b) => a + b;
   num subtract(num a, num b) => a - b;
-  num notify_hello(aNum) => aNum;
+  num notifyHello(aNum) => aNum;
   num subtract_named({required num minuend, required num subtrahend}) =>
       minuend - subtrahend;
-  dynamic get_data() => ['hello', 5];
+  dynamic getData() => ['hello', 5];
   void throwerr(a, num b) {
     throw Zerr('you expected this!');
   }
@@ -334,6 +334,18 @@ void main() {
       });
     });
 
+    test('literal null', () {
+      jsonRpc('''{
+        "jsonrpc": "2.0",
+        "method": "echo",
+        "params": null,
+        "id": 2
+      }''', dispatcher).then((result) {
+        expect(json.decode(result),
+            equals({'jsonrpc': '2.0', 'result': null, 'id': 2}));
+      });
+    });
+
     test('named 1', () {
       jsonRpc('''{
         "jsonrpc": "2.0",
@@ -490,12 +502,12 @@ void main() {
     test('batch', () {
       jsonRpc('''[ {"jsonrpc": "2.0", "method": "sum", "params": [1,2,4], 
             "id": "1"},
-        {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]},
+        {"jsonrpc": "2.0", "method": "notifyHello", "params": [7]},
         {"jsonrpc": "2.0", "method": "subtract", "params": [42,23], "id": "2"},
             {"foo": "boo"},
         {"jsonrpc": "2.0", "method": "foo.get", "params": {"name": "myself"},
          "id": "5"},
-        {"jsonrpc": "2.0", "method": "get_data", "id": "9"} ]''', dispatcher)
+        {"jsonrpc": "2.0", "method": "getData", "id": "9"} ]''', dispatcher)
           .then((result) {
         expect(
             json.decode(result),
@@ -527,7 +539,7 @@ void main() {
     test('batch with only notifications', () {
       jsonRpc('''[
       {"jsonrpc": "2.0", "method": "notify_sum",   "params": [1,2,4]},
-      {"jsonrpc": "2.0", "method": "notify_hello", "params": [7]}
+      {"jsonrpc": "2.0", "method": "notifyHello", "params": [7]}
       ]''', dispatcher).then((result) {
         expect(result, equals(''));
       });

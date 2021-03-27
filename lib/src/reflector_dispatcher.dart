@@ -4,7 +4,7 @@
 /// about invoking the method, and the Dispatcher gets the instance to perform
 /// the method and gives you the returned value.
 
-import 'package:jsonrpc2/src/dispatcher_base.dart';
+import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 
 /// Dispatcher introspects a class instance so you can invoke its methods by
@@ -13,9 +13,9 @@ import 'package:rpc_exceptions/rpc_exceptions.dart';
 /// Dispatcher.dispatch("someMethod") will return a Future of whatever value it
 /// returns.
 ///
-/// It's mainly a wrapper around reflectable. When you process a Reflectable
-/// class, a mirror of the class's schematics is created.
-/// A ReflectorDiapatcher is inititalized with that and an actual instance.
+/// R$eflectorDispatcher is mainly a wrapper around reflectable. When you 
+/// process a Reflectable class, a mirror of the class's schematics is created.
+/// A ReflectorDispatcher is inititalized with that and an actual instance.
 ///
 class ReflectorDispatcher implements Dispatcher {
   /// the initialized class instance we will be invoking methods on.
@@ -39,11 +39,15 @@ class ReflectorDispatcher implements Dispatcher {
       [dynamic positionalParams, Map<String, dynamic>? namedParams]) async {
     namedParams = namedParams ?? <String, dynamic>{};
     var posParams = positionalParams ?? [];
+    if (posParams is Map<String, dynamic>) {
+      namedParams = positionalParams;
+      posParams = [];
+    }
 
     if (posParams is! List) {
       posParams = [posParams];
     }
-
+    namedParams = namedParams ?? <String, dynamic>{};
     var symbolMap = <Symbol, dynamic>{};
     if (namedParams.isNotEmpty) {
       symbolMap = symbolizeKeys(namedParams);
@@ -51,7 +55,7 @@ class ReflectorDispatcher implements Dispatcher {
 
     var instanceMirror = mirror.reflect(instance);
 
-    // error checking the method and parameter counts
+    // error check the method and parameter counts
     var methodSchemas = instanceMirror.type.declarations;
     if (methodSchemas.containsKey(methodName)) {
       var params = methodSchemas[methodName].parameters;

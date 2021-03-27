@@ -68,12 +68,12 @@ class ExampleMethodsClass {
   String _private() => 'hello';
 
   /// I think we might call this but not care about the return value
-  Object notify_hello(dynamic args) {
+  Object notifyHello(dynamic args) {
     return args;
   }
 
   /// a method that employs the private method.
-  List get_data() {
+  List getData() {
     // just to remove a nagging Analysis
     var hello = _private();
     return [hello, 5];

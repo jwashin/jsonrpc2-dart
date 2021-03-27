@@ -1,16 +1,16 @@
-/// Dispatcher is interface with a dispatch method for invoking methods on 
+/// Dispatcher is interface with a dispatch method for invoking methods on
 /// an instance.
 /// This interface hides implementation details for concrete method invokers
 /// for a JsonRpc service.
-
 abstract class Dispatcher {
-  ///  Invoke named method with parameters on the instance and
-  /// return a Future of the result, if possible.
+  ///  Invoke named method with parameters on an instance.
+  ///
+  ///  return a Future of the result, if possible.
   ///  Catch, repackage and return (not throw or rethrow) *All Errors*.
   ///  positionalParams shall be a List or null.
   ///  namedParams shall be a Map of String:value or null.
   Future<dynamic> dispatch(String methodName,
-      [dynamic positionalParams, Map<String, dynamic>? namedParams]);
+      [List<dynamic> positionalParams, Map<String, dynamic>? namedParams]);
 }
 
 /// Convenience method for making a Map of Symbol:value out of
