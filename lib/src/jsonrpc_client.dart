@@ -32,7 +32,7 @@ class ServerProxy extends ServerProxyBase {
   Future<String> executeRequest(String package) async {
     /// This is HttpRequest from dart:html
     var request = HttpRequest();
-    
+
     request.open('POST', url);
 
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};
