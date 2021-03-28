@@ -4,14 +4,9 @@ import 'package:reflectable/reflectable.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 
 import 'classb.dart';
-import 'reflected_rpc_methods.reflectable.dart';
 
-void main() {
-  initializeReflectable();
-  ExampleMethodsClass();
-}
-
-/// cheap persistence. It's just a thing.
+/// cheap persistence. It's just a thing. We get a warning about this from
+/// reflector builder
 dynamic cheapPersistence;
 
 /// One of the stupidest APIs ever. Do not model this
@@ -19,7 +14,7 @@ dynamic cheapPersistence;
 /// But it does demo some of the kinds of things an API might do
 ///
 class MyReflectable extends Reflectable {
-  const MyReflectable() : super(invokingCapability);
+  const MyReflectable() : super(invokingCapability, declarationsCapability);
 }
 
 const myReflectable = MyReflectable();
@@ -104,7 +99,7 @@ class ExampleMethodsClass {
 }
 
 class FriendReflectable extends Reflectable {
-  const FriendReflectable() : super(invokingCapability);
+  const FriendReflectable() : super(invokingCapability, declarationsCapability);
 }
 
 const friendReflectable = FriendReflectable();

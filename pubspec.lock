@@ -330,6 +330,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.1"
+  reflector_dispatcher:
+    dependency: "direct dev"
+    description:
+      name: reflector_dispatcher
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1"
   rpc_dispatcher:
     dependency: "direct main"
     description:
