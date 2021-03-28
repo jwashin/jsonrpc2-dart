@@ -57,22 +57,6 @@ void main() {
           result, equals('Îñţérñåţîöñåļîžåţîờñ Τη γλώσσα μου έδωσαν ελληνική'));
     });
 
-    test('not JSON-serializable', () async {
-      try {
-        await proxy.call('subtract', [3, 0 / 0]);
-      } on Error catch (e) {
-        expect(e, isUnsupportedError);
-      }
-    });
-
-    test('class instance not JSON-serializable', () async {
-      try {
-        await proxy.call('subtract', [3, MyClass()]);
-      } on Error catch (e) {
-        expect(e, isUnsupportedError);
-      }
-    });
-
     test('serializable class - see classb.dart', () async {
       var result = await proxy.call('s1', [ClassB('hello', 'goodbye')]);
       expect(result, equals('hello'));
@@ -81,25 +65,19 @@ void main() {
     test('custom error', () async {
       dynamic result = await proxy.call('baloo', ['sam']);
       expect(result, equals('Balooing sam, as requested.'));
-
-      result = await proxy.call('baloo', ['frotz']);
       try {
-        proxy.checkError(result);
-        // should not get here
-//        throw new Exception(result);
+        result = await proxy.call('baloo', ['frotz']);
       } on RpcException catch (e) {
         expect(e.code, equals(34));
       }
     });
 
     test('no such method', () async {
-      var result = await proxy.call('foobar');
-      expect(result.code, equals(-32601));
+      expect(proxy.call('foobar'), throwsException);
     });
 
     test('private method', () async {
-      var result = await proxy.call('_private');
-      expect(result.code, equals(-32601));
+      expect(proxy.call('_private'), throwsException);
     });
 
     test('notification had effect', () async {

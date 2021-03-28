@@ -91,23 +91,19 @@ void main() {
       // proxy.call('baloo', 'sam').then((result) {
       //   expect(result, equals('Balooing sam, as requested.'));
       // });
-      var result2 = await proxy.call('baloo', ['frotz']);
       try {
-        proxy.checkError(result2);
+        await proxy.call('baloo', ['frotz']);
       } on RpcException catch (e) {
         expect(e.code, equals(34));
       }
     });
 
     test('unplanned error', () async {
-      dynamic result = await proxy.call('raiseMe', '[Hello]');
       try {
-        proxy.checkError(result);
+        await proxy.call('raiseMe', '[Hello]');
       } on RpcException catch (e) {
         expect(e.code, equals(-32000));
       }
-      // FYI
-      //expect ('$result', equals('RemoteException -32000: [Hello]'));
     });
 
     test('no such method', () {
@@ -121,12 +117,6 @@ void main() {
         expect(result.code, equals(-32601));
       });
     });
-
-//    test('notification had effect', () {
-//      proxy.call('fetchGlobal').then((result) {
-//        expect(result, equals([1, 2, 3, 4, 5]));
-//      });
-//    });
 
     test('basic batch', () {
       var proxy2 = BatchServerProxy('http://127.0.0.1:8394/sum');

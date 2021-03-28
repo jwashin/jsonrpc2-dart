@@ -5,7 +5,7 @@ import 'dart:async';
 
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
-import 'jsonrpc_io_client.dart';
+import 'jsonrpc_client.dart';
 import 'src/classb.dart';
 
 class MyClass {
@@ -69,25 +69,19 @@ void main() {
     test('custom error', () async {
       dynamic result = await proxy.call('baloo', ['sam']);
       expect(result, equals('Balooing sam, as requested.'));
-
-      result = await proxy.call('baloo', ['frotz']);
       try {
-        proxy.checkError(result);
-        // should not get here
-//        throw new Exception(result);
+        await proxy.call('baloo', ['frotz']);
       } on RpcException catch (e) {
         expect(e.code, equals(34));
       }
     });
 
     test('no such method', () async {
-      var result = await proxy.call('foobar');
-      expect(result.code, equals(-32601));
+      expect(proxy.call('foobar'), throwsException);
     });
 
     test('private method', () async {
-      dynamic result = await proxy.call('_private');
-      expect(result.code, equals(-32601));
+      expect(proxy.call('_private'), throwsException);
     });
 
     test('basic batch', () async {

@@ -1,20 +1,22 @@
 name: jsonrpc2
 version: 3.0.0
 author: Jim Washington <washington.jim@gmail.com>
-description: JSON-RPC (v2.0) utility classes for web applications. Invoke methods on another machine using JSON.
+description: JSON-RPC (v2.0) utility classes for web applications. Invoke
+  methods on another machine using JSON.
 homepage: https://github.com/jwashin/jsonrpc2-dart
 
 dependencies:
-  rpc_exceptions: any
+  http: ^0.13.1
   rpc_dispatcher: any
+  rpc_exceptions: any
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dev_dependencies:
-  stream_channel: any
   build_runner: any
   build_test: any
-  reflectable: ^3.0.0
   pedantic: ^1.11.0
+  reflectable: ^3.0.0
+  stream_channel: any
   test: ^1.16.5
