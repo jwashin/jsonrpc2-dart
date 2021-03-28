@@ -70,11 +70,8 @@ void main() {
       dynamic result = await proxy.call('baloo', ['sam']);
       expect(result, equals('Balooing sam, as requested.'));
 
-      result = await proxy.call('baloo', ['frotz']);
       try {
-        proxy.checkError(result);
-        // should not get here
-//        throw new Exception(result);
+        result = await proxy.call('baloo', ['frotz']);
       } on RpcException catch (e) {
         expect(e.code, equals(34));
       }

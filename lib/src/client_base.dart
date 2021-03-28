@@ -10,9 +10,7 @@ import 'package:rpc_exceptions/rpc_exceptions.dart';
 /// ServerProxyBase is intended to be subclassed. It does most of the
 /// client-side functionality needed for JSON-RPC v2, but the transport details
 /// are missing and must be provided by overriding the [executeRequest] method.
-/// [ServerProxy] in [jsonrpc_client.dart] and [jsonrpc_io_client.dart] are
-/// implementations as http client for a web page and http client for a command
-/// line utility, respectively.
+/// [ServerProxy] in [jsonrpc_client.dart] is an implementation.
 ///
 /// basic usage (ServerProxy here is a descendant class of ServerProxyBase):
 /// ```
@@ -31,16 +29,15 @@ abstract class ServerProxyBase {
   String url;
 
   /// serverVersion is variable for possible fallback to JSON-RPC v1.
-  String serverVersion = '2.0';
+  final String _serverVersion = '2.0';
 
   /// Initialize with the identifier for the server resource
   ServerProxyBase(this.url);
 
   /// Call the method on the server. Returns Future<dynamic>
   Future<String> notify(String method, [dynamic params]) async {
-    var meth = JsonRpcMethod(method, params,
-        notify: true, serverVersion: serverVersion);
-    var package = json.encode(meth);
+    var package = json.encode(JsonRpcMethod(method, params,
+        notify: true, serverVersion: _serverVersion));
     await executeRequest(package);
     return '';
   }
@@ -48,10 +45,9 @@ abstract class ServerProxyBase {
   /// Package and send the method request to the server.
   /// Return the response when it returns.
   Future<dynamic> call(String method, [dynamic params]) async {
-    var meth = JsonRpcMethod(method, params, serverVersion: serverVersion);
-
-    /// will throw error if unencodable
-    var package = json.encode(meth);
+    /// will throw error if not encodable into JSON
+    var package = json
+        .encode(JsonRpcMethod(method, params, serverVersion: _serverVersion));
 
     var resp = await executeRequest(package);
     return handleResponse(resp);
@@ -66,7 +62,7 @@ abstract class ServerProxyBase {
   ///
   Future<String> executeRequest(String package);
 
-  /// Return the result of calling the method, but first, check for error.
+  /// Return the result of calling the method.
   dynamic handleResponse(String returned) {
     // print('returned is $returned, ${returned.runtimeType}');
     var resp = Map<String, dynamic>.from(json.decode(returned));
@@ -74,20 +70,21 @@ abstract class ServerProxyBase {
     return handleDecoded(resp);
   }
 
+  /// 
   dynamic handleDecoded(Map resp) {
     if (resp.containsKey('error')) {
-      return RuntimeException.fromJson(resp['error']);
+      throw RuntimeException.fromJson(resp['error']);
     }
     return resp['result'];
   }
 
-  /// if error is a [RuntimeException], throw it, else return it.
-  ///
-  /// This method is used for custom exceptions, when the client and
-  /// server have agreed on those.
-  void checkError(dynamic response) {
-    if (response is RuntimeException) throw response;
-  }
+  // /// if error is a [RuntimeException], throw it, else return it.
+  // ///
+  // /// This method is used for custom exceptions, when the client and
+  // /// server have agreed on those.
+  // void checkError(dynamic response) {
+  //   if (response is RuntimeException) throw response;
+  // }
 }
 
 /// [BatchServerProxyBase] is like [ServerProxyBase], but it handles the
@@ -114,7 +111,7 @@ class BatchServerProxyBase {
   Future<dynamic> call(String method, [dynamic params]) async {
     /// We create a JsonRpcMethod for each method request
     var package =
-        JsonRpcMethod(method, params, serverVersion: proxy.serverVersion);
+        JsonRpcMethod(method, params, serverVersion: proxy._serverVersion);
 
     /// and we add it to our list
     _requests.add(package);
@@ -130,7 +127,7 @@ class BatchServerProxyBase {
   /// add to _requests list, but we don't care about anything returned
   void notify(String method, [dynamic params]) {
     var package = JsonRpcMethod(method, params,
-        notify: true, serverVersion: proxy.serverVersion);
+        notify: true, serverVersion: proxy._serverVersion);
     // add this for requesting, but not for the completion queue
     _requests.add(package);
   }

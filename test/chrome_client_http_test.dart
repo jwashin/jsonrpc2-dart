@@ -1,5 +1,5 @@
-@TestOn('vm')
-library io_client_test;
+@TestOn('chrome')
+library client_chrome_test;
 
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
@@ -10,18 +10,14 @@ class MyClass {
   MyClass();
 }
 
-bool persistentConnection = false;
-
+dynamic proxy;
 void main() {
-  var proxy = ServerProxy('http://127.0.0.1:8394/sum');
-  // proxy.persistentConnection = persistentConnection;
+  proxy = ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
     test('positional arguments', () {
       proxy.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
       });
-    });
-    test('positional arguments 2', () {
       proxy.call('subtract', [42, 23]).then((result) {
         expect(result, equals(19));
       });
@@ -54,7 +50,7 @@ void main() {
     });
 
     test('unicode', () {
-      proxy.call('echo', ['Îñţérñåţîöñåļîžåţîờñ']).then((result) {
+      proxy.call('echo', 'Îñţérñåţîöñåļîžåţîờñ').then((result) {
         expect(result, equals('Îñţérñåţîöñåļîžåţîờñ'));
       });
     });
@@ -66,101 +62,95 @@ void main() {
       });
     });
 
-    test('serializable class - see classb.dart', () {
-      proxy.call('s1', [ClassB('hello', 'goodbye')]).then((result) {
-        expect(result, equals('hello'));
-      });
+    /// removing these tests. JSON serializability should fail before it gets
+    /// here.
+    // test('not JSON-serializable', () {
+    //   expect(proxy.call('subtract', [3, 0 / 0]), throwsUnsupportedError);
+    // },skip: 'This is thrown by JSON serializer. Not our concern');
+
+    // test('class instance not JSON-serializable', () {
+    //   expect(proxy.call('subtract', [3, MyClass()]), throwsUnsupportedError);
+    // },skip: 'This is thrown by JSON serializer. Not our concern');
+
+    test('serializable class - see classb.dart', () async {
+      var result = await proxy.call('s1', [ClassB('hello', 'goodbye')]);
+      expect(result, equals('hello'));
     });
 
     test('custom error', () async {
-      // this works. separately.
-      // proxy.call('baloo', 'sam').then((result) {
-      //   expect(result, equals('Balooing sam, as requested.'));
-      // });
+      dynamic result = await proxy.call('baloo', ['sam']);
+      expect(result, equals('Balooing sam, as requested.'));
       try {
-        await proxy.call('baloo', ['frotz']);
+        result = await proxy.call('baloo', ['frotz']);
       } on RpcException catch (e) {
         expect(e.code, equals(34));
       }
+      ;
     });
 
-    test('unplanned error', () async {
-      try {
-        await proxy.call('raiseMe', '[Hello]');
-      } on RpcException catch (e) {
-        expect(e.code, equals(-32000));
-      }
-    });
-
-    test('no such method', () {
+    test('no such method', () async {
       expect(proxy.call('foobar'), throwsException);
     });
 
-    test('private method', () {
+    test('private method', () async {
       expect(proxy.call('_private'), throwsException);
     });
 
-//    test('notification had effect', () {
-//      proxy.call('fetchGlobal').then((result) {
-//        expect(result, equals([1, 2, 3, 4, 5]));
-//      });
-//    });
+    test('notification had effect', () {
+      proxy.call('fetchGlobal').then((result) {
+        expect(result, equals([1, 2, 3, 4, 5]));
+      });
+    });
 
     test('basic batch', () {
-      var proxy2 = BatchServerProxy('http://127.0.0.1:8394/sum');
-      // proxy2.persistentConnection = persistentConnection;
-      proxy2.call('subtract', [23, 42]).then((result) {
+      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
       });
-      proxy2.call('subtract', [42, 23]).then((result) {
+      proxy.call('subtract', [42, 23]).then((result) {
         expect(result, equals(19));
       });
-      proxy2.call('getData').then((result) {
+      proxy.call('getData').then((result) {
         expect(result, equals(['hello', 5]));
       });
-      proxy2.notify('update', ['happy Tuesday']);
+      proxy.notify('update', ['happy Tuesday']);
 
-      proxy2
-          .call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
+      proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
         expect(result, equals(-19));
       });
-      proxy2.send();
+      proxy.send();
     });
 
     test('batch with error on a notification', () {
-      var proxy3 = BatchServerProxy('http://127.0.0.1:8394/sum');
-      // proxy3.persistentConnection = persistentConnection;
-      proxy3.call('summation', [
+      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy.call('summation', [
         [1, 2, 3, 4, 5]
       ]).then((result) {
         expect(result, equals(15));
       });
-      proxy3.call('subtract', [42, 23]).then((result) {
+      proxy.call('subtract', [42, 23]).then((result) {
         expect(result, equals(19));
       });
-      proxy3.call('getData').then((result) {
+      proxy.call('getData').then((result) {
         expect(result, equals(['hello', 5]));
       });
-      proxy3.notify('update', [
+      proxy.notify('update', [
         [1, 2, 3, 4, 5]
       ]);
-      proxy3.notify('oopsie');
-      proxy3
-          .call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
+      proxy.notify('oopsie');
+      proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
         expect(result, equals(-19));
       });
-      proxy3.send();
+      proxy.send();
     });
 
     test('variable url', () {
-      var proxy4 = ServerProxy('http://127.0.0.1:8394/friend/Bob');
-      // proxy4.persistentConnection = persistentConnection;
-      proxy4.call('hello').then((result) {
+      var proxy = ServerProxy('http://127.0.0.1:8394/friend/Bob');
+      proxy.call('hello').then((result) {
         expect(result, equals('Hello from Bob!'));
       });
-      var proxy5 = ServerProxy('http://127.0.0.1:8394/friend/Mika');
-      // proxy5.persistentConnection = persistentConnection;
-      proxy5.call('hello').then((result) {
+      proxy = ServerProxy('http://127.0.0.1:8394/friend/Mika');
+      proxy.call('hello').then((result) {
         expect(result, equals('Hello from Mika!'));
       });
     });
