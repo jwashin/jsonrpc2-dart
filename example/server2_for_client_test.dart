@@ -2,16 +2,21 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:jsonrpc2/src/server_base.dart';
-import 'package:jsonrpc2/src/mirror_dispatcher.dart';
+import 'package:mirror_dispatcher/mirror_dispatcher.dart';
 import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 
 import 'rpc_methods.dart';
 
 final port = 8394;
+
 ///
 /// Test server for test_client.dart. Uses HttpServer from dart:io package.
 ///
-void main() async {
+void main() {
+  runTestServer(port);
+}
+
+Future<HttpServer> runTestServer(port) async {
   var server = await HttpServer.bind(InternetAddress.loopbackIPv4, port);
   print('Test Server running at '
       'http://${InternetAddress.loopbackIPv4.address}:$port\n');
@@ -54,7 +59,7 @@ void main() async {
       // print(request.method);
     }
   }
-  ;
+  return server;
 }
 
 void setCrossOriginHeaders(request) {

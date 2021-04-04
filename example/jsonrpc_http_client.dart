@@ -29,7 +29,7 @@ class ServerProxy extends ServerProxyBase {
 
   /// Return a Future with the JSON-RPC response
   @override
-  Future<String> executeRequest(String package) async {
+  Future<String> transmit(String package, [bool isNotification=false]) async {
     /// This is HttpRequest from dart:html
     
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};
@@ -39,7 +39,7 @@ class ServerProxy extends ServerProxyBase {
 
     // useful for debugging!
     // print(package);
-    var resp = await http.post(Uri.parse(url),body:package, headers:headers);
+    var resp = await http.post(Uri.parse(resource),body:package, headers:headers);
 
     var body = resp.body;
     if (resp.statusCode == 204 || body.isEmpty) {

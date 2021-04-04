@@ -10,8 +10,6 @@ import 'dart:developer';
 import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 
-
-
 // using log from dart:developer, so using logging constants from
 // https://github.com/dart-lang/logging/blob/master/lib/src/level.dart
 
@@ -62,7 +60,7 @@ class MethodRequest {
   Map<String, dynamic> request;
 
   /// [ptype] informs us how to handle the object.
-  paramsTypes ptype = paramsTypes.single;
+  paramsTypes ptype = paramsTypes.empty;
 
   /// constructor
   MethodRequest(this.request) {
@@ -81,19 +79,16 @@ class MethodRequest {
       ptype = paramsTypes.single;
       return;
     }
-    ptype = paramsTypes.empty;
     if (parms == null) {
       return;
     } else if (parms is Map) {
       if (parms.isEmpty) {
-        ptype = paramsTypes.empty;
         return;
       }
       ptype = paramsTypes.map;
       return;
     } else if (parms is List) {
       if (parms.isEmpty) {
-        ptype = paramsTypes.empty;
         return;
       }
       ptype = paramsTypes.list;
@@ -134,7 +129,7 @@ class MethodRequest {
     if (ptype == paramsTypes.map) {
       return request['params'];
     }
-    return <String,dynamic>{};
+    return <String, dynamic>{};
   }
 
   /// If we have a List of arguments, return the list. Else return null.

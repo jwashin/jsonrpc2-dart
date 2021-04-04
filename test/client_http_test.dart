@@ -102,7 +102,7 @@ void main() {
       });
     });
 
-    test('basic batch', () {
+    test('basic batch', () async {
       proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       proxy.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
@@ -118,10 +118,10 @@ void main() {
       proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
         expect(result, equals(-19));
       });
-      proxy.send();
+      await proxy.send();
     });
 
-    test('batch with error on a notification', () {
+    test('batch with error on a notification', () async {
       proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       proxy.call('summation', [
         [1, 2, 3, 4, 5]
@@ -141,7 +141,7 @@ void main() {
       proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
         expect(result, equals(-19));
       });
-      proxy.send();
+      await proxy.send();
     });
 
     test('variable url', () {

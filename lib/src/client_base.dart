@@ -9,7 +9,7 @@ import 'package:rpc_exceptions/rpc_exceptions.dart';
 ///
 /// ServerProxyBase is intended to be subclassed. It does most of the
 /// client-side functionality needed for JSON-RPC v2, but the transport details
-/// are missing and must be provided by overriding the [executeRequest] method.
+/// are missing and must be provided by overriding the [transmit] method.
 /// [ServerProxy] in [jsonrpc_client.dart] is an implementation.
 ///
 /// basic usage (ServerProxy here is a descendant class of ServerProxyBase):
@@ -17,74 +17,74 @@ import 'package:rpc_exceptions/rpc_exceptions.dart';
 /// import 'package:jsonrpc2/jsonrpc_client.dart'
 /// var url = 'http://some/location';
 /// var proxy = new ServerProxy(url);
-/// var response = await proxy.call('someServerMethod', [arg1, arg2 ]);
-///     proxy.checkError(response))
+/// try{
+///    var response = await proxy.call('someServerMethod', [arg1, arg2 ]);
+/// }on RemoteException (e){\\do something with exception e}
+///
 ///     doSomethingWithValue(response);
 /// ```
 /// Each arg must be representable in json.
 ///
 /// Exceptions on the remote end may throw [RemoteException].
 abstract class ServerProxyBase {
-  /// Server will be identified with a url, so here's the place for it.
-  String url;
+  /// Proxy will be initialized with some sort of remote resource, so make
+  /// a place for it.
+  dynamic resource;
 
   /// serverVersion is variable for possible fallback to JSON-RPC v1.
   final String _serverVersion = '2.0';
 
   /// Initialize with the identifier for the server resource
-  ServerProxyBase(this.url);
+  ServerProxyBase(this.resource);
 
   /// Call the method on the server. Returns Future<dynamic>
   Future<String> notify(String method, [dynamic params]) async {
     var package = json.encode(JsonRpcMethod(method, params,
         notify: true, serverVersion: _serverVersion));
-    await executeRequest(package);
+    await transmit(package, true);
     return '';
   }
 
   /// Package and send the method request to the server.
   /// Return the response when it returns.
   Future<dynamic> call(String method, [dynamic params]) async {
-    /// will throw error if not encodable into JSON
+    /// This will throw error if not encodable into JSON
     var package = json
         .encode(JsonRpcMethod(method, params, serverVersion: _serverVersion));
 
-    var resp = await executeRequest(package);
-    return handleResponse(resp);
+    var resp = await transmit(package);
+    return _handleResponse(resp);
   }
 
-  /// This is the transport interface. Abstract method [executeRequest] must
-  /// be implemented in a subclass. [package] is a String JSON-RPC Request
-  /// created through the [call] method of this class. Override the
-  /// [executeRequest] method to send the package to a server recipient, and
-  /// return the String body that comes back. You probably want to do error
-  /// handling on the transport.
+  /// Transmit a JSON-RPC String. Receive a response, and return it.
   ///
-  Future<String> executeRequest(String package);
+  /// This is the transport interface. Abstract method [transmit] must
+  /// be implemented in a subclass. package is a String JSON-RPC Request
+  /// created through the [call] method of this class. Override this
+  /// method by sending the package to a remote recipient,
+  /// and returning the String body (also JSON) that comes back. You may want to
+  /// do error handling on the transport. The [resource] member from
+  /// initialization is available for your use in your subclass.
+  /// [isNotification] indicates whether the package is a notification. The
+  /// transport determines whether notifications should be waited for. Http
+  /// always returns something. Other transports may not.
+  ///
+  Future<String> transmit(String package, [bool isNotification = false]);
 
   /// Return the result of calling the method.
-  dynamic handleResponse(String returned) {
+  dynamic _handleResponse(String returned) {
     // print('returned is $returned, ${returned.runtimeType}');
     var resp = Map<String, dynamic>.from(json.decode(returned));
     // print('response is $resp, ${resp.runtimeType}');
-    return handleDecoded(resp);
+    return _handleDecoded(resp);
   }
 
-  /// 
-  dynamic handleDecoded(Map resp) {
+  dynamic _handleDecoded(Map resp) {
     if (resp.containsKey('error')) {
       throw RuntimeException.fromJson(resp['error']);
     }
     return resp['result'];
   }
-
-  // /// if error is a [RuntimeException], throw it, else return it.
-  // ///
-  // /// This method is used for custom exceptions, when the client and
-  // /// server have agreed on those.
-  // void checkError(dynamic response) {
-  //   if (response is RuntimeException) throw response;
-  // }
 }
 
 /// [BatchServerProxyBase] is like [ServerProxyBase], but it handles the
@@ -143,21 +143,21 @@ class BatchServerProxyBase {
       } on JsonUnsupportedObjectError catch (e) {
         throw UnsupportedError('$e');
       }
-      var responses = await proxy.executeRequest(batchRequests);
+      var responses = await proxy.transmit(batchRequests);
       // reset the requests holder
       _requests.clear();
-      return handleResponses(responses);
+      return _handleResponses(responses);
     }
   }
 
   /// In Batch mode, responses also return in a batch. The individual responses
   /// have ids, so plug them into the Map of responses
   /// to complete those Futures.
-  void handleResponses(String responseString) {
+  void _handleResponses(String responseString) {
     var responses = json.decode(responseString);
     // print('responseString is $responseString');
     for (var response in responses) {
-      var value = proxy.handleDecoded(response);
+      var value = proxy._handleDecoded(response);
       var id = response['id'];
       if (_responses.containsKey(id)) {
         {

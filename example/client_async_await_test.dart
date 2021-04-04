@@ -7,7 +7,7 @@ import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';
 
 import 'classb.dart';
-import '../lib/src/jsonrpc_client.dart';
+import 'jsonrpc_http_client.dart';
 
 class MyClass {
   MyClass();
