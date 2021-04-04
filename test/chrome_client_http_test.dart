@@ -1,4 +1,4 @@
-@TestOn('chrome')
+@TestOn('browser')
 library client_chrome_test;
 
 import 'package:rpc_exceptions/rpc_exceptions.dart';

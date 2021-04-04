@@ -1,6 +1,6 @@
 @TestOn('vm')
 
-import 'package:jsonrpc2/src/mirror_dispatcher.dart';
+import 'package:mirror_dispatcher/mirror_dispatcher.dart';
 import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 import 'package:test/test.dart';

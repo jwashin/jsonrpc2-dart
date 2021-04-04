@@ -29,7 +29,7 @@ import 'package:rpc_exceptions/rpc_exceptions.dart';
 /// ServerProxyBase takes care of the JSON-RPC specific stuff. Referring to the
 /// above instructions, when you call a server method with args, that 
 /// invocation is converted into a JSON-RPC package, a specially-formatted
-/// chunk of JSON. The overridden [executeRequest] method here sends that string
+/// chunk of JSON. The overridden [transmit] method here sends that string
 /// to the server and receives a string in response. The response is parsed, and
 /// the result, or an error, is returned as the result of the call.
 class ServerProxy extends ServerProxyBase {
@@ -39,11 +39,11 @@ class ServerProxy extends ServerProxyBase {
   /// constructor. superize properly
   ServerProxy(String url) : super(url);
 
-  /// [executeRequest], overriding the abstract method
+  /// [transmit], overriding the abstract method
   ///
   /// return a future with the JSON-RPC response
   @override
-  Future<String> executeRequest(String package) async {
+  Future<String> transmit(String package, [bool isNotification=false]) async {
     /// init a client connection
     var conn = HttpClient();
 
@@ -51,7 +51,7 @@ class ServerProxy extends ServerProxyBase {
 
     /// make a Http request, POSTing the payload and setting an appropriate
     /// content-type
-    var request = await conn.postUrl(Uri.parse(url));
+    var request = await conn.postUrl(Uri.parse(resource));
     request.headers.add('Content-Type', 'application/json; charset=UTF-8');
 
     /// Implementation detail: persistentConnection (default)

@@ -18,6 +18,7 @@ dev_dependencies:
   build_test: any
   pedantic: ^1.11.0
   reflectable: ^3.0.0
+  mirror_dispatcher: ^1.0.1
   reflector_dispatcher: ^1.0.1
   stream_channel: any
   test: ^1.16.5

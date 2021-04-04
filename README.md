@@ -4,24 +4,37 @@ jsonrpc2
 JSON-RPC is a simple protocol for calling methods on a server and (usually)
 getting a response back. The specification is at [http://jsonrpc.org](http://jsonrpc.org).
 
-This package implements the [JSON-RPC 2.0 specification](http://www.jsonrpc.org/specification),
+This package does the fussy part of the [JSON-RPC 2.0 specification](http://www.jsonrpc.org/specification),
 with failover to 1.0 in the server implementation.
+
  
 Client Basics
 -------------
 
 - Import the client library.
 - Create a ServerProxy with the url for the desired endpoint.
+
+```dart
+
+
+
+
 - Call a method on that endpoint, error check, and do something with the result.
 
+```dart
  
-        import 'package:jsonrpc2/jsonrpc_client.dart';
-        proxy = ServerProxy('http://example.com/some_endpoint');
-        proxy.call('some_method',[arg1, arg2])
-             .then((returned)=>proxy.checkError(returned))
-             .then((result){do_something_with(result);})
-             .catchError((error){handle(error);});
+        import 'package:jsonrpc2/jsonrpc2.dart';
+        import 'package:rpc_exceptions/rpc_exceptions.dart';
+        proxy = MyServerProxy('http://example.com/some_endpoint');
+        var result;
+        try{
+        result = proxy.call('some_method',[arg1, arg2]);
+        on RpcException catch(e){
+            doSomethingWithException(e);
+        }
+        doSomethingWith(result);
 
+```
 
 - dart:io (command line) client is the same, except you import the io client module.
 
