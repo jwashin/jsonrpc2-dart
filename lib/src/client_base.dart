@@ -45,8 +45,16 @@ abstract class ServerProxyBase {
     return '';
   }
 
-  /// Package and send the method request to the server.
-  /// Return the response when it returns.
+  /// Call a method on the remote server, and get a response
+  ///
+  /// no params:              proxy.call('method_a');
+  /// single immutable param: proxy.call('method_b', 'some text');
+  /// single immutable param: proxy.call('method_b', ['some text']);
+  /// positional params:      proxy.call('method_c', [arg1, arg2, arg3]);
+  /// single List param:      proxy.call('method_d', [[a,b,c,d]]);
+  /// single Map param:       proxy.call('method_d', [{'p':5,'d':true}]);
+  /// named params:           proxy.call('method_e', {'ID':23,'nm':'Jo'});
+  ///
   Future<dynamic> call(String method, [dynamic params]) async {
     /// This will throw error if not encodable into JSON
     var package = json
