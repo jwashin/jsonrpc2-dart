@@ -29,9 +29,9 @@ class ServerProxy extends ServerProxyBase {
 
   /// Return a Future with the JSON-RPC response
   @override
-  Future<String> transmit(String package, [bool isNotification=false]) async {
+  Future<String> transmit(String package, [bool isNotification = false]) async {
     /// This is HttpRequest from dart:html
-    
+
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};
     if (customHeaders.isNotEmpty) {
       headers.addAll(customHeaders);
@@ -39,15 +39,22 @@ class ServerProxy extends ServerProxyBase {
 
     // useful for debugging!
     // print(package);
-    var resp = await http.post(Uri.parse(resource),body:package, headers:headers);
+    var resp =
+        await http.post(Uri.parse(resource), body: package, headers: headers);
 
     var body = resp.body;
     if (resp.statusCode == 204 || body.isEmpty) {
-      return ''; //in case we need a Map because null-safety...
+      return ''; // we'll return an empty string for null response
     } else {
       return body;
     }
   }
+
+  // optionally, mirror remote API
+  // Future echo(dynamic aThing) async {
+  //   var resp = await call('echo', [aThing]);
+  //   return resp;
+  // }
 }
 
 /// see the documentation in [BatchServerProxyBase]
