@@ -1,12 +1,11 @@
 jsonrpc2
 ========
 
-JSON-RPC is a simple, text-based protocol for calling methods on a remote server and (usually)
-getting a response back. The specification is at [http://jsonrpc.org](http://jsonrpc.org).
+JSON-RPC is a text-based protocol for calling methods on a remote server and (usually) getting a response back. The specification is at [http://jsonrpc.org](http://jsonrpc.org).
 
-JSON-RPC is divided into a client and server responsibilities. This package does the fussy part of the [JSON-RPC 2.0 specification](http://www.jsonrpc.org/specification), with failover to 1.0 in the server implementation. It is a 
+JSON-RPC is divided into client and server responsibilities. This package does the fussy part of the [JSON-RPC 2.0 specification](http://www.jsonrpc.org/specification), with failover to 1.0 for the server. 
 
-This package does not handle transport details, so it requires extension to actually send method requests and receive responses. Examples are provided for common implementations.
+Like the specification, this package does not handle transport details, so it requires extension to actually send method requests and receive responses. Examples are provided for common implementations.
 
 Usage:
 ======
@@ -16,46 +15,55 @@ Usage:
 - Import the client library.
 - Create a ServerProxy class, extended from ServerProxyBase, initialized with a server resource endpoint.
 - In your ServerProxy class override the **transmit** method, which sends a String to the remote JSON-RPC server and returns the returned string.
-- **Call** a method on that endpoint, error check, and do something with the result. 
+- Use an instance of your ServerProxy to **call** a method on that endpoint, and do something with the result. 
 
-Example JSON-RPC Client using http.dart [http_client.dart](example/jsonrpc_http_client.dart)
+Example JSON-RPC Client using http.dart 
 ---------------------------------------
+
+[http_client](example/jsonrpc_http_client.dart)
 ```dart
 import 'package:http/http.dart' as http;
 import 'package:jsonrpc2/jsonrpc2.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 
-
 // ServerProxy is a JSON-RPC client using http.dart.
 //
 // Extend ServerProxyBase by providing the transmit method.
 class ServerProxy extends ServerProxyBase {
-  // add customHeaders member, for jwts and other niceties
+  /// customHeaders, for jwts and other niceties
   Map<String, String> customHeaders;
 
-  // constructor. super-ize properly. Here, resource is the url of the server.
-  HttpServerProxy(String resource, [this.customHeaders = const <String, String>{}])
-      : super(resource);
+  /// constructor. superize properly
+  ServerProxy(String url, [this.customHeaders = const <String, String>{}])
+      : super(url);
 
-  // Send the package (it's a String) to a JSON-RPC server, and await to receive a String (it's a JSON-RPC encoded Response) from the remote end, and return it.
+  /// Return a Future with the JSON-RPC response
   @override
-  Future<String> transmit(String package, [isNotification = false]) async {
+  Future<String> transmit(String package, [bool isNotification = false]) async {
+    /// This is HttpRequest from dart:html
+
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};
     if (customHeaders.isNotEmpty) {
-      // addAll will overwrite, if we provide a different Content-Type
       headers.addAll(customHeaders);
     }
 
-    var resp = await http.post(Uri.parse(resource), body: package, headers: headers);
+    // useful for debugging!
+    // print(package);
+    var resp =
+        await http.post(Uri.parse(resource), body: package, headers: headers);
 
     var body = resp.body;
-    // empty string or HTTP 204
     if (resp.statusCode == 204 || body.isEmpty) {
-      return '';
+      return ''; // we'll return an empty string for null response
     } else {
       return body;
     }
   }
+  // optionally, but recommended: mirror remote API
+  // Future echo(aThing) async {
+  //   var resp = await call('echo', [aThing]);
+  //   return resp;
+  // }
 }
 
 main(){
