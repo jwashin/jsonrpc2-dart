@@ -41,7 +41,7 @@ abstract class ServerProxyBase {
   Future<String> notify(String method, [dynamic params]) async {
     var package = json.encode(JsonRpcMethod(method, params,
         notify: true, serverVersion: _serverVersion));
-    await transmit(package, true);
+    await transmit(package);
     return '';
   }
 
@@ -73,11 +73,10 @@ abstract class ServerProxyBase {
   /// and returning the String body (also JSON) that comes back. You may want to
   /// do error handling on the transport. The [resource] member from
   /// initialization is available for your use in your subclass.
-  /// [isNotification] indicates whether the package is a notification. The
-  /// transport determines whether notifications should be waited for. Http
+  /// The transport determines whether notifications should be waited for. Http
   /// always returns something. Other transports may not.
   ///
-  Future<String> transmit(String package, [bool isNotification = false]);
+  Future<String> transmit(String package);
 
   /// Return the result of calling the method.
   dynamic _handleResponse(String returned) {

@@ -24,12 +24,12 @@ class ServerProxy extends ServerProxyBase {
   Map<String, String> customHeaders;
 
   /// constructor. superize properly
-  ServerProxy(String url, [this.customHeaders = const <String, String>{}])
+  ServerProxy(url, [this.customHeaders = const <String, String>{}])
       : super(url);
 
   /// Return a Future with the JSON-RPC response
   @override
-  Future<String> transmit(String package, [bool isNotification = false]) async {
+  Future<String> transmit(String package) async {
     /// This is HttpRequest from dart:html
 
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};

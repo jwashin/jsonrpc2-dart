@@ -43,7 +43,7 @@ class ServerProxy extends ServerProxyBase {
   ///
   /// return a future with the JSON-RPC response
   @override
-  Future<String> transmit(String package, [bool isNotification=false]) async {
+  Future<String> transmit(String package) async {
     /// init a client connection
     var conn = HttpClient();
 

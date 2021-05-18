@@ -14,3 +14,5 @@
 * triple-slash docs everywhere, as requested.
 ## [2.0.3+1] 2019-09-09  
 * pub.dev had some suggestions... 
+## [3.0.0] 2021-05-04
+* Complete revamp. Null safety. Other reworkings and refactorings too numerous to enumerate. Assume everything is different.
