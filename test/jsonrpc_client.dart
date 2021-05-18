@@ -27,7 +27,7 @@ class ServerProxy extends ServerProxyBase {
   /// Send the package (it's a String), and await to receive a String (it's a
   /// JSON-RPC encoded Response) from the other end, and return it.
   @override
-  Future<String> transmit(String package, [isNotification = false]) async {
+  Future<String> transmit(String package,) async {
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};
     if (customHeaders.isNotEmpty) {
       headers.addAll(customHeaders);

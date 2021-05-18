@@ -13,8 +13,33 @@ Usage:
 ### Client Basics
 
 - Import the client library.
-- Create a ServerProxy class, extended from ServerProxyBase, initialized with a server resource endpoint.
+
+```dart
+import 'package:jsonrpc2/jsonrpc2.dart';
+import 'package:rpc_exceptions/rpc_exceptions.dart';
+```
+
+- Create a ServerProxy class, extended from ServerProxyBase, initialized with a server resource.
+```dart 
+class ServerProxy extends ServerProxyBase {
+  /// constructor. extend this, if you want, then superize properly
+  ServerProxy(resource) //resource can be anything
+      : super(resource);
+}
+```
+
 - In your ServerProxy class override the **transmit** method, which sends a String to the remote JSON-RPC server and returns the returned string.
+```dart
+/// Return a Future with the JSON-RPC response
+  @override
+  Future<String> transmit(String package) async {
+
+    var transport = customTransport(resource);
+    var response = await transport.send(package);
+
+    return response;
+  }
+
 - Use an instance of your ServerProxy to **call** a method on that endpoint, and do something with the result. 
 
 Example JSON-RPC Client using http.dart 
@@ -39,8 +64,7 @@ class ServerProxy extends ServerProxyBase {
 
   /// Return a Future with the JSON-RPC response
   @override
-  Future<String> transmit(String package, [bool isNotification = false]) async {
-    /// This is HttpRequest from dart:html
+  Future<String> transmit(String package) async {
 
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};
     if (customHeaders.isNotEmpty) {
