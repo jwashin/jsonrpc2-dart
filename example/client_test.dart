@@ -13,7 +13,7 @@ class MyClass {
 
 dynamic proxy;
 void main() {
-  proxy = ServerProxy('http://127.0.0.1:8394/sum');
+  proxy = HttpServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
     test('positional arguments', () {
       proxy.call('subtract', [23, 42]).then((result) {
@@ -108,7 +108,7 @@ void main() {
     });
 
     test('basic batch', () {
-      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy = HttpBatchServerProxy('http://127.0.0.1:8394/sum');
       proxy.call('subtract', [23, 42]).then((result) {
         expect(result, equals(-19));
       });
@@ -127,7 +127,7 @@ void main() {
     });
 
     test('batch with error on a notification', () {
-      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
+      proxy = HttpBatchServerProxy('http://127.0.0.1:8394/sum');
       proxy.call('summation', [
         [1, 2, 3, 4, 5]
       ]).then((result) {
@@ -150,11 +150,11 @@ void main() {
     });
 
     test('variable url', () {
-      var proxy = ServerProxy('http://127.0.0.1:8394/friend/Bob');
+      var proxy = HttpServerProxy('http://127.0.0.1:8394/friend/Bob');
       proxy.call('hello').then((result) {
         expect(result, equals('Hello from Bob!'));
       });
-      proxy = ServerProxy('http://127.0.0.1:8394/friend/Mika');
+      proxy = HttpServerProxy('http://127.0.0.1:8394/friend/Mika');
       proxy.call('hello').then((result) {
         expect(result, equals('Hello from Mika!'));
       });

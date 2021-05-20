@@ -1,60 +1,80 @@
 jsonrpc2
 ========
 
-JSON-RPC is a text-based protocol for calling methods on a remote server and (usually) getting a response back. The specification is at [http://jsonrpc.org](http://jsonrpc.org).
+This package is a kit of pure Dart utility classes for JSON-RPC clients and servers in Dart. These need to be extended, to provide the actual transport for the JSON-RPC messages. Instructions, examples, and tests are provided.
+
+JSON-RPC is a unicode-based protocol for calling methods on a remote server and getting responses back. The specification is at [http://jsonrpc.org](http://jsonrpc.org).
 
 JSON-RPC is divided into client and server responsibilities. This package does the fussy part of the [JSON-RPC 2.0 specification](http://www.jsonrpc.org/specification), with failover to 1.0 for the server. 
 
-Like the specification, this package does not handle transport details, so it requires extension to actually send method requests and receive responses. Examples are provided for common implementations.
+Like the specification, this package does not handle transport details for the client, so it requires extension to actually send method requests and receive responses. Similarly for the server side. Examples are provided for common implementations.
 
-Usage:
-======
+# Usage:
 
-### Client Basics
+## Client Basics
 
-- Import the client library.
+1. Import the client library.
 
 ```dart
 import 'package:jsonrpc2/jsonrpc2.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 ```
 
-- Create a ServerProxy class, extended from ServerProxyBase, initialized with a server resource.
+2. Create a server proxy class, extended from ServerProxyBase, initialized with a server resource. resource may be used in the **transmit** method.
 ```dart 
-class ServerProxy extends ServerProxyBase {
+class MyServerProxy extends ServerProxyBase {
   /// constructor. extend this, if you want, then superize properly
-  ServerProxy(resource) //resource can be anything
+  MyServerProxy(resource) //resource can be anything
       : super(resource);
 }
 ```
 
-- In your ServerProxy class override the **transmit** method, which sends a String to the remote JSON-RPC server and returns the returned string.
+3.  In your server proxy class override the **transmit** method, which sends a String to the remote JSON-RPC server and returns the returned string. You may use the server resource identified earlier.
 ```dart
 /// Return a Future with the JSON-RPC response
   @override
   Future<String> transmit(String package) async {
 
-    var transport = customTransport(resource);
+    // for example, create a transport using a string resource name. 
+    var transport = ExampleTransport(resource);
+
+    // send the package using the transport, and await response
     var response = await transport.send(package);
 
+    // return the String response for further processing
     return response;
   }
+```
+4.  Use an instance of your server proxy to **call** a method on that endpoint, and do something with the result. 
 
-- Use an instance of your ServerProxy to **call** a method on that endpoint, and do something with the result. 
+```dart
+  /// Update login token 
+  login (String username, String password) async {
+    var remoteLogin = MyServerProxy('https://example.org/do_login');
+    // Get the login token. This may throw an exception.
+    var token = await remoteLogin.call('login',['fische','gefilte']);
+    // If you have mirrored the server API in your proxy, 
+    // token = await remoteLogin.login('fische','gefilte);  // nice!
+    if (token.isNotEmpty){
+    // use the token
+    };
+  }
 
-Example JSON-RPC Client using http.dart 
----------------------------------------
+```
+
+### Example JSON-RPC Client using [http.dart](https://pub.dev/packages/http) from pub.dev.
 
 [http_client](example/jsonrpc_http_client.dart)
+
 ```dart
 import 'package:http/http.dart' as http;
 import 'package:jsonrpc2/jsonrpc2.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
 
-// ServerProxy is a JSON-RPC client using http.dart.
+// HttpServerProxy is a JSON-RPC client using http.dart.
 //
 // Extend ServerProxyBase by providing the transmit method.
-class ServerProxy extends ServerProxyBase {
+class HttpServerProxy extends ServerProxyBase {
   /// customHeaders, for jwts and other niceties
   Map<String, String> customHeaders;
 
@@ -90,11 +110,11 @@ class ServerProxy extends ServerProxyBase {
   // }
 }
 
-main(){
+main() async {
   proxy = HttpServerProxy('http://example.com/some_endpoint');
   var result='';
   try{
-  result = proxy.call('some_method',[arg1, arg2]);
+  result = await proxy.call('some_method',[arg1, arg2]);
   on RpcException catch(e){
         doSomethingWithException(e);
   }
@@ -102,18 +122,18 @@ main(){
 }
 ```
 
-Server Basics
--------------
+## Server Basics
 
-This server library decodes JSON-RPC request packages and associates the JSON-RPC request with an instance
-that implements the remote methods, and returns a result. Network and transport issues are outside the scope of this
-implementation. That said, using the library should be fairly easy with the transport or framework you are using.
+The server library decodes JSON-RPC request packages and allows association of the JSON-RPC request with an object that calls the remote methods, and returns a result. Network and transport issues are outside the scope of this implementation. That said, this is designed to be fairly easy with the transport or framework you are using.
+
+This implementation uses the Dispatcher concept. Essentially, there is an instantiated class that contains
+the remote methods to be called. The server merely accepts the call requests, decodes them, then tells the dispatcher to call the method with the request parameters. The returned value (or exception) is recoded as a response and sent back to the client.
 
 
 - Import the server library
 
 
-        import 'package:jsonrpc2/jsonrpc_service.dart';
+        import 'package:jsonrpc2/jsonrpc2.dart';
 
 
 - Create a class implementing the service methods at an endpoint.
