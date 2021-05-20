@@ -1,17 +1,11 @@
 import 'package:http/http.dart' as http;
-import 'package:jsonrpc2/src/client_base.dart';
+import 'package:jsonrpc2/jsonrpc2.dart';
 
 /// basic usage:
 ///
 ///    String url = "http://somelocation";
-///    ServerProxy proxy = ServerProxy(url);
+///    ServerProxy proxy = HttpServerProxy(url);
 ///    response = await proxy.call("someServerMethod", [arg1, arg2]);
-///    try{
-///         proxy.checkError(response);
-///     }on RpcException catch(e){
-///         // do error handling with exception e...
-///         }
-///
 ///     // do something with response...
 ///
 ///  Each arg in the call must be representable in json
@@ -19,12 +13,12 @@ import 'package:jsonrpc2/src/client_base.dart';
 ///
 ///  Exceptions on the remote end will throw RpcException.
 
-class ServerProxy extends ServerProxyBase {
+class HttpServerProxy extends ServerProxyBase {
   /// customHeaders, for jwts and other niceties
   Map<String, String> customHeaders;
 
   /// constructor. superize properly
-  ServerProxy(url, [this.customHeaders = const <String, String>{}])
+  HttpServerProxy(url, [this.customHeaders = const <String, String>{}])
       : super(url);
 
   /// Return a Future with the JSON-RPC response
@@ -58,12 +52,12 @@ class ServerProxy extends ServerProxyBase {
 }
 
 /// see the documentation in [BatchServerProxyBase]
-class BatchServerProxy extends BatchServerProxyBase {
+class HttpBatchServerProxy extends BatchServerProxyBase {
   @override
   dynamic proxy;
 
   /// constructor
-  BatchServerProxy(String url, [customHeaders = const <String, String>{}]) {
-    proxy = ServerProxy(url, customHeaders);
+  HttpBatchServerProxy(String url, [customHeaders = const <String, String>{}]) {
+    proxy = HttpServerProxy(url, customHeaders);
   }
 }
