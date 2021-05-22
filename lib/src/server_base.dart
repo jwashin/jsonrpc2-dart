@@ -1,4 +1,4 @@
-/// [jsonrpc_service] is a server-side implementation of JSPN-RPC v2.
+/// [jsonrpc_service] is a server-side codec for JSON-RPC v2.
 ///
 ///
 library jsonrpc_service;
