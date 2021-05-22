@@ -36,11 +36,10 @@ class ExampleMethodsClass {
 
   /// add them together
   num summation(List args) {
-    var sum = 0.0;
-    for (var value in args) {
-      sum += value;
+    if (args.isNotEmpty) {
+      return args.reduce((value, element) => value + element);
     }
-    return sum;
+    return 0;
   }
 
   /// throw an exception
@@ -62,7 +61,7 @@ class ExampleMethodsClass {
   }
 
   /// make a silly thing and return its JSON representation
-  String s1(Map<String,dynamic> amap) => ClassB.fromMap(amap).s1;
+  String s1(Map<String, dynamic> amap) => ClassB.fromMap(amap).s1;
 
   /// shh. private...
   String _private() => 'hello';

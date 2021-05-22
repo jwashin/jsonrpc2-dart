@@ -3,13 +3,22 @@ jsonrpc2
 
 This package is a kit of pure Dart utility classes for JSON-RPC clients and servers in Dart. These need to be extended, to provide the actual transport for the JSON-RPC messages. Instructions, examples, and tests are provided.
 
-JSON-RPC is a unicode-based protocol for calling methods on a remote server and getting responses back. The specification is at [http://jsonrpc.org](http://jsonrpc.org).
+JSON-RPC is a JSON unicode protocol for calling methods on a remote server and getting responses back. The specification is at [http://jsonrpc.org](http://jsonrpc.org).
+
+
+
+
+
+# Usage:
 
 JSON-RPC is divided into client and server responsibilities. This package does the fussy part of the [JSON-RPC 2.0 specification](http://www.jsonrpc.org/specification), with failover to 1.0 for the server. 
 
-Like the specification, this package does not handle transport details for the client, so it requires extension to actually send method requests and receive responses. Similarly for the server side. Examples are provided for common implementations.
+Like the specification, these utilities do not handle transport details for the client, so extension is required to actually send method requests and receive responses. Similarly for the server side. Examples are provided for common implementations.
 
-# Usage:
+The server library decodes JSON-RPC request packages and allows association of the JSON-RPC request with an object that calls the remote methods, and returns a result. Network and transport issues are outside the scope of this implementation. That said, this is designed to be fairly easy with the transport or framework you are using. It's just a method that uses a dispatcher. In a server implementation, make an endpoint for a particular Dispatcher, and use these utilities to decode the request and package the result.
+
+This server implementation uses the Dispatcher concept. Essentially, a dispatcher is an instantiated class that contains the remote methods to be called at an endpoint. The server merely accepts the call requests, decodes them, then creates a dispatcher to call the method with the request parameters. The returned value (or exception) is recoded as a response and sent back to the client.
+
 
 ## Client Basics
 
@@ -124,10 +133,7 @@ main() async {
 
 ## Server Basics
 
-The server library decodes JSON-RPC request packages and allows association of the JSON-RPC request with an object that calls the remote methods, and returns a result. Network and transport issues are outside the scope of this implementation. That said, this is designed to be fairly easy with the transport or framework you are using.
 
-This implementation uses the Dispatcher concept. Essentially, there is an instantiated class that contains
-the remote methods to be called. The server merely accepts the call requests, decodes them, then tells the dispatcher to call the method with the request parameters. The returned value (or exception) is recoded as a response and sent back to the client.
 
 
 - Import the server library
