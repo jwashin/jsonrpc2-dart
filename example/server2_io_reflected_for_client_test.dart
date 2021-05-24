@@ -8,7 +8,7 @@ import 'package:reflectable/reflectable.dart';
 import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 
 import 'reflected_rpc_methods.dart';
-import 'reflected_server_for_client_test.reflectable.dart';
+import 'server2_io_reflected_for_client_test.reflectable.dart';
 
 class Reflector extends Reflectable {
   const Reflector()
