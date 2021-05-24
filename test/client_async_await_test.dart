@@ -11,7 +11,7 @@ class MyClass {
 }
 
 void main() {
-  dynamic proxy = ServerProxy('http://127.0.0.1:8394/sum');
+  var proxy = ServerProxy('http://127.0.0.1:8394/sum');
   group('JSON-RPC', () {
     test('positional arguments', () async {
       int result = await proxy.call('subtract', [23, 42]);
@@ -86,13 +86,13 @@ void main() {
     });
 
     test('basic batch', () async {
-      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
+      var proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       var result1 = proxy.call('subtract', [23, 42]);
       var result2 = proxy.call('subtract', [42, 23]);
       var result3 = proxy.call('getData');
       proxy.notify('update', ['happy Tuesday']);
       var result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
-      proxy.send();
+      await proxy.send();
       expect(await result1, equals(-19));
       expect(await result2, equals(19));
       expect(await result3, equals(['hello', 5]));
@@ -100,7 +100,7 @@ void main() {
     });
 
     test('batch with error on a notification', () async {
-      proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
+      var proxy = BatchServerProxy('http://127.0.0.1:8394/sum');
       var result1 = proxy.call('summation', [
         [1, 2, 3, 4, 5]
       ]);
@@ -111,7 +111,7 @@ void main() {
       ]);
       proxy.notify('oopsie');
       var result4 = proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42});
-      proxy.send();
+      await proxy.send();
       expect(await result4, equals(-19));
       expect(await result3, equals(['hello', 5]));
       expect(await result2, equals(19));
