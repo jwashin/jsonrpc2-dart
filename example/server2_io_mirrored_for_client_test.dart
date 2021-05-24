@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:jsonrpc2/src/server_base.dart';
 import 'package:mirror_dispatcher/mirror_dispatcher.dart';
-import 'package:rpc_dispatcher/rpc_dispatcher.dart';
 
 import 'rpc_methods.dart';
 
@@ -34,7 +33,7 @@ Future<HttpServer> runTestServer(port) async {
 
         //_logger.fine(body.body);
         var pathCheck = request.uri.pathSegments[0];
-        Dispatcher dispatcher;
+        var dispatcher;
         if (pathCheck == 'friend') {
           var friendName = request.uri.pathSegments[1];
           dispatcher = MirrorDispatcher(Friend(friendName));

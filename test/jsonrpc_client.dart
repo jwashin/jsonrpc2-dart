@@ -27,15 +27,17 @@ class ServerProxy extends ServerProxyBase {
   /// Send the package (it's a String), and await to receive a String (it's a
   /// JSON-RPC encoded Response) from the other end, and return it.
   @override
-  Future<String> transmit(String package,) async {
+  Future<String> transmit(
+    String package,
+  ) async {
     var headers = {'Content-Type': 'application/json; charset=UTF-8'};
     if (customHeaders.isNotEmpty) {
       headers.addAll(customHeaders);
     }
-
-    var resp =
-        await http.post(Uri.parse(resource), body: package, headers: headers);
-
+    var uri = Uri.parse(resource);
+    // print('uri is $uri');
+    var resp = await http.post(uri, headers: headers, body: package);
+    // print(resp.headers);
     var body = resp.body;
     if (resp.statusCode == 204 || body.isEmpty) {
       return '';

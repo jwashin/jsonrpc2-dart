@@ -1,26 +1,38 @@
 jsonrpc2
 ========
 
-This package is a kit of pure Dart utility classes for JSON-RPC clients and servers in Dart. These need to be extended, to provide the actual transport for the JSON-RPC messages. Instructions, examples, and tests are provided.
+This package is a kit of pure Dart utility classes and methods for JSON-RPC clients and servers in Dart. These need to be extended, to provide the actual transport for the JSON-RPC messages. Instructions, examples, and tests are provided.
 
 JSON-RPC is a JSON unicode protocol for calling methods on a remote server and getting responses back. The specification is at [http://jsonrpc.org](http://jsonrpc.org).
-
-
-
-
 
 # Usage:
 
 JSON-RPC is divided into client and server responsibilities. This package does the fussy part of the [JSON-RPC 2.0 specification](http://www.jsonrpc.org/specification), with failover to 1.0 for the server. 
 
-Like the specification, these utilities do not handle transport details for the client, so extension is required to actually send method requests and receive responses. Similarly for the server side. Examples are provided for common implementations.
+## Client
+Like the specification, the client implementation does not specify transport details for the client. One needs to create a class extended from ServerProxyBase to actually send method requests and receive responses. Examples are provided for common use cases.
 
-The server library decodes JSON-RPC request packages and allows association of the JSON-RPC request with an object that calls the remote methods, and returns a result. Network and transport issues are outside the scope of this implementation. That said, this is designed to be fairly easy with the transport or framework you are using. It's just a method that uses a dispatcher. In a server implementation, make an endpoint for a particular Dispatcher, and use these utilities to decode the request and package the result.
+Once instantiated, a client proxy may call methods on the server using the **call** method of the proxy. It is a client responsibility to match the server's API.
 
-This server implementation uses the Dispatcher concept. Essentially, a dispatcher is an instantiated class that contains the remote methods to be called at an endpoint. The server merely accepts the call requests, decodes them, then creates a dispatcher to call the method with the request parameters. The returned value (or exception) is recoded as a response and sent back to the client.
+```dart
+Future<dynamic> call(String method, [dynamic params])
+```
+- proxy.call('method_a') // no args
+   
+- proxy.call('method_b', [arg1]) // one arg 
 
+- proxy.call('method_c', arg1) // one arg, arg is neither [] nor {}
 
-## Client Basics
+- proxy.call('method_d', [arg1, arg2, arg3]) // more than one arg
+
+- proxy.call('method_e', [[item1, item2, item3, item4]]) // one arg, arg is [] 
+
+- proxy.call('method_f', [{'a': 'hello', 'b': 'world'}]) // one arg, arg is {} 
+
+- proxy.call('method_g', {'name_a':value_a,'name_b':value_b}) // named args
+   
+
+### Creating a Client (ServerProxy) Class
 
 1. Import the client library.
 
@@ -33,7 +45,7 @@ import 'package:rpc_exceptions/rpc_exceptions.dart';
 ```dart 
 class MyServerProxy extends ServerProxyBase {
   /// constructor. extend this, if you want, then superize properly
-  MyServerProxy(resource) //resource can be anything
+  MyServerProxy(resource) // resource can be anything
       : super(resource);
 }
 ```
@@ -68,7 +80,6 @@ class MyServerProxy extends ServerProxyBase {
     // use the token
     };
   }
-
 ```
 
 ### Example JSON-RPC Client using [http.dart](https://pub.dev/packages/http) from pub.dev.
@@ -132,28 +143,41 @@ main() async {
 ```
 
 ## Server Basics
+The server library decodes JSON-RPC request packages and allows association of the JSON-RPC request with an object that calls the remote methods, and returns a result. Network and transport issues are outside the scope of this implementation. That said, this is designed to be fairly easy with the transport or framework you are using. It's just a method that uses a dispatcher. In a server implementation, make an endpoint for a particular Dispatcher, and use these utilities to decode the request and package the result.
 
-
-
+This server implementation uses a Dispatcher concept. Essentially, a dispatcher is an instantiated class that contains the remote methods to be called at an endpoint. The server accepts a call request, deconstructs the JSON, then creates a dispatcher to call the method on that instance, with the requested parameters. The returned value (or exception) is reconstructed into JSON as a response and sent back to the client.
 
 - Import the server library
+```dart
+import 'package:jsonrpc2/jsonrpc2.dart';
+```
+
+- Create a class implementing the service methods at an endpoint. Just about any class with methods will do. [example api class](example/rpc_methods.dart), and import it, if it is in a different file.
+```dart
+import 'rpc_methods.dart';
+```
+- make a method for your listener that accepts JSON-RPC strings from the client. This string may be, for example, the body of a HTTP POST. Within this method, use this library's **jsonRpc** method to associate the string with a **Dispatcher**. The **jsonRpc** method will ultimately produce a string, which should be sent back to the client as a response.
+
+The **jsonRpc** method has the following signature.
+
+```dart
+Future<String> jsonRpc(String request, Dispatcher dispatcher)
+```
+-- **request** is a JSON string, the JSON-RPC request from the client.
+
+-- a **dispatcher** meets the [Dispatcher interface](https://pub.dev/packages/rpc_dispatcher). See, for example:
+- [mirror_dispatcher](https://pub.dev/packages/mirror_dispatcher)
+
+- [reflector_dispatcher](https://pub.dev/packages/reflector_dispatcher)
+
+These two implementations work about the same. Mirror_dispatcher is easier to use, but it uses dart:mirrors, which cannot work inside flutter. There may be other trade-offs.
 
 
-        import 'package:jsonrpc2/jsonrpc2.dart';
 
 
-- Create a class implementing the service methods at an endpoint.
-- Either (jsonRpcExec)
-
-  
-  1. Decode the request payload to String from (UTF-8) character set.
-  2. Parse the JSON from the String.
-  3. Using the *jsonRpcExec* method, dispatch the request to an instance of the service class.
-  4. Stringify the (usually, a JSONable object) response.
-  5. Usually, return the response (in UTF-8).
 
 
-- or (jsonRpc)
+
 
 
   1. Decode the request payload to String (from UTF-8).
