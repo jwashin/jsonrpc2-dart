@@ -1,13 +1,12 @@
 name: jsonrpc2
 version: 3.0.0
-author: Jim Washington <washington.jim@gmail.com>
 description: JSON-RPC (v2.0) utility classes. Invoke methods on another machine
   using JSON-formatted messages. Some assembly required.
 homepage: https://github.com/jwashin/jsonrpc2-dart
 
 dependencies:
   rpc_exceptions: ^1.0.1
-  
+  rpc_dispatcher: ^1.0.1
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
@@ -20,7 +19,6 @@ dev_dependencies:
   pedantic: ^1.11.0
   reflectable: ^3.0.0
   reflector_dispatcher: ^1.0.1
-  rpc_dispatcher: ^1.0.1
   shelf: ^1.1.0
   shelf_router: ^1.0.0
   stream_channel: any

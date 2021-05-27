@@ -359,7 +359,7 @@ packages:
     source: hosted
     version: "1.0.1"
   rpc_dispatcher:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: rpc_dispatcher
       url: "https://pub.dartlang.org"
