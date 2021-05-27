@@ -25,7 +25,7 @@ class Service {
       var body = await request.readAsString();
       return Response.ok(await jsonRpc(body, dispatcher), headers: jRpcHeader);
     });
-
+    
     router.post('/sum', (Request request) async {
       return Response.ok(
           await jsonRpc(await request.readAsString(),
@@ -33,11 +33,11 @@ class Service {
           headers: jRpcHeader);
     });
 
-    router.post('/', (Request request) async {
-      var dispatcher = MirrorDispatcher(ExampleMethodsClass());
-      var body = await request.readAsString();
-      return Response.ok(await jsonRpc(body, dispatcher), headers: jRpcHeader);
-    });
+    // router.post('/', (Request request) async {
+    //   var dispatcher = MirrorDispatcher(ExampleMethodsClass());
+    //   var body = await request.readAsString();
+    //   return Response.ok(await jsonRpc(body, dispatcher), headers: jRpcHeader);
+    // });
 
     return router;
   }

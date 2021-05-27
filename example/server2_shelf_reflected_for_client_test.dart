@@ -50,12 +50,12 @@ class Service {
           headers: jRpcHeader);
     });
 
-    router.post('/', (Request request) async {
-      var dispatcher =
-          ReflectorDispatcher(ExampleMethodsClass(), myReflectable);
-      var body = await request.readAsString();
-      return Response.ok(await jsonRpc(body, dispatcher), headers: jRpcHeader);
-    });
+    // router.post('/', (Request request) async {
+    //   var dispatcher =
+    //       ReflectorDispatcher(ExampleMethodsClass(), myReflectable);
+    //   var body = await request.readAsString();
+    //   return Response.ok(await jsonRpc(body, dispatcher), headers: jRpcHeader);
+    // });
 
     return router;
   }
