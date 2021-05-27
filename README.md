@@ -83,7 +83,7 @@ class MyServerProxy extends ServerProxyBase {
 ```
 ### Example JSON-RPC Client using [http.dart](https://pub.dev/packages/http) from pub.dev: [http_client](example/jsonrpc_http_client.dart)
 
-[more examples](examples)
+[more examples](example)
 
 ## Server Basics
 The server library decodes JSON-RPC request packages and allows association of the JSON-RPC request with an object that calls the remote methods, and returns a result. Network and transport issues are outside the scope of this implementation. That said, this is designed to be fairly easy with the transport or framework you are using. It's just a method that uses a dispatcher. In a server implementation, make an endpoint for a particular Dispatcher, and use these utilities to decode the request and package the result.
@@ -118,5 +118,5 @@ These two implementations work equivalently. Mirror_dispatcher is easier to use,
 ### Example server using [shelf_io and mirror_dispatcher](example/server2_shelf_mirrored_for_client_test.dart)
 ### Example server using [shelf_io and reflector_dispatcher](example/server2_shelf_reflected_for_client_test.dart)
 
-[more examples (server example names start with 'server2')](examples)
+[more examples (server example names start with 'server2')](example)
 
