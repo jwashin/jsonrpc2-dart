@@ -10,7 +10,7 @@ JSON-RPC is a JSON unicode grammar for calling methods on a remote server and ge
 JSON-RPC is divided into client and server responsibilities. This package does the fussy part of the [JSON-RPC 2.0 specification](http://www.jsonrpc.org/specification), with failover to 1.0 for the server. 
 
 ## Client
-Like the specification, the client implementation does not specify transport details for the client. One needs to create a class extended from ServerProxyBase to actually send method requests and receive responses. Look in [Examples](examples) for common use cases, or see below for step-by-step instructions.
+Like the specification, the client implementation does not specify transport details for the client. One needs to create a class extended from ServerProxyBase to actually send method requests and receive responses. Look in [Examples](example) for common use cases, or see below for step-by-step instructions.
 
 Once instantiated, a client proxy may call methods on the server using the **call** method of the proxy, and receive a response. It is a client responsibility to match the server's API.
 
