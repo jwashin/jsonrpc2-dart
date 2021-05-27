@@ -1,4 +1,4 @@
-The [example](example) folder contains many examples and tests of JSON-RPC functionality.
+The example folder contains many examples and tests of JSON-RPC functionality.
 
 [JSON-RPC client using package:http](jsonrpc_http_client.dart)
 
