@@ -2,7 +2,7 @@ library classb;
 
 import 'dart:convert';
 
-/// Stupid example class. Does almost nothing. But simply :)
+/// Stupid example class. Does almost nothing. But it's easy to understand :)
 class ClassB {
   /// arbitrary member s1
   String s1;
@@ -10,15 +10,15 @@ class ClassB {
   /// arbitrary member s2
   String s2;
 
-  /// constructor. No surprise!
+  /// constructor. No surprises!
   ClassB(this.s1, this.s2);
 
   /// create a ClassB instance from a map
-  ClassB.fromMap(Map<String,dynamic>aMap)
+  ClassB.fromMap(Map<String, dynamic> aMap)
       : s1 = aMap['s1'],
         s2 = aMap['s2'];
 
-  /// ClassB instances will be expressible in JSON
+  /// toJson means that ClassB instances are expressible in JSON
   Map<String, dynamic> toJson() => {'s1': s1, 's2': s2};
 }
 

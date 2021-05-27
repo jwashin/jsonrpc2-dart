@@ -49,7 +49,7 @@ class ExampleMethodsClass {
   }
 
   /// you can balloo anything but a 'frotz'
-  String baloo(String? arg) {
+  String baloo(String arg) {
     if (arg == 'frotz') {
       throw RuntimeException('Cannot baloo with $arg!', 34);
     }
