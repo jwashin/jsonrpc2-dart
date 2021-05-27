@@ -1,5 +1,5 @@
 name: jsonrpc2
-version: 3.0.0+1
+version: 3.0.0+3
 description: JSON-RPC (v2.0) utility classes. Invoke methods on another machine
   using JSON-formatted messages. Some assembly required.
 homepage: https://github.com/jwashin/jsonrpc2-dart

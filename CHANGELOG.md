@@ -17,3 +17,5 @@
 ## [3.0.0] 2021-05-27
 * Complete revamp. Null safety. Other reworkings and refactorings too numerous to enumerate. Simpler to use. Assume everything is different.
 ## [3.0.0+1] OOps on docs.
+## [3.0.0+2] OOps on docs. Again.
+
