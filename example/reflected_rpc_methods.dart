@@ -1,4 +1,5 @@
-library rpc_methods;
+/// Same as rpc_methods, with reflectable enabled
+library reflected_rpc_methods;
 
 import 'package:reflectable/reflectable.dart';
 import 'package:rpc_exceptions/rpc_exceptions.dart';
