@@ -87,15 +87,54 @@ class MyServerProxy extends ServerProxyBase {
 
 ### Client Notifications
 JSON-RPC supports the concept of notifications. A **notification** is for calling a method on the remote server without requiring a response. 
-Do this by calling **notify** instead of **call** with your client (or server proxy). The JSON-RPC specification requires that no there will be no response
-to notifications. Some transports, like HTTP, always return a response. You may handle this appropriately in the overridden **transmit** method of your
-server proxy. For HTTP, my examples return an empty string or 204 status from the server, and the server proxy returns an empty string. Regardless, the **notify** method does not return anything.
+Do this by calling a remote method using **notify** instead of **call** with your client (or server proxy). 
 
 ```dart
 void notify(String method, [dynamic params])
 ```
+The JSON-RPC specification requires that no there will be no response to notifications. Some transports, like HTTP, always return a response. You may handle this appropriately in the overridden **transmit** method of your
+server proxy. For HTTP, my examples return an empty string or 204 status from the server, and the server proxy returns an empty string. Regardless, the **notify** method of a ServerProxyBase does not return anything. 
 
+### Batch Requests
+JSON-RPC V2 supports batching several method requests into a single transport request.
 
+To support this on a client, after you have created your client (server proxy) class, do the following
+
+1. Create a client BatchServerProxy class, using your client ServerProxy class as instance proxy. 
+```dart
+/// see the documentation in [BatchServerProxyBase]
+class MyBatchServerProxy extends BatchServerProxyBase {
+  @override
+  dynamic proxy;
+
+  /// constructor
+  MyBatchServerProxy(String url, [customHeaders = const <String, String>{}]) {
+    proxy = MyServerProxy(url, customHeaders);
+  }
+}
+```
+2.  Using your BatchServerProxy class, **call** an arbitrary number methods, like you are using the normal proxy. Then **send** the methods as a batch.
+
+```dart
+/// call a bunch of methods to return three items
+  List threeItems () async {
+    var remoteSite = MyBatchServerProxy('https://example.org/');
+    
+    var item1 = remoteSite.call('firstItem');
+    var item2 = remoteSite.call('secondItem');
+    remoteSite.notify('happyLog', 'I hope the last item comes through!');
+    var item3 = remoteSite.call('lastItem');
+    // Or, if you have mirrored the server API in your proxy, 
+    // var item1 = remoteSite.item1();  // ...etc.
+
+    // now, send the request to the server.
+    await remoteSite.send();
+
+    // now do something with the Futures from the calls.
+    return [fromJson(await item1), fromJson(await item2), fromJson(await item3)]
+  }
+
+```
 ## Server Basics
 The server library decodes JSON-RPC request packages and allows association of the JSON-RPC request with an object that calls the remote methods, and returns a result. Network and transport issues are outside the scope of this implementation. That said, this is designed to be fairly easy with the transport or framework you are using. It's just a method that uses a dispatcher. In a server implementation, make an endpoint for a particular Dispatcher, and use these utilities to decode the request and package the result.
 

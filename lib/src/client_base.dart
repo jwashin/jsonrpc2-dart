@@ -95,7 +95,6 @@ abstract class ServerProxyBase {
 
 /// [BatchServerProxyBase] is like [ServerProxyBase], but it handles the
 /// special case where the batch formulation of JSON-RPC v2 is used.
-/// In dart, this is not particularly useful with async/await
 class BatchServerProxyBase {
   /// [proxy] is a descendant of [ServerProxyBase] that actually does
   /// the hard work of sending requests and receiving responses.
@@ -139,7 +138,7 @@ class BatchServerProxyBase {
   }
 
   /// send a batch of requests
-  Future<dynamic> send() async {
+  Future send() async {
     if (_requests.isEmpty) {
       throw ArgumentError('Nothing to send');
     } else {
