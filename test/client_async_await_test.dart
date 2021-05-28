@@ -40,10 +40,9 @@ void main() {
     });
 
     test('notification', () async {
-      var result = await proxy.notify('update', [
+      proxy.notify('update', [
         [1, 2, 3, 4, 5]
       ]);
-      expect(result, equals(''));
     });
 
     test('unicode', () async {

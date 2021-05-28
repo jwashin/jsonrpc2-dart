@@ -85,6 +85,17 @@ class MyServerProxy extends ServerProxyBase {
 
 [more examples](example)
 
+### Client Notifications
+JSON-RPC supports the concept of notifications. A **notification** is for calling a method on the remote server without requiring a response. 
+Do this by calling **notify** instead of **call** with your client (or server proxy). The JSON-RPC specification requires that no there will be no response
+to notifications. Some transports, like HTTP, always return a response. You may handle this appropriately in the overridden **transmit** method of your
+server proxy. For HTTP, my examples return an empty string or 204 status from the server, and the server proxy returns an empty string. Regardless, the **notify** method does not return anything.
+
+```dart
+void notify(String method, [dynamic params])
+```
+
+
 ## Server Basics
 The server library decodes JSON-RPC request packages and allows association of the JSON-RPC request with an object that calls the remote methods, and returns a result. Network and transport issues are outside the scope of this implementation. That said, this is designed to be fairly easy with the transport or framework you are using. It's just a method that uses a dispatcher. In a server implementation, make an endpoint for a particular Dispatcher, and use these utilities to decode the request and package the result.
 

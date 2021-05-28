@@ -42,11 +42,7 @@ void main() {
     });
 
     test('notification', () {
-      proxy.notify('update', [
-        [1, 2, 3, 4, 5]
-      ]).then((result) {
-        expect(result, equals(''));
-      });
+      proxy.notify('update', ['happy Tuesday']);
     });
 
     test('unicode', () {
@@ -98,7 +94,7 @@ void main() {
 
     test('notification had effect', () {
       proxy.call('fetchGlobal').then((result) {
-        expect(result, equals([1, 2, 3, 4, 5]));
+        expect(result, equals('happy Tuesday'));
       });
     });
 
@@ -113,7 +109,7 @@ void main() {
       proxy.call('getData').then((result) {
         expect(result, equals(['hello', 5]));
       });
-      proxy.notify('update', ['happy Tuesday']);
+      proxy.notify('update', 'happy Tuesday');
 
       proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {
         expect(result, equals(-19));
@@ -135,7 +131,7 @@ void main() {
         expect(result, equals(['hello', 5]));
       });
       proxy.notify('update', [
-        [1, 2, 3, 4, 5]
+        [1, 2, 3, 4, 6]
       ]);
       proxy.notify('oopsie');
       proxy.call('nsubtract', {'minuend': 23, 'subtrahend': 42}).then((result) {

@@ -37,12 +37,11 @@ abstract class ServerProxyBase {
   /// Initialize with the identifier for the server resource
   ServerProxyBase(this.resource);
 
-  /// Call the method on the server. Returns Future<dynamic>
-  Future<String> notify(String method, [dynamic params]) async {
+  /// Call the method on the server. Returns nothing
+  void notify(String method, [dynamic params]) async {
     var package = json.encode(JsonRpcMethod(method, params,
         notify: true, serverVersion: _serverVersion));
     await transmit(package);
-    return '';
   }
 
   /// Call a method on the remote server, and get a response
